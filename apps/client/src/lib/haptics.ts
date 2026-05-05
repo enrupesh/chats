@@ -1,19 +1,53 @@
 /**
  * VeilChat haptics.
  *
- * Thin, lazy wrapper around `navigator.vibrate`. On platforms without
- * vibration support (most desktops, iOS Safari) every call becomes a
- * silent no-op so callers can fire-and-forget.
- *
- * Patterns are deliberately short — these are conversational micro-cues
- * to match the matching sound motifs, not buzz-attention alarms.
+ * On Android (Capacitor), uses the native Haptics plugin for precise,
+ * high-quality tactile feedback — much better than navigator.vibrate.
+ * On the web / iOS PWA, falls back to navigator.vibrate as before.
+ * Every call is a silent no-op on platforms without vibration support.
  */
+
+import { isAndroid } from "./capacitor";
 
 let hapticsEnabled = true;
 
 export function setHapticsEnabled(v: boolean): void {
   hapticsEnabled = v;
 }
+
+// ─── Native (Capacitor Android) path ────────────────────────────────────────
+
+async function nativeImpact(style: "Heavy" | "Medium" | "Light"): Promise<void> {
+  if (!hapticsEnabled) return;
+  try {
+    const { Haptics, ImpactStyle } = await import("@capacitor/haptics");
+    await Haptics.impact({ style: ImpactStyle[style] });
+  } catch {
+    /* native module not available — silently ignore */
+  }
+}
+
+async function nativeNotification(type: "Success" | "Warning" | "Error"): Promise<void> {
+  if (!hapticsEnabled) return;
+  try {
+    const { Haptics, NotificationType } = await import("@capacitor/haptics");
+    await Haptics.notification({ type: NotificationType[type] });
+  } catch {
+    /* native module not available — silently ignore */
+  }
+}
+
+async function nativeVibrate(duration: number): Promise<void> {
+  if (!hapticsEnabled) return;
+  try {
+    const { Haptics } = await import("@capacitor/haptics");
+    await Haptics.vibrate({ duration });
+  } catch {
+    /* native module not available — silently ignore */
+  }
+}
+
+// ─── Web path ────────────────────────────────────────────────────────────────
 
 function canVibrate(): boolean {
   if (!hapticsEnabled) return false;
@@ -26,41 +60,66 @@ function buzz(pattern: number | number[]): void {
   try {
     navigator.vibrate(pattern);
   } catch {
-    /* Some browsers throw on rapid repeat — safe to ignore. */
+    /* some browsers throw on rapid repeat — safe to ignore */
   }
 }
 
-/** ~8 ms — softest possible "I felt the tap." */
+// ─── Public API ──────────────────────────────────────────────────────────────
+
+/** Softest "I felt the tap." */
 export function hapticTap(): void {
-  buzz(8);
+  if (isAndroid()) {
+    void nativeImpact("Light");
+  } else {
+    buzz(8);
+  }
 }
 
-/** ~15 ms — slightly more present, for confirmations. */
+/** Slightly more present, for confirmations. */
 export function hapticSoft(): void {
-  buzz(15);
+  if (isAndroid()) {
+    void nativeImpact("Medium");
+  } else {
+    buzz(15);
+  }
 }
 
 /** A short "ba-dum" for sends and successful actions. */
 export function hapticSuccess(): void {
-  buzz([10, 40, 12]);
+  if (isAndroid()) {
+    void nativeNotification("Success");
+  } else {
+    buzz([10, 40, 12]);
+  }
 }
 
 /** Two quick taps for incoming activity. */
 export function hapticReceive(): void {
-  buzz([12, 60, 12]);
+  if (isAndroid()) {
+    void nativeImpact("Medium");
+  } else {
+    buzz([12, 60, 12]);
+  }
 }
 
 /** A heavier triple for errors. */
 export function hapticError(): void {
-  buzz([40, 30, 40, 30, 40]);
+  if (isAndroid()) {
+    void nativeNotification("Error");
+  } else {
+    buzz([40, 30, 40, 30, 40]);
+  }
 }
 
 /** Cancel any in-flight vibration. */
 export function hapticCancel(): void {
-  if (!canVibrate()) return;
-  try {
-    navigator.vibrate(0);
-  } catch {
-    /* ignore */
+  if (isAndroid()) {
+    void nativeVibrate(0).catch(() => undefined);
+  } else if (canVibrate()) {
+    try {
+      navigator.vibrate(0);
+    } catch {
+      /* ignore */
+    }
   }
 }

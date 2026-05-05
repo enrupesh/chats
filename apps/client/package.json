@@ -6,11 +6,26 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 5000",
     "build": "tsc -b && vite build",
+    "build:android": "VITE_CAPACITOR=true tsc -b && VITE_CAPACITOR=true vite build",
     "preview": "vite preview --host 0.0.0.0 --port 5000",
     "typecheck": "tsc --noEmit",
-    "og": "node scripts/build-og-image.mjs"
+    "og": "node scripts/build-og-image.mjs",
+    "cap:sync": "pnpm build:android && npx cap sync android",
+    "cap:open": "npx cap open android",
+    "cap:icons": "node scripts/generate-android-icons.mjs",
+    "cap:splash": "node scripts/generate-splash.mjs"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.1",
+    "@capacitor/app": "^8.1.0",
+    "@capacitor/core": "^8.3.1",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/keyboard": "^8.0.3",
+    "@capacitor/local-notifications": "^8.0.2",
+    "@capacitor/network": "^8.0.1",
+    "@capacitor/push-notifications": "^8.0.3",
+    "@capacitor/splash-screen": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.2",
     "@hookform/resolvers": "^5.2.2",
     "@noble/curves": "^2.2.0",
     "@noble/hashes": "^2.2.0",
@@ -40,6 +55,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.3.1",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",

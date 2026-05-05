@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, makeTrpcClient } from "./lib/trpc";
@@ -21,6 +21,7 @@ import { PushPermissionPrompt } from "./components/PushPermissionPrompt";
 import { DailyVerificationGate } from "./components/DailyVerificationGate";
 import { AppErrorBoundary } from "./components/ErrorBoundary";
 import { ToastViewport } from "./lib/toast";
+import { initAndroidNative } from "./lib/androidSetup";
 
 // All non-landing routes are code-split. Each chunk only downloads when
 // the user navigates there, so the initial JS bundle stays tiny and the
@@ -123,6 +124,27 @@ export function App() {
   // making screenshots / app-switcher previews far less useful to a
   // shoulder-surfer. Honours the user's `screenshotBlurEnabled` toggle.
   usePrivacyBlur();
+
+  // Android native setup — status bar theming, splash hide, back button,
+  // and app-lifecycle events. Runs only inside the Capacitor shell; the
+  // hook is a no-op on every other platform so it's always safe to call.
+  const androidCleanup = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    void initAndroidNative({
+      onBackButton: () => {
+        // Return true to suppress the default behaviour (e.g. if a modal
+        // is open and you've closed it manually). Return false/undefined to
+        // let the default history-back or app-minimise logic run.
+        return false;
+      },
+    }).then((cleanup) => {
+      androidCleanup.current = cleanup;
+    });
+    return () => {
+      androidCleanup.current?.();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <AppErrorBoundary>

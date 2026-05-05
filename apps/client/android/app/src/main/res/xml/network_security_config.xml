@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Network security configuration for VeilChat Android.
+
+    - Only HTTPS is permitted (cleartext is disabled in the manifest).
+    - The production API server is explicitly trusted via the system CAs.
+    - Capacitor's local bridge (https://localhost) is also trusted.
+    - No certificate pinning here — pinning is better handled at the
+      application layer (HPKP-style) once you have a stable cert chain.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- Allow the Capacitor bridge origin -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">localhost</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!-- API backend -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="false">chats-fk6e.onrender.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>
