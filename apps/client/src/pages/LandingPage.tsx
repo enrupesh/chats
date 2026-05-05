@@ -51,6 +51,7 @@ export function LandingPage() {
       }}
     >
       <NavBar />
+      <AndroidDownloadBanner />
       {/* Wrap the page content in a `<main>` landmark so screen readers
           and Lighthouse can identify the primary content region. */}
       <main id="main">
@@ -217,6 +218,69 @@ function useTapToScroll() {
 /* ───────────────────────── Floating install chip ───────────────────────── */
 
 const INSTALL_CHIP_DISMISS_KEY = "veil:landing_install_chip_dismissed";
+const ANDROID_BANNER_DISMISS_KEY = "veil:android_banner_dismissed";
+
+/* ───────── Android APK download banner (shown only on Android) ───────────
+ *
+ * Detected via the user-agent. Shown as a slim sticky bar just below
+ * the nav on Android devices, linking to /download. Dismissable per-session.
+ */
+function AndroidDownloadBanner() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (sessionStorage.getItem(ANDROID_BANNER_DISMISS_KEY) === "1") return;
+    const isAndroid = /android/i.test(navigator.userAgent);
+    if (isAndroid) setVisible(true);
+  }, []);
+
+  const dismiss = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try { sessionStorage.setItem(ANDROID_BANNER_DISMISS_KEY, "1"); } catch { /* ignore */ }
+    setVisible(false);
+  };
+
+  if (!visible) return null;
+
+  return (
+    <div
+      className="fixed top-16 inset-x-0 z-30 flex items-center justify-between gap-3 px-4 py-2.5"
+      style={{
+        backgroundColor: "#2E6F40",
+        boxShadow: "0 4px 16px -4px rgba(46,111,64,0.4)",
+      }}
+      role="banner"
+    >
+      <div className="flex items-center gap-2.5 min-w-0">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+          <path d="M17.523 15.341a.854.854 0 0 1-.857.857.854.854 0 0 1-.857-.857.854.854 0 0 1 .857-.857.854.854 0 0 1 .857.857M7.19 15.341a.854.854 0 0 1-.857.857.854.854 0 0 1-.857-.857.854.854 0 0 1 .857-.857.854.854 0 0 1 .857.857M17.79 10l1.5-2.598a.313.313 0 0 0-.114-.427.313.313 0 0 0-.427.114L17.23 9.56A8.99 8.99 0 0 0 12 8.25a8.99 8.99 0 0 0-5.23 1.31L5.25 7.089a.313.313 0 0 0-.427-.114.313.313 0 0 0-.114.427L6.21 10C4.246 11.221 3 13.232 3 15.5h18c0-2.268-1.246-4.279-3.21-5.5" />
+        </svg>
+        <span className="text-[13.5px] font-medium text-white/90 truncate">
+          Get the VeilChat Android app
+        </span>
+      </div>
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <Link
+          to="/download"
+          className="text-[13px] font-bold text-white bg-white/20 hover:bg-white/30 px-3.5 py-1.5 rounded-full transition-colors"
+        >
+          Download APK
+        </Link>
+        <button
+          type="button"
+          onClick={dismiss}
+          aria-label="Dismiss"
+          className="p-1 rounded-full text-white/70 hover:text-white hover:bg-white/15 transition-colors"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function FloatingInstallChip() {
   const [visible, setVisible] = useState(false);

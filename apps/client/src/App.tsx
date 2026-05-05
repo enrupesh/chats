@@ -66,6 +66,7 @@ const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage").then((m
 const TermsPage = lazy(() => import("./pages/TermsPage").then((m) => ({ default: m.TermsPage })));
 const AboutPage = lazy(() => import("./pages/AboutPage").then((m) => ({ default: m.AboutPage })));
 const OpenSourcePage = lazy(() => import("./pages/OpenSourcePage").then((m) => ({ default: m.OpenSourcePage })));
+const DownloadPage = lazy(() => import("./pages/DownloadPage").then((m) => ({ default: m.DownloadPage })));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })));
 
 // Quiet, branded fallback shown while a route chunk is fetched. Sized
@@ -195,6 +196,7 @@ export function App() {
               <Route path="/terms" element={<TermsPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/open-source" element={<OpenSourcePage />} />
+              <Route path="/download" element={<DownloadPage />} />
               <Route path="/i/:token" element={<InviteRedeemPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

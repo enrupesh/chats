@@ -188,6 +188,42 @@ Then run `cap sync` again.
 
 ---
 
+## Distributing the APK on veilchat.me/download
+
+The website has a dedicated download page at `/download` that shows an
+Android download button, a QR code, and a step-by-step install guide.
+
+### Step 1 — Host the APK file (GitHub Releases, free)
+
+1. Go to your GitHub repo → click **Releases** → **Draft a new release**
+2. Set a tag like `v1.0` and a title like `VeilChat Android v1.0`
+3. Drag and drop your `app-release.apk` into the assets area
+4. Click **Publish release**
+5. Right-click the APK in the release and copy the direct download URL
+   (it looks like: `https://github.com/YOUR_USER/YOUR_REPO/releases/download/v1.0/app-release.apk`)
+
+### Step 2 — Set the URL in your environment
+
+Open `apps/client/.env` and fill in:
+
+```env
+VITE_ANDROID_APK_URL=https://github.com/YOUR_USER/YOUR_REPO/releases/download/v1.0/app-release.apk
+VITE_ANDROID_APK_VERSION=1.0
+VITE_ANDROID_APK_SIZE=28 MB
+```
+
+For production (Vercel), add the same three variables in your **Vercel project settings → Environment Variables**.
+
+### Step 3 — Redeploy
+
+Push to `main` (or trigger a Vercel redeploy). The download button will go live automatically.
+
+### When you release a new version
+
+Repeat Step 1 with a new tag (`v1.1`, etc.), update `VITE_ANDROID_APK_URL` and `VITE_ANDROID_APK_VERSION` in Vercel, then redeploy.
+
+---
+
 ## Troubleshooting
 
 | Problem | Fix |
