@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 5000",
     "build": "tsc -b && vite build",
-    "build:android": "VITE_CAPACITOR=true tsc -b && VITE_CAPACITOR=true vite build",
+    "build:android": "cross-env VITE_CAPACITOR=true tsc -b && cross-env VITE_CAPACITOR=true vite build",
     "preview": "vite preview --host 0.0.0.0 --port 5000",
     "typecheck": "tsc --noEmit",
     "og": "node scripts/build-og-image.mjs",
@@ -61,6 +61,7 @@
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.20",
+    "cross-env": "^10.1.0",
     "postcss": "^8.4.49",
     "sharp": "^0.34.5",
     "tailwindcss": "^3.4.15",
