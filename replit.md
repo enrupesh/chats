@@ -10,7 +10,7 @@ A Progressive Web App messenger that is end-to-end encrypted, open-source, and f
 - `pnpm --filter @veil/server db:push`: Syncs DB schema to Neon.
 - `pnpm typecheck`: Typechecks all packages.
 - `pnpm build`: Builds all packages.
-- **Required Server Env Vars:** `DATABASE_URL`, `JWT_SECRET`, `IDENTIFIER_HMAC_PEPPER`.
+- **Required Server Env Vars:** `DATABASE_URL`, `JWT_SECRET`, `REFRESH_TOKEN_SECRET`, `IDENTIFIER_HMAC_PEPPER`.
 - **Optional Server Env Vars:** `RESEND_API_KEY`, `RESEND_FROM`, `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `REPORT_EMAIL_TO`.
 - **Client Env Vars:** `VITE_API_BASE_URL` (defaults to `/api`), `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`.
 

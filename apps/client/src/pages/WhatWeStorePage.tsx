@@ -1,6 +1,4 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../lib/store";
 import { AppBar } from "../components/Layout";
 import { useNoindex } from "../lib/useDocumentMeta";
 
@@ -19,11 +17,6 @@ import { useNoindex } from "../lib/useDocumentMeta";
 export function WhatWeStorePage() {
   useNoindex("What we store · VeilChat");
   const navigate = useNavigate();
-  const accessToken = useAuthStore((s) => s.accessToken);
-
-  useEffect(() => {
-    if (!accessToken) navigate("/");
-  }, [accessToken, navigate]);
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">
