@@ -102,6 +102,7 @@ import { verifyBiometric } from "../lib/biometric";
 import { MessageText } from "../lib/markdown";
 import { useNoindex } from "../lib/useDocumentMeta";
 import { isAndroid } from "../lib/capacitor";
+import { enableScreenSecurity, disableScreenSecurity } from "../lib/screenSecurity";
 
 const POLL_MS = 3000;
 export const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
@@ -2225,6 +2226,19 @@ function ViewOnceViewer({
   // Prevents onClose() from being called more than once when multiple
   // signals fire in rapid succession (e.g. visibilitychange + appStateChange).
   const closedRef = useRef(false);
+
+  // ── FLAG_SECURE (Android only) ──────────────────────────────────────────
+  // While this viewer is mounted, activate FLAG_SECURE on the Android window
+  // so that any OS-level screenshot attempt (Power + Volume Down, screen
+  // recording, Recents thumbnail) captures a blank black frame instead of
+  // the View-Once content.  The flag is always cleared on unmount so the
+  // rest of the app session is unaffected.
+  useEffect(() => {
+    void enableScreenSecurity();
+    return () => {
+      void disableScreenSecurity();
+    };
+  }, []);
 
   function safeClose() {
     if (closedRef.current) return;

@@ -9,6 +9,7 @@ public class MainActivity extends BridgeActivity {
         // Register native plugins before calling super.onCreate so Capacitor
         // can wire them up before the WebView is created.
         registerPlugin(WebAuthnPlugin.class);
+        registerPlugin(ScreenSecurityPlugin.class);
         super.onCreate(savedInstanceState);
     }
 }
