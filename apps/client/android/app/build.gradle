@@ -47,6 +47,12 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+
+    // Android Credential Manager — provides native FIDO2 / passkey support.
+    // Required by WebAuthnPlugin.java so passkeys work in the Capacitor WebView
+    // (window.PublicKeyCredential is not available in the WebView itself).
+    implementation "androidx.credentials:credentials:1.5.0"
+    implementation "androidx.credentials:credentials-play-services-auth:1.5.0"
 }
 
 apply from: 'capacitor.build.gradle'

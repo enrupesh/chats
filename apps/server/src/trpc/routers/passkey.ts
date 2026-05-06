@@ -53,6 +53,20 @@ import { env } from "../../env.js";
  * from the `Origin` header so the same backend works in dev (localhost
  * or replit.dev) and in production without env wiring. We treat the
  * full origin as the source of truth and pin rpID to its hostname.
+ *
+ * Android Credential Manager note:
+ *   When the Capacitor Android app creates or uses a passkey via the
+ *   native Credential Manager API, the `clientDataJSON.origin` in the
+ *   WebAuthn response will be an Android APK key hash string of the form:
+ *     android:apk-key-hash:<base64url-sha256-of-signing-cert>
+ *   rather than the HTTP origin (`https://localhost`).
+ *
+ *   To handle this, verifyRegistration and verifyAuthentication extract
+ *   the actual origin from the response's clientDataJSON and — when the
+ *   request is coming from our Capacitor app (Origin: https://localhost
+ *   or null) — pass that extracted origin as the expectedOrigin to
+ *   @simplewebauthn/server.  The rpID stays as `localhost` throughout,
+ *   which Android Credential Manager accepts without Digital Asset Links.
  */
 
 const RP_NAME = "Veil";
@@ -84,6 +98,79 @@ function getRpInfo(req: {
     });
   }
   return { rpID: url.hostname, origin: url.origin };
+}
+
+/**
+ * True when the request comes from the Capacitor Android app.
+ * Capacitor serves content from https://localhost, so that is the
+ * origin sent in HTTP requests to the backend.
+ */
+function isCapacitorOrigin(origin: string): boolean {
+  try {
+    const url = new URL(origin);
+    return url.hostname === "localhost";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Extract the WebAuthn `clientDataJSON.origin` from a registration or
+ * authentication response. Returns null if parsing fails.
+ *
+ * Android Credential Manager embeds `android:apk-key-hash:<hash>` here
+ * instead of the HTTP origin, so we must read it before passing it to
+ * @simplewebauthn/server as expectedOrigin.
+ */
+function extractClientDataOrigin(response: unknown): string | null {
+  try {
+    // Both registration and authentication responses nest clientDataJSON
+    // under response.response.clientDataJSON (base64url-encoded JSON string).
+    const resp = response as Record<string, unknown>;
+    const inner = resp["response"] as Record<string, unknown> | undefined;
+    const clientDataJSON = inner?.["clientDataJSON"];
+    if (typeof clientDataJSON !== "string" || !clientDataJSON) return null;
+
+    // clientDataJSON is base64url-encoded; decode and parse.
+    const pad = clientDataJSON.length % 4 === 0
+      ? ""
+      : "=".repeat(4 - (clientDataJSON.length % 4));
+    const b64 = clientDataJSON.replace(/-/g, "+").replace(/_/g, "/") + pad;
+    const decoded = Buffer.from(b64, "base64").toString("utf8");
+    const parsed = JSON.parse(decoded) as { origin?: string };
+    return typeof parsed.origin === "string" ? parsed.origin : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Resolve the expected origin(s) to pass to @simplewebauthn/server.
+ *
+ * For regular browser requests the origin from the HTTP header is used.
+ * For Capacitor Android requests, the clientDataJSON.origin will be an
+ * `android:apk-key-hash:…` string rather than `https://localhost`.
+ * We extract that actual Android origin and return it alongside the
+ * Capacitor HTTP origin so both can be accepted.
+ */
+function resolveExpectedOrigins(
+  httpOrigin: string,
+  webAuthnResponse: unknown,
+): string[] {
+  const origins: string[] = [httpOrigin];
+
+  if (isCapacitorOrigin(httpOrigin)) {
+    const clientDataOrigin = extractClientDataOrigin(webAuthnResponse);
+    if (
+      clientDataOrigin &&
+      clientDataOrigin !== httpOrigin &&
+      clientDataOrigin.startsWith("android:apk-key-hash:")
+    ) {
+      origins.push(clientDataOrigin);
+    }
+  }
+
+  return origins;
 }
 
 const REFRESH_COOKIE_SAMESITE: "none" | "lax" = env.COOKIE_SECURE
@@ -252,12 +339,18 @@ export const passkeyRouter = router({
         });
       }
 
+      // Build the list of accepted origins. For regular browser requests this
+      // is just the HTTP Origin. For Capacitor Android (origin = https://localhost)
+      // the credential's clientDataJSON.origin will be android:apk-key-hash:…
+      // so we extract and include that too.
+      const expectedOrigins = resolveExpectedOrigins(origin, input.response);
+
       let verification;
       try {
         verification = await verifyRegistrationResponse({
           response: input.response as never,
           expectedChallenge,
-          expectedOrigin: origin,
+          expectedOrigin: expectedOrigins,
           expectedRPID: rpID,
           requireUserVerification: false,
         });
@@ -458,12 +551,15 @@ export const passkeyRouter = router({
         transports: parseTransports(row.transports),
       };
 
+      // Same Android Credential Manager origin handling as registration.
+      const expectedOrigins = resolveExpectedOrigins(origin, input.response);
+
       let verification;
       try {
         verification = await verifyAuthenticationResponse({
           response: input.response as never,
           expectedChallenge,
-          expectedOrigin: origin,
+          expectedOrigin: expectedOrigins,
           expectedRPID: rpID,
           credential,
           requireUserVerification: false,

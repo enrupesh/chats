@@ -8,6 +8,7 @@
  *   - Physical / gesture back-button behaviour (Android only).
  *   - App lifecycle events (foreground / background) for WebSocket
  *     reconnect hints and push-subscription refresh.
+ *   - Passkey support detection via the native WebAuthn plugin.
  *
  * All imports are dynamic so the web bundle is never bloated with
  * native-only code — tree-shaking removes the entire module on web.
@@ -86,6 +87,16 @@ export async function initAndroidNative(opts: {
     cleanups.push(() => void stateHandler.remove());
   } catch {
     /* not critical */
+  }
+
+  // ── 5. Passkey / WebAuthn support detection ─────────────────────────────
+  // This must run early so that isPasskeySupported() returns the correct
+  // value by the time the user reaches any page that shows passkey UI.
+  try {
+    const { initAndroidPasskeySupport } = await import("./passkey");
+    await initAndroidPasskeySupport();
+  } catch {
+    /* not critical — passkey UI will hide itself if unsupported */
   }
 
   return () => cleanups.forEach((fn) => fn());
