@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "770164354147",
+    "project_id": "chats-19114",
+    "storage_bucket": "chats-19114.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:770164354147:android:87c16ab17e0c65cafc5c56",
+        "android_client_info": {
+          "package_name": "me.veilchat.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtQ6YFlM3TXtDY5kEtqIRENGVEllitMZM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

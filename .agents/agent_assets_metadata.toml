@@ -1,0 +1,31 @@
+uploads = []
+
+[[generated]]
+id = "4QD_E2flV19QLEvbmeepn"
+uri = "file://apps/client/public/og-image.png"
+type = "image"
+title = "veil og social card"
+
+[[outputs]]
+id = "z1caNzbDL_yn5I72ECE_c"
+uri = "file://attached_assets/recovery-kit-preview/veil-recovery-kit-sample.pdf"
+type = "pdf"
+title = "Sample Veil Recovery Kit (PDF)"
+
+[[outputs]]
+id = "38krUzUxvGSEtMuLSZsDn"
+uri = "file://attached_assets/recovery-kit-preview/veil-recovery-kit-preview.png"
+type = "image"
+title = "Recovery Kit page preview"
+
+[[outputs]]
+id = "K0KDVkD-wMnqSQbze45dD"
+uri = "file://apps/client/public/og-image.png"
+type = "image"
+title = "VeilChat — Social share preview (1200×630)"
+
+[[outputs]]
+id = "V9Ejn4PnmU6AQDwnloCVl"
+uri = "file://veilchat-keyword-map.md"
+type = "text"
+title = "VeilChat — Keyword Map (220 phrases)"

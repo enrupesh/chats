@@ -1,0 +1,451 @@
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { trpc, makeTrpcClient } from "./lib/trpc";
+import { useAuthStore, getStoredRefreshToken } from "./lib/store";
+import {
+  loadCachedUnlockedIdentity,
+  useUnlockStore,
+} from "./lib/unlockStore";
+import { installSystemThemeListener } from "./lib/themeStore";
+import { ensurePushSubscription } from "./lib/push";
+import { readPendingInvite, clearPendingInvite } from "./lib/inviteRedirect";
+// Landing page is the entry point — keep it eager so first paint is instant.
+import { LandingPage } from "./pages/LandingPage";
+import { SessionSync } from "./lib/SessionSync";
+import { SessionGuard } from "./components/SessionGuard";
+import { useStealthPrefs } from "./lib/stealthPrefs";
+import { unlockAudioOnFirstGesture } from "./lib/sound";
+import { InstallPrompt } from "./components/InstallPrompt";
+import { PushPermissionPrompt } from "./components/PushPermissionPrompt";
+import { DailyVerificationGate } from "./components/DailyVerificationGate";
+import { AppErrorBoundary } from "./components/ErrorBoundary";
+import { ToastViewport } from "./lib/toast";
+import { initAndroidNative } from "./lib/androidSetup";
+import { useAppRefreshLoop } from "./lib/appRefresh";
+import { NativeIntro } from "./components/NativeIntro";
+import { isAndroid } from "./lib/capacitor";
+
+// All non-landing routes are code-split. Each chunk only downloads when
+// the user navigates there, so the initial JS bundle stays tiny and the
+// landing page becomes interactive much faster on slow networks.
+const WelcomePage = lazy(() => import("./pages/WelcomePage").then((m) => ({ default: m.WelcomePage })));
+const EmailSignupPage = lazy(() => import("./pages/EmailSignupPage").then((m) => ({ default: m.EmailSignupPage })));
+const PhoneSignupPage = lazy(() => import("./pages/PhoneSignupPage").then((m) => ({ default: m.PhoneSignupPage })));
+const RandomIdSignupPage = lazy(() => import("./pages/RandomIdSignupPage").then((m) => ({ default: m.RandomIdSignupPage })));
+const LoginPage = lazy(() => import("./pages/LoginPage").then((m) => ({ default: m.LoginPage })));
+const RandomLoginPage = lazy(() => import("./pages/RandomLoginPage").then((m) => ({ default: m.RandomLoginPage })));
+const PhoneLoginPage = lazy(() => import("./pages/PhoneLoginPage").then((m) => ({ default: m.PhoneLoginPage })));
+const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage").then((m) => ({ default: m.ForgotPasswordPage })));
+const ChatsPage = lazy(() => import("./pages/ChatsPage").then((m) => ({ default: m.ChatsPage })));
+const ChatThreadPage = lazy(() => import("./pages/ChatThreadPage").then((m) => ({ default: m.ChatThreadPage })));
+const ProfilePage = lazy(() => import("./pages/ProfilePage").then((m) => ({ default: m.ProfilePage })));
+const GroupsPage = lazy(() => import("./pages/GroupsPage").then((m) => ({ default: m.GroupsPage })));
+const GroupChatPage = lazy(() => import("./pages/GroupChatPage").then((m) => ({ default: m.GroupChatPage })));
+const GroupSettingsPage = lazy(() => import("./pages/GroupSettingsPage").then((m) => ({ default: m.GroupSettingsPage })));
+const InvitePage = lazy(() => import("./pages/InvitePage").then((m) => ({ default: m.InvitePage })));
+const InviteRedeemPage = lazy(() => import("./pages/InviteRedeemPage").then((m) => ({ default: m.InviteRedeemPage })));
+const ConnectionsPage = lazy(() => import("./pages/ConnectionsPage").then((m) => ({ default: m.ConnectionsPage })));
+const DiscoverPage = lazy(() => import("./pages/DiscoverPage").then((m) => ({ default: m.DiscoverPage })));
+const DiscoverProfilePage = lazy(() => import("./pages/DiscoverProfilePage").then((m) => ({ default: m.DiscoverProfilePage })));
+const SettingsPage = lazy(() => import("./pages/SettingsPage").then((m) => ({ default: m.SettingsPage })));
+const VaultPage = lazy(() => import("./pages/VaultPage").then((m) => ({ default: m.VaultPage })));
+const PrivacyReportPage = lazy(() => import("./pages/PrivacyReportPage").then((m) => ({ default: m.PrivacyReportPage })));
+const UnderTheHoodPage = lazy(() => import("./pages/UnderTheHoodPage").then((m) => ({ default: m.UnderTheHoodPage })));
+const WhatWeStorePage = lazy(() => import("./pages/WhatWeStorePage").then((m) => ({ default: m.WhatWeStorePage })));
+const FocusModePage = lazy(() => import("./pages/FocusModePage").then((m) => ({ default: m.FocusModePage })));
+const SoundPage = lazy(() => import("./pages/SoundPage").then((m) => ({ default: m.SoundPage })));
+const PromisesPage = lazy(() => import("./pages/PromisesPage").then((m) => ({ default: m.PromisesPage })));
+const EncryptionPage = lazy(() => import("./pages/EncryptionPage").then((m) => ({ default: m.EncryptionPage })));
+const WhatsappPrivacyPage = lazy(() => import("./pages/WhatsappPrivacyPage").then((m) => ({ default: m.WhatsappPrivacyPage })));
+const SignalVsWhatsappPage = lazy(() => import("./pages/SignalVsWhatsappPage").then((m) => ({ default: m.SignalVsWhatsappPage })));
+const BestEncryptedMessengersPage = lazy(() => import("./pages/BestEncryptedMessengersPage").then((m) => ({ default: m.BestEncryptedMessengersPage })));
+const WhyOpenSourcePage = lazy(() => import("./pages/WhyOpenSourcePage").then((m) => ({ default: m.WhyOpenSourcePage })));
+const HowToChooseEncryptedMessengerPage = lazy(() => import("./pages/HowToChooseEncryptedMessengerPage").then((m) => ({ default: m.HowToChooseEncryptedMessengerPage })));
+const MessengerMetadataLeaksPage = lazy(() => import("./pages/MessengerMetadataLeaksPage").then((m) => ({ default: m.MessengerMetadataLeaksPage })));
+const MessengerWithoutPhoneNumberPage = lazy(() => import("./pages/MessengerWithoutPhoneNumberPage").then((m) => ({ default: m.MessengerWithoutPhoneNumberPage })));
+const BlogIndexPage = lazy(() => import("./pages/BlogIndexPage").then((m) => ({ default: m.BlogIndexPage })));
+const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage").then((m) => ({ default: m.PrivacyPolicyPage })));
+const TermsPage = lazy(() => import("./pages/TermsPage").then((m) => ({ default: m.TermsPage })));
+const AboutPage = lazy(() => import("./pages/AboutPage").then((m) => ({ default: m.AboutPage })));
+const OpenSourcePage = lazy(() => import("./pages/OpenSourcePage").then((m) => ({ default: m.OpenSourcePage })));
+const DownloadPage = lazy(() => import("./pages/DownloadPage").then((m) => ({ default: m.DownloadPage })));
+const NotFoundPage = lazy(() => import("./pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })));
+
+// Quiet, branded fallback shown while a route chunk is fetched. Sized
+// like the app shell so layout doesn't visibly jump when it appears.
+function RouteFallback() {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      aria-label="Loading"
+      style={{
+        minHeight: "100vh",
+        display: "grid",
+        placeItems: "center",
+        backgroundColor: "#FCF5EB",
+        color: "#2E6F40",
+        fontFamily:
+          "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      }}
+    >
+      <span style={{ opacity: 0.6, fontSize: 14 }}>Loading…</span>
+    </div>
+  );
+}
+
+export function App() {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: { retry: false, refetchOnWindowFocus: false },
+        },
+      }),
+  );
+  const [trpcClient] = useState(() => makeTrpcClient());
+  useAppRefreshLoop(queryClient);
+
+  // Theme system no longer follows the OS preference — VeilChat always opens
+  // in the Light theme unless the user explicitly picked another from
+  // Settings. The call is kept (as a no-op) to preserve the existing import
+  // shape and avoid breaking anyone wiring against this hook.
+  useEffect(() => installSystemThemeListener(), []);
+
+  // Hydrate stealth/UI prefs early so sound + haptic toggles are
+  // honoured the moment the user first taps anything.
+  const hydratePrefs = useStealthPrefs((s) => s.hydrate);
+  useEffect(() => {
+    void hydratePrefs();
+  }, [hydratePrefs]);
+
+  // Browsers gate the AudioContext behind a first user gesture. Wire
+  // up a one-shot unlocker so our send/receive tones can fire as soon
+  // as the user actually does anything.
+  useEffect(() => unlockAudioOnFirstGesture(), []);
+
+  // Privacy: blur the entire app when the tab loses focus or is hidden,
+  // making screenshots / app-switcher previews far less useful to a
+  // shoulder-surfer. Honours the user's `screenshotBlurEnabled` toggle.
+  usePrivacyBlur();
+
+  // Android native setup — status bar theming, splash hide, back button,
+  // and app-lifecycle events. Runs only inside the Capacitor shell; the
+  // hook is a no-op on every other platform so it's always safe to call.
+  const androidCleanup = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    void initAndroidNative({
+      onBackButton: () => {
+        // Return true to suppress the default behaviour (e.g. if a modal
+        // is open and you've closed it manually). Return false/undefined to
+        // let the default history-back or app-minimise logic run.
+        return false;
+      },
+    }).then((cleanup) => {
+      androidCleanup.current = cleanup;
+    });
+    return () => {
+      androidCleanup.current?.();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // NativeIntro: shown once per cold-start on Android. The flag lives in
+  // module scope so it survives across React re-renders but resets each
+  // time the OS kills and restarts the process (i.e. every cold start),
+  // which is exactly the behaviour we want — same as Instagram.
+  const [showIntro, setShowIntro] = useState(() => isAndroid());
+
+  return (
+    <AppErrorBoundary>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          {/* Animated intro overlay — renders on top of everything, only on
+              Android. Mounts immediately so it covers the RouteFallback and
+              unmounts after its own animation (~1.3 s) completes. */}
+          {showIntro && (
+            <NativeIntro onDone={() => setShowIntro(false)} />
+          )}
+          <SessionBootstrap />
+          <SessionSync />
+          <SessionGuard />
+          <Suspense fallback={<RouteFallback />}>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/welcome" element={<WelcomePage />} />
+              <Route path="/signup/email" element={<EmailSignupPage />} />
+              <Route path="/signup/phone" element={<PhoneSignupPage />} />
+              <Route path="/signup/random" element={<RandomIdSignupPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/login/phone" element={<PhoneLoginPage />} />
+              <Route path="/login/random" element={<RandomLoginPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/chats" element={<ChatsPage />} />
+              <Route path="/chats/:peerId" element={<ChatThreadPage />} />
+              <Route path="/profile/:peerId" element={<ProfilePage />} />
+              <Route path="/groups" element={<GroupsPage />} />
+              <Route path="/groups/:groupId" element={<GroupChatPage />} />
+              <Route path="/groups/:groupId/settings" element={<GroupSettingsPage />} />
+              <Route path="/invite" element={<InvitePage />} />
+              <Route path="/connections" element={<ConnectionsPage />} />
+              <Route path="/discover" element={<DiscoverPage />} />
+              <Route path="/discover/:userId" element={<DiscoverProfilePage />} />
+              <Route path="/settings/*" element={<SettingsPage />} />
+              <Route path="/vault" element={<VaultPage />} />
+              <Route path="/privacy-report" element={<PrivacyReportPage />} />
+              <Route path="/under-the-hood" element={<UnderTheHoodPage />} />
+              <Route path="/what-we-store" element={<WhatWeStorePage />} />
+              <Route path="/focus-mode" element={<FocusModePage />} />
+              <Route path="/sound" element={<SoundPage />} />
+              <Route path="/promises" element={<PromisesPage />} />
+              <Route path="/encryption" element={<EncryptionPage />} />
+              <Route path="/blog" element={<BlogIndexPage />} />
+              <Route path="/blog/whatsapp-privacy-truth" element={<WhatsappPrivacyPage />} />
+              <Route path="/blog/signal-vs-whatsapp" element={<SignalVsWhatsappPage />} />
+              <Route path="/blog/best-encrypted-messengers-2026" element={<BestEncryptedMessengersPage />} />
+              <Route path="/blog/why-open-source-matters-in-messaging" element={<WhyOpenSourcePage />} />
+              <Route path="/blog/how-to-choose-encrypted-messenger-2026" element={<HowToChooseEncryptedMessengerPage />} />
+              <Route path="/blog/messenger-metadata-leaks" element={<MessengerMetadataLeaksPage />} />
+              <Route path="/blog/messenger-without-phone-number" element={<MessengerWithoutPhoneNumberPage />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/open-source" element={<OpenSourcePage />} />
+              <Route path="/download" element={<DownloadPage />} />
+              <Route path="/i/:token" element={<InviteRedeemPage />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Suspense>
+          <InstallPrompt />
+          <PushPermissionPrompt />
+          <DailyVerificationGate />
+          <ToastViewport />
+        </QueryClientProvider>
+      </trpc.Provider>
+    </AppErrorBoundary>
+  );
+}
+
+/**
+ * Runs once on mount:
+ *  - hydrate unlocked identity from IndexedDB (PIN-once-per-browser),
+ *  - refresh the auth session via the long-lived refresh cookie,
+ *  - if there's a pending invite + we're now signed in, jump straight
+ *    to the invite redeem page no matter what path we landed on.
+ */
+function SessionBootstrap() {
+  const setAuth = useAuthStore((s) => s.setAuth);
+  const hydrate = useUnlockStore((s) => s.hydrate);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const refresh = trpc.auth.refresh.useMutation();
+  const ran = useMemo(() => ({ done: false }), []);
+
+  useEffect(() => {
+    if (ran.done) return;
+    ran.done = true;
+
+    // Try to reload the cached, already-decrypted identity so the user
+    // doesn't have to re-enter their PIN on every refresh.
+    void loadCachedUnlockedIdentity().then((id) => {
+      if (id) hydrate(id);
+    });
+
+    // Silently re-bind any pre-existing push subscription. We never
+    // prompt for permission here — that happens on user action (a
+    // dedicated toggle on the Settings screen).
+    void ensurePushSubscription({ requestPermission: false });
+
+    // Helper: route an already-authenticated user away from the
+    // pre-auth landing/login pages. Pending invite (if any) wins.
+    const routeAuthenticated = () => {
+      const pending = readPendingInvite();
+      const onAuthLandingPath =
+        location.pathname === "/" ||
+        location.pathname === "/welcome" ||
+        location.pathname === "/login" ||
+        location.pathname === "/login/phone" ||
+        location.pathname === "/login/random" ||
+        location.pathname === "/signup/email" ||
+        location.pathname === "/signup/phone" ||
+        location.pathname === "/signup/random";
+      if (pending) {
+        clearPendingInvite();
+        navigate(`/i/${encodeURIComponent(pending)}`, { replace: true });
+      } else if (onAuthLandingPath) {
+        navigate("/chats", { replace: true });
+      }
+    };
+
+    // FAST PATH: if the auth store already hydrated a valid session
+    // from localStorage, route the user immediately so they aren't
+    // stuck on the landing/login page while we wait for the network
+    // round-trip. The background refresh below still runs to mint a
+    // fresh access token.
+    const { accessToken: existingAccess, user: existingUser } =
+      useAuthStore.getState();
+    if (existingAccess && existingUser) {
+      routeAuthenticated();
+    }
+
+    // Skip the refresh attempt entirely when there's no persisted
+    // refresh token. On the deployed Vercel ↔ Render setup the
+    // `veil_refresh` cookie is third-party and is often blocked by
+    // browsers, so calling refresh without a stored token would just
+    // produce a noisy 401 in the console for logged-out visitors.
+    if (!getStoredRefreshToken()) {
+      return;
+    }
+
+    // Use the long-lived refresh cookie / x-refresh-token header to
+    // mint a new access token.
+    refresh
+      .mutateAsync()
+      .then((r) => {
+        setAuth({
+          accessToken: r.accessToken,
+          refreshToken: r.refreshToken,
+          refreshExpiresIn: r.refreshExpiresIn,
+          user: r.user,
+        });
+        // If we hadn't already taken the fast path above, route now.
+        if (!existingAccess || !existingUser) {
+          routeAuthenticated();
+        }
+      })
+      .catch(() => {
+        /* No valid refresh cookie → user stays on the current page. */
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return null;
+}
+
+export { useNavigate };
+
+/**
+ * Apply a heavy CSS blur (and optional black overlay) to the whole app
+ * whenever the tab is hidden / window is blurred. Cleared the moment
+ * the user comes back. Disable via Settings → Privacy.
+ */
+function usePrivacyBlur() {
+  const enabled = useStealthPrefs(
+    (s) => s.prefs?.screenshotBlurEnabled ?? true,
+  );
+  useEffect(() => {
+    const cls = "veil-privacy-blur";
+    const root = document.documentElement;
+
+    // Hold-blur timer: when a screenshot keystroke fires, we can't
+    // un-blur immediately (the OS captures a few frames after the key
+    // press on some platforms), so we keep the screen blacked out for
+    // a short window before falling back to passive focus-based blur.
+    let holdUntil = 0;
+    let holdTimer: ReturnType<typeof setTimeout> | null = null;
+    let captureActive = false;
+
+    function apply() {
+      if (!enabled) {
+        root.classList.remove(cls);
+        return;
+      }
+      const focusBlur =
+        document.visibilityState === "hidden" || !document.hasFocus();
+      const holding = Date.now() < holdUntil;
+      root.classList.toggle(cls, focusBlur || holding || captureActive);
+    }
+
+    function holdBlur(ms: number) {
+      holdUntil = Math.max(holdUntil, Date.now() + ms);
+      if (holdTimer) clearTimeout(holdTimer);
+      apply();
+      holdTimer = setTimeout(() => {
+        holdTimer = null;
+        apply();
+      }, ms);
+    }
+
+    function isScreenshotKey(e: KeyboardEvent): boolean {
+      const k = e.key;
+      // PrintScreen / Snapshot — Windows + Linux.
+      if (k === "PrintScreen" || k === "Snapshot") return true;
+      // Windows: Win+Shift+S (Snipping Tool), Win+PrintScreen.
+      if (e.shiftKey && (k === "S" || k === "s") && (e.metaKey || e.getModifierState("OS"))) {
+        return true;
+      }
+      // macOS: Cmd+Shift+3, Cmd+Shift+4, Cmd+Shift+5, Cmd+Shift+6.
+      if (e.metaKey && e.shiftKey && (k === "3" || k === "4" || k === "5" || k === "6")) {
+        return true;
+      }
+      // ChromeOS: Ctrl+Show-Windows / Ctrl+Shift+Show-Windows.
+      if (e.ctrlKey && (k === "F5" || k === "MediaPlayPause")) return true;
+      return false;
+    }
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (!enabled) return;
+      if (isScreenshotKey(e)) {
+        // Prevent default where browsers allow it (PrintScreen on some
+        // platforms is interceptable; OS-level shortcuts are not, but
+        // the hold-blur still kicks in for the post-keystroke frames).
+        e.preventDefault();
+        holdBlur(2500);
+        // Best-effort: stomp the clipboard so the captured image (if
+        // any) doesn't survive a paste into another app.
+        try {
+          if (navigator.clipboard && "writeText" in navigator.clipboard) {
+            void navigator.clipboard.writeText("");
+          }
+        } catch {
+          /* clipboard write may be blocked — safe to ignore. */
+        }
+      }
+    }
+
+    // Detect when the tab itself is being captured/recorded (browser
+    // screen-share, OBS browser source, etc). We monkey-patch
+    // getDisplayMedia so any capture started from this page activates
+    // the blur, and we listen for the resulting MediaStream's
+    // "inactive" event to clear it.
+    const md = navigator.mediaDevices as
+      | (MediaDevices & {
+          getDisplayMedia?: (c?: DisplayMediaStreamOptions) => Promise<MediaStream>;
+        })
+      | undefined;
+    const originalGDM = md?.getDisplayMedia?.bind(md);
+    if (md && originalGDM) {
+      md.getDisplayMedia = async (constraints?: DisplayMediaStreamOptions) => {
+        const stream = await originalGDM(constraints);
+        captureActive = true;
+        apply();
+        const clear = () => {
+          captureActive = false;
+          apply();
+        };
+        stream.getTracks().forEach((t) => t.addEventListener("ended", clear));
+        stream.addEventListener("inactive", clear);
+        return stream;
+      };
+    }
+
+    apply();
+    window.addEventListener("blur", apply);
+    window.addEventListener("focus", apply);
+    document.addEventListener("visibilitychange", apply);
+    window.addEventListener("keydown", onKeyDown, { capture: true });
+
+    return () => {
+      window.removeEventListener("blur", apply);
+      window.removeEventListener("focus", apply);
+      document.removeEventListener("visibilitychange", apply);
+      window.removeEventListener("keydown", onKeyDown, { capture: true } as EventListenerOptions);
+      if (holdTimer) clearTimeout(holdTimer);
+      if (md && originalGDM) {
+        md.getDisplayMedia = originalGDM;
+      }
+      root.classList.remove(cls);
+    };
+  }, [enabled]);
+}

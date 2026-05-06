@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    VeilChat adaptive icon foreground — the V-chevron with notification dot.
+    Background layer is a solid #00A884 green (defined in ic_launcher_background
+    color resource). The design is centred in the 108dp canvas so the key
+    elements stay within the 72dp safe zone that Android guarantees will be
+    visible across all launcher shapes.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- V-chevron (scaled and centred from original 192×192 SVG) -->
+    <path
+        android:pathData="M27,44 L54,78 L81,44"
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="9"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <!-- Notification dot (upper right, scaled from original) -->
+    <path
+        android:pathData="M86,24 m-7,0 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0"
+        android:fillColor="#FFFFFF" />
+
+</vector>
