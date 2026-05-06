@@ -2801,8 +2801,6 @@ export function ExplainerVideo() {
   }, [muted]);
 
   const isBusy = status === "playing" || status === "recording";
-  const activeChapterIdx =
-    CHAPTERS.findIndex((c) => currentT >= c.start && currentT < c.end) || 0;
 
   return (
     <section
@@ -2859,9 +2857,9 @@ export function ExplainerVideo() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+        <div>
           {/* Player */}
-          <div className="lg:col-span-8 order-2 lg:order-1">
+          <div>
             <div
               className="relative mx-auto rounded-[28px] overflow-hidden border border-[#1A2D22]/15 bg-[#0F1B14] shadow-[0_50px_100px_-40px_rgba(26,45,34,0.5),0_20px_40px_-20px_rgba(15,27,20,0.25)]"
               data-no-tap-scroll
@@ -3002,61 +3000,6 @@ export function ExplainerVideo() {
             )}
           </div>
 
-          {/* Chapter list + script download */}
-          <aside className="lg:col-span-4 order-1 lg:order-2">
-            <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-[#506A57]/70 mb-3">
-              Chapters
-            </div>
-            <ol className="space-y-2">
-              {CHAPTERS.map((c, i) => {
-                const active = i === activeChapterIdx && (status === "playing" || status === "recording");
-                return (
-                  <li
-                    key={c.key}
-                    className={`flex items-baseline gap-3 rounded-2xl px-4 py-3 border transition-all ${
-                      active
-                        ? "bg-[#1A2D22] border-transparent shadow-[0_10px_24px_-12px_rgba(26,45,34,0.45)]"
-                        : "bg-white border-[#1A2D22]/10"
-                    }`}
-                  >
-                    <span
-                      className={`text-[10.5px] font-bold tracking-[0.18em] uppercase tabular-nums ${
-                        active ? "text-[#D9F5DF]" : "text-[#2E6F40]"
-                      }`}
-                    >
-                      {formatTime(c.start)}
-                    </span>
-                    <span
-                      className={`text-[14px] font-semibold leading-tight flex-1 ${
-                        active ? "text-white" : "text-[#1A2D22]"
-                      }`}
-                    >
-                      {c.label}
-                    </span>
-                  </li>
-                );
-              })}
-            </ol>
-
-            <a
-              href="/docs/veilchat-explainer-script.md"
-              download="VeilChat-Explainer-Script.md"
-              className="mt-5 inline-flex items-center justify-center gap-2 w-full bg-white hover:bg-[#FCF6EC] border border-[#1A2D22]/12 text-[#1A2D22] font-semibold text-[14px] px-5 py-3 rounded-full transition-all"
-            >
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <path d="M14 2v6h6" />
-              </svg>
-              Download the full narration script
-            </a>
-
-            <p className="mt-4 text-[12.5px] text-[#506A57]/75 leading-relaxed">
-              The video is rendered live in your browser — no upload, no
-              tracking. Press <strong>Record</strong> to capture it as a
-              real .mp4 (or .webm in some browsers) file with the music
-              and accents baked in.
-            </p>
-          </aside>
         </div>
       </div>
     </section>

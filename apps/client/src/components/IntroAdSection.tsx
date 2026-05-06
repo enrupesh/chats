@@ -4917,60 +4917,11 @@ export function IntroAdSection() {
               )}
             </div>
 
-            {/* feature chips */}
-            <div className="mt-5 flex flex-wrap justify-center gap-2 max-w-[480px] mx-auto">
-              {[
-                "Identity scan",
-                "Key orbit",
-                "Vault sealing",
-                "Encrypted shimmer",
-                "Verified ✓",
-                "Self-destructing photo",
-                "Pixel-dust burn",
-                "Disappearing notes",
-                "Voice on the wire",
-                "Screenshot blocked",
-                "Heartbeat secure",
-                "Long-press menu",
-                "Unsend animation",
-                "Attachment grid",
-                "Schedule picker",
-                "Scheduled bubble",
-                "Settings tour",
-                "Animated toggles",
-                "Storage cleanup",
-                "Linked devices",
-                "Open source · AGPL-3.0",
-                "GitHub repo on screen",
-                "Brand soundtrack",
-              ].map((chip) => (
-                <span
-                  key={chip}
-                  className="text-[11px] font-semibold uppercase tracking-wide text-[#2E6F40] bg-[#CFFFDC] border border-[#68BA7F]/40 rounded-full px-2.5 py-1"
-                >
-                  {chip}
-                </span>
-              ))}
-            </div>
           </div>
 
           {/* Controls */}
           <div className="lg:col-span-5 order-1 lg:order-2">
-            <h3
-              className="text-[22px] sm:text-[26px] font-semibold text-[#253D2C]"
-              style={{ fontFamily: "'Fraunces', serif" }}
-            >
-              Yours to keep — sealed and signed.
-            </h3>
-            <p className="mt-2 text-[15px] sm:text-[16px] text-[#3C5A47] leading-relaxed">
-              Every frame is rendered fresh on your device, so the file
-              you download is brand-new — no servers, no watermarks. A
-              cinematic 60-second product tour of privacy — capped with an
-              open-source proof beat — ready for your reels, your pitch,
-              or your own site.
-            </p>
-
-            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 type="button"
                 onClick={play}
@@ -5064,50 +5015,6 @@ export function IntroAdSection() {
               </p>
             )}
 
-            <ul className="mt-7 space-y-2.5 text-[14px] text-[#3C5A47]">
-              <li className="flex items-start gap-2.5">
-                <span className="grid place-items-center w-5 h-5 rounded-full bg-[#CFFFDC] text-[#2E6F40] mt-0.5">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-                </span>
-                Opens with an identity scan and orbiting encryption keys
-                — pure trust theatre.
-              </li>
-              <li className="flex items-start gap-2.5">
-                <span className="grid place-items-center w-5 h-5 rounded-full bg-[#CFFFDC] text-[#2E6F40] mt-0.5">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-                </span>
-                Each outgoing message gets a real lock-and-seal animation
-                with a soft metallic click.
-              </li>
-              <li className="flex items-start gap-2.5">
-                <span className="grid place-items-center w-5 h-5 rounded-full bg-[#CFFFDC] text-[#2E6F40] mt-0.5">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-                </span>
-                Disappearing-message countdown, voice-recording UI,
-                read receipts and a verified ✓ on Maya.
-              </li>
-              <li className="flex items-start gap-2.5">
-                <span className="grid place-items-center w-5 h-5 rounded-full bg-[#CFFFDC] text-[#2E6F40] mt-0.5">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-                </span>
-                A "Screenshot blocked" alert flashes during the
-                encryption highlight — privacy as a feature, not a promise.
-              </li>
-              <li className="flex items-start gap-2.5">
-                <span className="grid place-items-center w-5 h-5 rounded-full bg-[#CFFFDC] text-[#2E6F40] mt-0.5">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-                </span>
-                Custom soundtrack: warm pad, auth sweep, send/receive
-                chimes, lock clicks, heartbeat, and outro arpeggio.
-              </li>
-              <li className="flex items-start gap-2.5">
-                <span className="grid place-items-center w-5 h-5 rounded-full bg-[#CFFFDC] text-[#2E6F40] mt-0.5">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-                </span>
-                720 × 1280 vertical, perfect for Reels, Shorts &amp;
-                TikTok. MP4 where supported, WebM otherwise.
-              </li>
-            </ul>
           </div>
         </div>
       </div>
