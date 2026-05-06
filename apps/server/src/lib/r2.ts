@@ -155,6 +155,25 @@ export async function putObjectBuffer(
   );
 }
 
+/**
+ * Download an R2 object as a Buffer from the server side.
+ * Used by the proxy download route — no browser CORS involved.
+ */
+export async function getObjectBuffer(key: string): Promise<Buffer> {
+  const result = await client().send(
+    new GetObjectCommand({
+      Bucket: env.R2_BUCKET!,
+      Key: key,
+    }),
+  );
+  if (!result.Body) throw new Error("Empty R2 response body");
+  const chunks: Uint8Array[] = [];
+  for await (const chunk of result.Body as AsyncIterable<Uint8Array>) {
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks);
+}
+
 export async function deleteObjects(keys: string[]): Promise<void> {
   if (keys.length === 0) return;
   // R2/S3 caps DeleteObjects at 1000 per request.

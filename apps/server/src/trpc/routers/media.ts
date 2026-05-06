@@ -16,7 +16,6 @@ import {
   r2Configured,
   missingR2Config,
   presignUpload,
-  presignDownload,
   headObject,
   deleteObjects,
 } from "../../lib/r2.js";
@@ -145,20 +144,20 @@ export const mediaRouter = router({
     }),
 
   /**
-   * Hand the client a short-lived presigned GET URL pointing at R2.
-   * Authenticated only — per-recipient ACLs are unnecessary because the
-   * AES-GCM key required to decrypt the bytes only ever travels inside a
-   * Signal-encrypted chat message.
+   * Return a server-proxy download URL for the given blob.
+   * The browser GETs from our own server (which fetches from R2 server-side),
+   * so the browser never talks to R2 directly — no CORS issues possible.
+   * Per-recipient ACLs are unnecessary because the AES-GCM decryption key
+   * only ever travels inside a Signal-encrypted chat message.
    */
   download: protectedProcedure
     .input(DownloadMediaInput)
     .output(DownloadMediaResult)
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       requireR2();
       const db = getDb();
       const rows = await db
         .select({
-          r2Key: schema.mediaBlobs.r2Key,
           mime: schema.mediaBlobs.mime,
           sizeBytes: schema.mediaBlobs.sizeBytes,
           uploaded: schema.mediaBlobs.uploaded,
@@ -185,12 +184,25 @@ export const mediaRouter = router({
           message: "Media has expired.",
         });
       }
-      const presigned = await presignDownload(row.r2Key);
+
+      // Build a server-proxy download URL so the browser never fetches from
+      // R2 directly. Mirrors the same pattern used by requestUpload.
+      const protocol =
+        (ctx.req.headers["x-forwarded-proto"] as string | undefined) ??
+        ctx.req.protocol ??
+        "https";
+      const host =
+        (ctx.req.headers["x-forwarded-host"] as string | undefined) ??
+        ctx.req.hostname ??
+        (ctx.req.headers.host as string | undefined) ??
+        "";
+      const downloadUrl = `${protocol}://${host}/api/media/download/${input.blobId}`;
+
       return {
-        downloadUrl: presigned.url,
+        downloadUrl,
         mime: row.mime,
         sizeBytes: row.sizeBytes,
-        expiresAt: presigned.expiresAt.toISOString(),
+        expiresAt: row.expiresAt.toISOString(),
       };
     }),
 });

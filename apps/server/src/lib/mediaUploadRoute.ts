@@ -1,8 +1,8 @@
 import type { FastifyInstance } from "fastify";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { verifyAccessToken } from "./jwt.js";
 import { getDb, schema } from "../db/index.js";
-import { r2Configured, putObjectBuffer } from "./r2.js";
+import { r2Configured, putObjectBuffer, getObjectBuffer } from "./r2.js";
 import { env } from "../env.js";
 
 /**
@@ -88,6 +88,82 @@ export async function registerMediaUploadRoute(
       await putObjectBuffer(row.r2Key, body);
 
       return reply.code(200).send({ ok: true });
+    },
+  );
+}
+
+/**
+ * GET /api/media/download/:blobId
+ *
+ * A server-side proxy for R2 downloads. The browser GETs encrypted ciphertext
+ * here (with a Bearer token) and this route fetches it from R2 server-side and
+ * streams the bytes back. This eliminates the browser→R2 CORS issue for
+ * downloads — the browser only ever talks to our own server.
+ *
+ * Any authenticated user can download any blob because the AES-GCM key
+ * required to decrypt the bytes only ever travels inside a Signal-encrypted
+ * chat message — the key is the real access control, not the blob URL.
+ *
+ * Auth:   Authorization: Bearer <access_token>
+ * Params: blobId — must exist in media_blobs and have uploaded=true
+ */
+export async function registerMediaDownloadRoute(
+  app: FastifyInstance,
+): Promise<void> {
+  app.get<{ Params: { blobId: string } }>(
+    "/api/media/download/:blobId",
+    async (req, reply) => {
+      // ── Authenticate ────────────────────────────────────────────────────────
+      const auth = req.headers.authorization;
+      if (!auth?.startsWith("Bearer ")) {
+        return reply.code(401).send({ error: "Unauthorized" });
+      }
+      try {
+        await verifyAccessToken(auth.slice(7).trim());
+      } catch {
+        return reply.code(401).send({ error: "Invalid or expired token" });
+      }
+
+      const { blobId } = req.params;
+
+      // ── Look up blob ─────────────────────────────────────────────────────────
+      const db = getDb();
+      const rows = await db
+        .select({
+          r2Key: schema.mediaBlobs.r2Key,
+          mime: schema.mediaBlobs.mime,
+          uploaded: schema.mediaBlobs.uploaded,
+          expiresAt: schema.mediaBlobs.expiresAt,
+        })
+        .from(schema.mediaBlobs)
+        .where(
+          and(
+            eq(schema.mediaBlobs.id, blobId),
+            eq(schema.mediaBlobs.uploaded, true),
+          ),
+        )
+        .limit(1);
+
+      const row = rows[0];
+      if (!row) {
+        return reply.code(404).send({ error: "Media not found" });
+      }
+      if (row.expiresAt.getTime() <= Date.now()) {
+        return reply.code(410).send({ error: "Media expired" });
+      }
+
+      // ── R2 availability ──────────────────────────────────────────────────────
+      if (!r2Configured()) {
+        return reply.code(503).send({ error: "Storage not configured" });
+      }
+
+      // ── Fetch from R2 server-side and forward to browser ────────────────────
+      const bytes = await getObjectBuffer(row.r2Key);
+      return reply
+        .header("Content-Type", "application/octet-stream")
+        .header("Content-Length", String(bytes.length))
+        .header("Cache-Control", "private, max-age=300")
+        .send(bytes);
     },
   );
 }

@@ -83,9 +83,14 @@ export async function fetchAndDecryptMedia(
   const dl = await trpcClientProxy().media.download.query({
     blobId: attachment.blobId,
   });
-  const getRes = await fetch(dl.downloadUrl);
+  // The download URL now points to our own server (proxy route) instead of
+  // R2 directly, so we include the access token just like every other API call.
+  const { accessToken } = useAuthStore.getState();
+  const getHeaders: Record<string, string> = {};
+  if (accessToken) getHeaders["Authorization"] = `Bearer ${accessToken}`;
+  const getRes = await fetch(dl.downloadUrl, { headers: getHeaders });
   if (!getRes.ok) {
-    throw new Error(`Media download from R2 failed (${getRes.status}).`);
+    throw new Error(`Media download failed (${getRes.status}).`);
   }
   const ct = new Uint8Array(await getRes.arrayBuffer());
   const plain = await decryptBlob(ct, attachment.key);

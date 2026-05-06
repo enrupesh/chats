@@ -221,6 +221,14 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
 
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  // Optimistic sending preview: shown immediately when the user picks media
+  // so there is always a visible bubble in the chat while upload is in progress.
+  const [pendingSend, setPendingSend] = useState<
+    | { kind: "image"; localUrl: string }
+    | { kind: "voice"; durationMs: number }
+    | null
+  >(null);
+  const pendingSendUrlRef = useRef<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState<
@@ -697,6 +705,14 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
       if (down.bytes.byteLength > MAX_IMAGE_BYTES) {
         throw new Error("Image is too large after compression (max 8 MB).");
       }
+      // Show a local preview bubble immediately (WhatsApp-style) so the user
+      // can see the image in the chat while the encrypted upload is in progress.
+      const localUrl = URL.createObjectURL(
+        new Blob([down.bytes.slice().buffer], { type: down.mime }),
+      );
+      pendingSendUrlRef.current = localUrl;
+      setPendingSend({ kind: "image", localUrl });
+
       const thumb = await makeThumbnail(
         new Blob([down.bytes.slice().buffer], { type: down.mime }),
       );
@@ -727,12 +743,17 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't send image.");
     } finally {
+      setPendingSend(null);
+      const u = pendingSendUrlRef.current;
+      pendingSendUrlRef.current = null;
+      if (u) setTimeout(() => URL.revokeObjectURL(u), 2000);
       setSending(false);
     }
   }
 
   async function onSendVoice(bytes: Uint8Array, mime: string, durationMs: number) {
     setSending(true);
+    setPendingSend({ kind: "voice", durationMs });
     setError(null);
     try {
       const upload = await uploadEncryptedMedia(bytes, mime);
@@ -754,6 +775,7 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't send voice note.");
     } finally {
+      setPendingSend(null);
       setSending(false);
     }
   }
@@ -1060,6 +1082,45 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
               />
             ));
           })()
+        )}
+        {/* Optimistic sending bubble — visible immediately when the user picks
+            media, before the encrypted upload completes (WhatsApp-style). */}
+        {pendingSend && (
+          <div className="flex justify-end animate-bubble-out-in">
+            <div className="max-w-[70%] bg-wa-bubble-out rounded-2xl rounded-tr-sm px-3 py-2 shadow-bubble">
+              {pendingSend.kind === "image" ? (
+                <div
+                  className="relative rounded-md overflow-hidden -mx-1 -mt-1"
+                  style={{ width: "min(260px, 70vw)", aspectRatio: "1" }}
+                >
+                  <img
+                    src={pendingSend.localUrl}
+                    alt=""
+                    className="w-full h-full object-cover"
+                    draggable={false}
+                  />
+                  <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-2">
+                    <Spinner />
+                    <span className="text-white text-[11px] font-medium">Sending…</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 min-w-[180px] py-0.5">
+                  <div className="size-9 rounded-full bg-wa-green/60 flex items-center justify-center shrink-0">
+                    <Spinner />
+                  </div>
+                  <div className="flex-1 h-1 bg-white/20 rounded-full overflow-hidden">
+                    <div className="h-full w-1/3 bg-white/60 rounded-full animate-pulse" />
+                  </div>
+                  <span className="text-xs text-text-muted tabular-nums">
+                    {pendingSend.durationMs
+                      ? `${Math.round(pendingSend.durationMs / 1000)}s`
+                      : ""}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
         )}
         {peerTyping && (
           <div className="self-start text-xs text-text-muted bg-wa-bubble-in rounded-2xl rounded-tl-sm px-3 py-1.5 shadow-bubble animate-bubble-in-in">
