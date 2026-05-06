@@ -38,10 +38,15 @@ export async function initAndroidNative(opts: {
   // ── 2. Splash screen ────────────────────────────────────────────────────
   try {
     const { SplashScreen } = await import("@capacitor/splash-screen");
-    // Small delay ensures the React tree has painted before we reveal it.
+    // Delay the hide so the AnimatedVectorDrawable in ic_splash_animated.xml
+    // has time to complete its full animation sequence (600 ms chevron draw
+    // + 300 ms dot fade = 900 ms total). We wait 950 ms before hiding so
+    // the user sees the full animation, then the React NativeIntro overlay
+    // (which has already mounted at this point) carries the visual continuity
+    // while the native splash fades out behind it.
     setTimeout(() => {
       void SplashScreen.hide({ fadeOutDuration: 350 });
-    }, 300);
+    }, 950);
   } catch {
     /* not critical — continue */
   }

@@ -16,15 +16,32 @@
     </style>
 
     <!--
-        Launch theme shown while the splash screen is active.
-        Uses the Android 12 SplashScreen API for a clean animated entry.
-        windowSplashScreenBackground matches the app shell so there is no
-        jarring colour flash when the WebView first renders.
+        Launch theme shown while the Android 12+ SplashScreen is active.
+
+        windowSplashScreenAnimatedIcon — points to the AnimatedVectorDrawable
+            that draws the V-chevron path in, then fades the notification dot
+            in (total ~900 ms). On Android < 12 this gracefully falls back to
+            the static ic_launcher_foreground vector.
+
+        windowSplashScreenIconBackgroundColor — the green circle behind the
+            white V-chevron, matching the adaptive launcher icon background so
+            the icon looks identical between the home-screen icon and the
+            splash screen.
+
+        windowSplashScreenAnimationDuration — tells the OS how long to run
+            the AVD animation before allowing the splash to dismiss. Must be
+            >= total animator duration in ic_splash_animated.xml (600+300=900).
+
+        windowSplashScreenBackground — full-screen background behind the icon.
+            Matches the app shell (#FCF5EB cream) so there is no colour flash
+            when the WebView first paints.
     -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
         <item name="windowSplashScreenBackground">@color/splashscreen_background</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_animated</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/ic_launcher_background</item>
+        <item name="windowSplashScreenAnimationDuration">900</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>
 

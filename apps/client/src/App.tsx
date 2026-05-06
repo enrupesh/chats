@@ -22,6 +22,8 @@ import { DailyVerificationGate } from "./components/DailyVerificationGate";
 import { AppErrorBoundary } from "./components/ErrorBoundary";
 import { ToastViewport } from "./lib/toast";
 import { initAndroidNative } from "./lib/androidSetup";
+import { NativeIntro } from "./components/NativeIntro";
+import { isAndroid } from "./lib/capacitor";
 
 // All non-landing routes are code-split. Each chunk only downloads when
 // the user navigates there, so the initial JS bundle stays tiny and the
@@ -147,10 +149,22 @@ export function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // NativeIntro: shown once per cold-start on Android. The flag lives in
+  // module scope so it survives across React re-renders but resets each
+  // time the OS kills and restarts the process (i.e. every cold start),
+  // which is exactly the behaviour we want — same as Instagram.
+  const [showIntro, setShowIntro] = useState(() => isAndroid());
+
   return (
     <AppErrorBoundary>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
+          {/* Animated intro overlay — renders on top of everything, only on
+              Android. Mounts immediately so it covers the RouteFallback and
+              unmounts after its own animation (~1.3 s) completes. */}
+          {showIntro && (
+            <NativeIntro onDone={() => setShowIntro(false)} />
+          )}
           <SessionBootstrap />
           <SessionSync />
           <SessionGuard />

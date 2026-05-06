@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    VeilChat splash-screen foreground — identical shape to ic_launcher_foreground
+    but with NAMED paths so the AnimatedVectorDrawable in ic_splash_animated.xml
+    can target them individually.
+
+    trimPathEnd="0" on the chevron and fillAlpha="0" on the dot cause both
+    elements to start invisible; the animator brings them in during the
+    Android 12+ splash-screen animation sequence.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- V-chevron: draws itself in via trimPathEnd 0→1 -->
+    <path
+        android:name="vchevron"
+        android:pathData="M27,44 L54,78 L81,44"
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="9"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:trimPathEnd="0" />
+
+    <!-- Notification dot: fades in after the chevron finishes -->
+    <path
+        android:name="dot"
+        android:pathData="M86,24 m-7,0 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0"
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0" />
+
+</vector>

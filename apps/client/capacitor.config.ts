@@ -21,9 +21,13 @@ const config: CapacitorConfig = {
 
   plugins: {
     SplashScreen: {
-      launchShowDuration: 1800,
-      launchAutoHide: true,
-      launchFadeOutDuration: 400,
+      // launchAutoHide: false — we call SplashScreen.hide() manually from
+      // androidSetup.ts after the AVD animation has had time to complete.
+      // This prevents the Capacitor plugin from dismissing the splash too
+      // early and lets the animated icon play its full ~900 ms sequence.
+      launchAutoHide: false,
+      launchShowDuration: 0,
+      launchFadeOutDuration: 350,
       backgroundColor: "#FCF5EB",
       androidSplashResourceName: "splash",
       androidScaleType: "CENTER_CROP",

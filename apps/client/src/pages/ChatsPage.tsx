@@ -33,6 +33,7 @@ import { MoodSheet } from "../components/MoodSheet";
 import { moodCountdownLabel, getActiveMyMood } from "../lib/moodSync";
 import { useFocusState, focusReasonLabel } from "../lib/focusMode";
 import { useNoindex } from "../lib/useDocumentMeta";
+import { PullToRefresh } from "../components/PullToRefresh";
 
 export function ChatsPage() {
   useNoindex("Chats · VeilChat");
@@ -291,6 +292,16 @@ export function ChatsPage() {
               }}
             />
           </div>
+          <PullToRefresh
+            onRefresh={async () => {
+              await Promise.all([
+                connections.refetch().catch(() => undefined),
+                identity
+                  ? pollAndDecrypt(identity).catch(() => undefined)
+                  : Promise.resolve(),
+              ]);
+            }}
+          >
           {connections.isLoading ? (
             <div className="flex justify-center py-10">
               <Spinner />
@@ -463,6 +474,7 @@ export function ChatsPage() {
               </div>
             ))
           )}
+          </PullToRefresh>
         </div>
       )}
 

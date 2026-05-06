@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    AnimatedVectorDrawable for the VeilChat splash screen.
+
+    Animation sequence (total ~900 ms):
+      0–600 ms  — V-chevron path draws itself in (trimPathEnd 0 → 1)
+                  with a fast-out-slow-in curve for a satisfying "write"
+                  feeling.
+      600–900 ms — notification dot fades in after the chevron is complete,
+                   giving the icon a moment to "finish" before disappearing.
+
+    Referenced by windowSplashScreenAnimatedIcon in styles.xml.
+    The enclosing splash-screen background (windowSplashScreenBackground)
+    is @color/splashscreen_background (#FCF5EB cream), and the icon itself
+    sits on windowSplashScreenIconBackgroundColor (#00A884 green) so the
+    white strokes are clearly visible on all Android launchers.
+-->
+<animated-vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:drawable="@drawable/ic_splash_foreground">
+
+    <!-- Draw the V-chevron path in over 600 ms -->
+    <target android:name="vchevron">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:propertyName="trimPathEnd"
+                android:valueFrom="0"
+                android:valueTo="1"
+                android:duration="600"
+                android:startOffset="0"
+                android:interpolator="@android:interpolator/fast_out_slow_in" />
+        </aapt:attr>
+    </target>
+
+    <!-- Fade the notification dot in once the chevron is complete -->
+    <target android:name="dot">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:propertyName="fillAlpha"
+                android:valueFrom="0"
+                android:valueTo="1"
+                android:duration="300"
+                android:startOffset="600"
+                android:interpolator="@android:interpolator/fast_out_slow_in" />
+        </aapt:attr>
+    </target>
+
+</animated-vector>
