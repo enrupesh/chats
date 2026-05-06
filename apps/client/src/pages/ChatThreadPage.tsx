@@ -101,6 +101,7 @@ import { useKeyboardPrefs, isCoarsePointerDevice } from "../lib/keyboardPrefs";
 import { verifyBiometric } from "../lib/biometric";
 import { MessageText } from "../lib/markdown";
 import { useNoindex } from "../lib/useDocumentMeta";
+import { isAndroid } from "../lib/capacitor";
 
 const POLL_MS = 3000;
 export const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
@@ -2221,36 +2222,78 @@ function ViewOnceViewer({
   const TOTAL_MS = imageUrl ? 10_000 : 30_000;
   const [remainingMs, setRemainingMs] = useState(TOTAL_MS);
   const screenshotReportedRef = useRef(false);
+  // Prevents onClose() from being called more than once when multiple
+  // signals fire in rapid succession (e.g. visibilitychange + appStateChange).
+  const closedRef = useRef(false);
+
+  function safeClose() {
+    if (closedRef.current) return;
+    closedRef.current = true;
+    onClose();
+  }
+
+  function flagScreenshot() {
+    if (screenshotReportedRef.current) return;
+    screenshotReportedRef.current = true;
+    onScreenshot();
+  }
 
   useEffect(() => {
     const start = Date.now();
     const tick = window.setInterval(() => {
       const left = Math.max(0, TOTAL_MS - (Date.now() - start));
       setRemainingMs(left);
-      if (left <= 0) onClose();
+      if (left <= 0) safeClose();
     }, 100);
     return () => window.clearInterval(tick);
   }, [TOTAL_MS, onClose]);
 
-  // Close on tab hide / app switch — common when the user is about to
-  // screenshot or screen-share.
+  // Close on tab hide / app switch.
+  // On Android native, any transition to background is treated as a probable
+  // screenshot event. The androidSetup.ts layer already bridges Capacitor's
+  // appStateChange → synthetic visibilitychange, so this single handler covers
+  // both the web case and the Android app-goes-to-background case.
   useEffect(() => {
     const onVis = () => {
-      if (document.hidden) onClose();
+      if (!document.hidden) return;
+      if (isAndroid()) {
+        // Hardware-button screenshots (Power + Vol Down) don't fire any web
+        // event, but switching away from the app to take a screenshot via the
+        // recents panel or any other path does background the app. Treat any
+        // backgrounding during View Once viewing as a probable screenshot.
+        flagScreenshot();
+      }
+      safeClose();
     };
     document.addEventListener("visibilitychange", onVis);
     return () => document.removeEventListener("visibilitychange", onVis);
-  }, [onClose]);
+  }, [onClose, onScreenshot]);
 
-  // Best-effort screenshot detection. Browsers deliberately do not fire
-  // events for OS screenshots, but PrintScreen and Win+Shift+S are
+  // Belt-and-suspenders for Android: listen to @capacitor/app appStateChange
+  // directly. This fires even if the synthetic visibilitychange dispatch in
+  // androidSetup.ts is delayed or skipped on some Android versions/OEMs.
+  useEffect(() => {
+    if (!isAndroid()) return;
+    let handle: { remove: () => Promise<void> } | null = null;
+    import("@capacitor/app").then(({ App }) => {
+      App.addListener("appStateChange", ({ isActive }) => {
+        if (!isActive) {
+          flagScreenshot();
+          safeClose();
+        }
+      }).then((h) => {
+        handle = h;
+      }).catch(() => undefined);
+    }).catch(() => undefined);
+    return () => {
+      handle?.remove().catch(() => undefined);
+    };
+  }, [onClose, onScreenshot]);
+
+  // Best-effort screenshot detection on web/desktop. Browsers don't fire
+  // events for OS-level screenshots, but PrintScreen and Win+Shift+S are
   // observable as keydowns when the page has focus.
   useEffect(() => {
-    function flagScreenshot() {
-      if (screenshotReportedRef.current) return;
-      screenshotReportedRef.current = true;
-      onScreenshot();
-    }
     function onKey(e: KeyboardEvent) {
       const k = e.key;
       if (k === "PrintScreen") {
@@ -2318,8 +2361,9 @@ function ViewOnceViewer({
         )}
       </div>
       <div className="px-4 py-3 text-center text-[11px] text-white/60">
-        Screenshots can't always be detected. The sender will be notified
-        if we see one.
+        {isAndroid()
+          ? "The sender is notified if you leave this screen. Direct screenshots may not always be detected."
+          : "Screenshots can't always be detected. The sender will be notified if we see one."}
       </div>
     </div>
   );

@@ -1,0 +1,25 @@
+Okay, so now our complete focus will be on the Android app. Because my website version is already good and working properly, but the Android app still has some issues. There are some bugs, some errors, and some features that need proper implementation.
+
+So let me explain the first bug carefully.
+
+You understand that there are website users, right? Suppose User A is using the website in the browser, and User B is also using the website in the browser. Both users are chatting with each other.
+
+Now, as you must have noticed while analyzing my project, there is a feature called “View Once.” In this feature, when a user sends a photo or message using View Once, then as soon as the receiver views that photo or message, it automatically disappears or gets deleted within seconds. This part is working correctly.
+
+Now suppose both users are browser users. If User A takes a screenshot of the View Once photo or message, then User B receives a message/alert saying that User A has taken a screenshot. This functionality is working properly on the website/browser version.
+
+But this is not working properly in the Android app.
+
+Now understand the exact issue carefully:
+
+Suppose User A is using the Android app, and User B is using the website/browser.
+
+If the Android app user sends a View Once photo or message, and then the website/browser user takes a screenshot, the Android user correctly receives an alert saying that User B took a screenshot.
+
+But the opposite case is not working.
+
+If the browser user (User B) sends a View Once photo or message, and then the Android app user takes a screenshot, the browser user does not receive any alert that the Android user took a screenshot.
+
+So this is the overall problem. I have explained it very clearly, and I hope you understand exactly what I mean.
+
+Please solve this carefully, properly, and deeply. Make sure there are no issues left. I fully trust and believe that you will fix this properly and deeply, and after your fix I should not need to revisit or redo this issue again.
