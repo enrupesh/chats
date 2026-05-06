@@ -13,6 +13,7 @@ import { startMediaSweeper } from "./lib/mediaSweeper.js";
 import { startMessageSweeper } from "./lib/messageSweeper.js";
 import { startScheduledSweeper } from "./lib/scheduledSweeper.js";
 import { ensureCorsPolicy } from "./lib/r2.js";
+import { registerMediaUploadRoute } from "./lib/mediaUploadRoute.js";
 
 const app = Fastify({
   trustProxy: true,
@@ -114,6 +115,10 @@ await app.register(cors, {
 await app.register(cookie);
 
 await registerWebSocketRoutes(app);
+
+// Binary upload proxy: browser → our server → R2.
+// Registered before tRPC so the route takes priority.
+await registerMediaUploadRoute(app);
 
 app.get("/health", async (): Promise<HealthResponse> => {
   return {

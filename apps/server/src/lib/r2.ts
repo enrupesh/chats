@@ -136,6 +136,25 @@ export async function ensureCorsPolicy(log?: { info: (msg: string) => void; warn
   }
 }
 
+/**
+ * Upload a buffer directly to R2 from the server side.
+ * Used by the proxy upload route — no browser CORS involved.
+ */
+export async function putObjectBuffer(
+  key: string,
+  body: Buffer | Uint8Array,
+  contentType = "application/octet-stream",
+): Promise<void> {
+  await client().send(
+    new PutObjectCommand({
+      Bucket: env.R2_BUCKET!,
+      Key: key,
+      Body: body,
+      ContentType: contentType,
+    }),
+  );
+}
+
 export async function deleteObjects(keys: string[]): Promise<void> {
   if (keys.length === 0) return;
   // R2/S3 caps DeleteObjects at 1000 per request.

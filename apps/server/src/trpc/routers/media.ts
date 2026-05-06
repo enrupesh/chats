@@ -67,12 +67,25 @@ export const mediaRouter = router({
         uploaded: false,
         expiresAt,
       });
-      const presigned = await presignUpload(r2Key);
+
+      // Build a server-proxy upload URL so the browser never talks to R2
+      // directly. This permanently eliminates the CORS preflight issue: our
+      // Fastify server already has CORS configured for veilchat.me; R2 does
+      // not need any CORS policy set at all.
+      const protocol = (ctx.req.headers["x-forwarded-proto"] as string | undefined)
+        ?? ctx.req.protocol
+        ?? "https";
+      const host = (ctx.req.headers["x-forwarded-host"] as string | undefined)
+        ?? ctx.req.hostname
+        ?? (ctx.req.headers.host as string | undefined)
+        ?? "";
+      const uploadUrl = `${protocol}://${host}/api/media/upload/${blobId}`;
+
       return {
         blobId,
-        uploadUrl: presigned.url,
-        uploadContentType: presigned.contentType,
-        uploadExpiresAt: presigned.expiresAt.toISOString(),
+        uploadUrl,
+        uploadContentType: "application/octet-stream",
+        uploadExpiresAt: expiresAt.toISOString(),
       };
     }),
 

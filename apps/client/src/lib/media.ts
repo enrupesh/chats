@@ -1,5 +1,6 @@
 import { trpcClientProxy } from "./trpcClientProxy";
 import { encryptBlob, decryptBlob, bytesToBase64Std } from "./mediaCrypto";
+import { useAuthStore } from "./store";
 
 export interface MediaAttachment {
   /** Discriminator inside a chat-message envelope. */
@@ -37,9 +38,17 @@ export async function uploadEncryptedMedia(
     sizeBytes: ciphertext.byteLength,
   });
 
+  // Include the access token so our server-proxy upload route can
+  // authenticate the request (the upload no longer goes to R2 directly).
+  const { accessToken } = useAuthStore.getState();
+  const putHeaders: Record<string, string> = {
+    "Content-Type": requested.uploadContentType,
+  };
+  if (accessToken) putHeaders["Authorization"] = `Bearer ${accessToken}`;
+
   const putRes = await fetch(requested.uploadUrl, {
     method: "PUT",
-    headers: { "Content-Type": requested.uploadContentType },
+    headers: putHeaders,
     body: new Blob([ciphertext.slice().buffer], {
       type: requested.uploadContentType,
     }),
