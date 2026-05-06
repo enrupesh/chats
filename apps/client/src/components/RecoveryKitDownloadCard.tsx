@@ -3,22 +3,24 @@ import {
   formatBytes,
   generateRecoveryKitPdf,
   triggerKitDownload,
+  type DownloadResult,
   type RecoveryKit,
 } from "../lib/recoveryKitPdf";
 import { feedback } from "../lib/feedback";
 import { humanizeError } from "../lib/humanizeError";
 
 /**
- * Visual recovery-kit download card — VeilChat's answer to ProtonMail's
- * "Download recovery kit" widget.
+ * Visual recovery-kit download card.
  *
- *   • Renders a small PDF "thumbnail" on the left so the user sees
- *     this is a real document, not just a button.
- *   • Lazy-builds the PDF on mount (so the file size and the
- *     download click both feel instant once the card is visible).
- *   • Calls `onDownloaded` exactly once on the user's first
- *     successful download — gating screens use this to enable
- *     their "I've saved it" CTA.
+ *   • Lazy-builds the PDF on mount so download feels instant.
+ *   • On Android native, writes the PDF to the device's public Downloads
+ *     folder via @capacitor/filesystem (the <a>.download trick is silently
+ *     ignored by the Chromium WebView — this was the root cause of the
+ *     "file missing" bug).
+ *   • On web / PWA / iOS, uses the standard browser anchor download.
+ *   • Calls `onDownloaded` ONLY after the file has been genuinely written.
+ *     If the write throws, the error is shown and `onDownloaded` is NOT called,
+ *     so the user cannot proceed until the kit is actually on their device.
  */
 export function RecoveryKitDownloadCard({
   username,
@@ -34,8 +36,10 @@ export function RecoveryKitDownloadCard({
   const [kit, setKit] = useState<RecoveryKit | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
-  const [downloadedOnce, setDownloadedOnce] = useState(false);
-  // We only want to fire `onDownloaded` once even across re-renders.
+  const [downloadResult, setDownloadResult] = useState<DownloadResult | null>(
+    null,
+  );
+  // Fire onDownloaded exactly once, even across re-renders.
   const announcedRef = useRef(false);
 
   // Build the PDF as soon as the card mounts so the file is ready
@@ -59,20 +63,31 @@ export function RecoveryKitDownloadCard({
   async function handleDownload() {
     if (downloading) return;
     setDownloading(true);
+    setError(null);
     try {
+      // Generate the PDF if it isn't ready yet.
       let target = kit;
       if (!target) {
         target = await generateRecoveryKitPdf({ username, phrase });
         setKit(target);
       }
-      triggerKitDownload(target);
+
+      // triggerKitDownload either:
+      //   • Writes to the Android Downloads folder and returns { savedTo: "Downloads" }
+      //   • Triggers a browser download and returns { savedTo: "device" }
+      // If it THROWS, the file was NOT saved — we show the error and do NOT
+      // advance the user (onDownloaded is not called).
+      const result = await triggerKitDownload(target);
+
+      // File is confirmed on device — now update state and notify parent.
       feedback.success();
-      setDownloadedOnce(true);
+      setDownloadResult(result);
       if (!announcedRef.current) {
         announcedRef.current = true;
         onDownloaded?.();
       }
     } catch (e) {
+      // Write failed — show the reason. User must try again.
       setError(humanizeError(e).message);
     } finally {
       setDownloading(false);
@@ -81,6 +96,11 @@ export function RecoveryKitDownloadCard({
 
   const filename = kit?.filename ?? `veilchat-recovery-kit-${username}.pdf`;
   const sizeLabel = kit ? formatBytes(kit.bytes) : "Preparing…";
+  const downloaded = downloadResult !== null;
+
+  // Both platforms show the same "Saved" badge — on Android the file is written
+  // to device storage and the share sheet opens for the user to pick a location.
+  const savedLabel = "Saved";
 
   return (
     <div className={className}>
@@ -99,7 +119,7 @@ export function RecoveryKitDownloadCard({
             <span className="text-[15px] font-semibold text-text">
               Download PDF
             </span>
-            {downloadedOnce && (
+            {downloaded && (
               <span
                 className={
                   "inline-flex items-center gap-1 text-[10.5px] font-semibold " +
@@ -109,7 +129,7 @@ export function RecoveryKitDownloadCard({
                   "border border-wa-green/35"
                 }
               >
-                <CheckIcon /> Saved
+                <CheckIcon /> {savedLabel}
               </span>
             )}
           </div>
@@ -119,6 +139,8 @@ export function RecoveryKitDownloadCard({
           <div className="text-[11.5px] text-text-faint mt-0.5">
             {sizeLabel}
           </div>
+          {/* Android hint — shown before first download so the user knows what to expect */}
+          {!downloaded && <AndroidDownloadHint />}
         </div>
 
         <button
@@ -157,13 +179,38 @@ export function RecoveryKitDownloadCard({
   );
 }
 
-/* ─────────── decorative bits ─────────── */
+/* ─────────── Android hint ─────────── */
 
 /**
- * Small abstract PDF preview tile — a stylised page with a QR-code-
- * style dot block, content lines, and an accent stripe. Designed to
- * read as "document" at a glance without containing any user data.
+ * Small helper that renders a "Find it in Files → Downloads" tip
+ * only when running inside the Android Capacitor shell, so web users
+ * don't see irrelevant copy.
  */
+function AndroidDownloadHint() {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    // Dynamically import so the web bundle is never touched by native code.
+    import("../lib/capacitor")
+      .then(({ isNative, isAndroid }) => {
+        if (isNative() && isAndroid()) setShow(true);
+      })
+      .catch(() => undefined);
+  }, []);
+
+  if (!show) return null;
+
+  return (
+    <div className="text-[11px] text-text-faint mt-1">
+      A share sheet will open — choose{" "}
+      <span className="font-semibold text-text-muted">Save to Downloads</span>{" "}
+      or any app to keep it safe
+    </div>
+  );
+}
+
+/* ─────────── decorative bits ─────────── */
+
 function PdfThumbnail() {
   return (
     <div
