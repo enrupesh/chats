@@ -504,6 +504,103 @@ html.veil-privacy-blur body::after {
   100% { opacity: 0;    transform: scale(2.1); }
 }
 
+/* ─────────────────── VeilChat Private Keyboard ─────────────────── */
+/*
+ * All keyboard keys use one of three CSS classes instead of Tailwind
+ * utility soup. This keeps theme-aware color logic in one place and
+ * makes overrides predictable.
+ *
+ * Design language: flat raised keys (single bottom shadow) that
+ * "sink" on press (shadow removed + bg darkens). No scaling — that
+ * makes a keyboard feel like a toy. Shadow depth is the only motion.
+ */
+
+/* Shared reset — no OS blue tap flash, correct touch-action. */
+.veil-key-char,
+.veil-key-mod,
+.veil-key-send {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  will-change: background-color, box-shadow;
+  transition:
+    background-color 65ms ease-out,
+    box-shadow       65ms ease-out;
+}
+
+/* Character keys — lightest surface, most visible, pop out of bg. */
+.veil-key-char {
+  background: rgb(var(--wa-elevated));
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.38);
+}
+.veil-key-char:active {
+  background: rgb(var(--wa-line));
+  box-shadow: none;
+}
+
+/* Modifier / function keys (shift, backspace, mode, space).
+   Slightly darker than char keys so they visually recede.   */
+.veil-key-mod {
+  background: rgb(var(--wa-surface));
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.38);
+}
+.veil-key-mod:active {
+  background: rgb(var(--wa-line));
+  box-shadow: none;
+}
+
+/* In light themes --wa-surface == --wa-elevated == white, so
+   modifier keys get an explicit grey so they differ from char keys. */
+[data-theme="light"]   .veil-key-mod,
+[data-theme="reading"] .veil-key-mod,
+[data-theme="rose"]    .veil-key-mod,
+[data-theme="green"]   .veil-key-mod,
+[data-theme="garden"]  .veil-key-mod {
+  background: rgb(var(--wa-line));
+}
+[data-theme="light"]   .veil-key-mod:active,
+[data-theme="reading"] .veil-key-mod:active,
+[data-theme="rose"]    .veil-key-mod:active,
+[data-theme="green"]   .veil-key-mod:active,
+[data-theme="garden"]  .veil-key-mod:active {
+  background: rgb(var(--wa-text-faint) / 0.35);
+  box-shadow: none;
+}
+
+/* Send / return key — brand green accent. */
+.veil-key-send {
+  background: rgb(var(--wa-green));
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.45);
+}
+.veil-key-send:active {
+  background: rgb(var(--wa-green-dark));
+  box-shadow: none;
+}
+
+/* Keyboard panel background — deepest bg tone so the keys lift off it. */
+.veil-keyboard-bg {
+  background: rgb(var(--wa-bg));
+}
+
+/* Key preview bubble — the enlarged letter that floats above a pressed
+   key. Faster than the generic soft-pop (120ms vs 220ms) so it feels
+   instant, matching native Android keyboard behavior.               */
+.veil-key-preview-pop {
+  animation: veil-key-preview-pop 120ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes veil-key-preview-pop {
+  from { opacity: 0; transform: scale(0.82) translateY(4px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);   }
+}
+
+/* Keyboard slides up from the bottom when it mounts. */
+.veil-keyboard-slide-in {
+  animation: veil-keyboard-slide-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes veil-keyboard-slide-in {
+  from { transform: translateY(12px); opacity: 0.6; }
+  to   { transform: translateY(0);    opacity: 1;   }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .veil-toast,
   .veil-toast.veil-toast-enter,
@@ -519,7 +616,9 @@ html.veil-privacy-blur body::after {
   .veil-voice-slide-in,
   .veil-voice-collapse,
   .veil-live-pulse,
-  .veil-live-pulse::before {
+  .veil-live-pulse::before,
+  .veil-key-preview-pop,
+  .veil-keyboard-slide-in {
     animation: none !important;
     transition-duration: 1ms !important;
     transform: none !important;

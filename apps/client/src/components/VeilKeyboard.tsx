@@ -1,30 +1,32 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { feedback } from "../lib/feedback";
 import { hapticTap } from "../lib/haptics";
+import { feedback } from "../lib/feedback";
 
 /**
- * VeilChat's in-app on-screen keyboard.
+ * VeilChat's in-app on-screen keyboard — polished to feel like a
+ * professional native keyboard (Gboard-class finish).
  *
- * A self-contained QWERTY keyboard panel that the chat composer can
- * render in place of the OS soft keyboard. Every keystroke is
- * dispatched via callbacks straight into local React state — nothing
- * touches a third-party IME. That removes Gboard/SwiftKey-style
- * keystroke logging and learned-words cloud sync from the threat
- * model on mobile.
+ * Design principles:
+ *   - Keys "sink" on press: shadow disappears + bg darkens. No scale.
+ *     Scaling feels toy-like; shadow depth is the correct tactile cue.
+ *   - Haptic-only feedback on keystrokes. Sound is played only for the
+ *     send/return key (a meaningful action), never for typing.
+ *   - Character keys are the lightest surface (elevated) so they pop
+ *     off the darker keyboard background. Modifier keys are a mid tone
+ *     so they visually recede — exactly how Gboard hierarchises keys.
+ *   - Key preview bubble appears in 120 ms (vs 220 ms for generic
+ *     pop-ins), so it feels instant and doesn't lag behind the finger.
+ *   - Keyboard panel slides in smoothly on mount.
  *
- * The keyboard is intentionally:
+ * Architecture:
  *   - Stateless about the draft (the parent owns the textarea).
- *   - Layout-only: no autocomplete, no swipe-to-type, no learned
- *     dictionary. Privacy is the feature.
- *   - Three modes (letters/numbers/symbols) plus a shift key with
- *     three states: off, on (one-shot), and locked.
- *
- * Interaction polish:
+ *   - No autocomplete, no swipe-to-type, no learned dictionary.
+ *     Privacy is the feature.
+ *   - Three modes (letters / numbers / symbols) + shift with three
+ *     states: off, on (one-shot), lock (caps-lock).
  *   - Keys fire on pointerdown for zero-perceived-latency response.
- *   - Holding a character key (or backspace) repeats smoothly after
- *     a short initial delay, just like a native keyboard.
- *   - Pointer-capture means a held key keeps repeating even if the
- *     finger drifts off its bounds — release anywhere ends the repeat.
+ *   - Hold-to-repeat on character keys and backspace.
+ *   - Pointer capture keeps repeat going even if finger drifts off key.
  */
 export type KeyboardMode = "letters" | "numbers" | "symbols";
 export type ShiftState = "off" | "on" | "lock";
@@ -47,9 +49,19 @@ const ROW_SYMBOLS: string[][] = [
   [".", ",", "?", "!", "'"],
 ];
 
-/** Press-and-hold timing — tuned to feel like iOS/Android natives. */
+/** Press-and-hold timing — tuned to match Gboard / native iOS. */
 const REPEAT_INITIAL_DELAY_MS = 380;
 const REPEAT_INTERVAL_MS = 45;
+
+/**
+ * Shared layout base — visual styling is handled entirely by the CSS
+ * classes veil-key-char / veil-key-mod / veil-key-send so that
+ * theme-aware colors live in one place and there's zero risk of
+ * Tailwind active: overrides fighting the CSS :active rules.
+ */
+const KEY_LAYOUT =
+  "relative h-[50px] rounded-[5px] " +
+  "select-none touch-manipulation ";
 
 export function VeilKeyboard({
   onChar,
@@ -58,36 +70,26 @@ export function VeilKeyboard({
   onClose,
   showCloseButton = true,
 }: {
-  /** Called with the character the user just pressed. */
   onChar: (char: string) => void;
-  /** Called when the user presses backspace. */
   onBackspace: () => void;
-  /**
-   * Called when the user presses the submit/return key. Parents can
-   * decide whether to send the message or just insert a newline.
-   */
   onSubmit: () => void;
-  /** Optional — when set, a ⌄ button collapses the keyboard. */
   onClose?: () => void;
   showCloseButton?: boolean;
 }) {
   const [mode, setMode] = useState<KeyboardMode>("letters");
   const [shift, setShift] = useState<ShiftState>("on"); // start capitalised
 
+  // ── Key press handlers ──────────────────────────────────────────────
+  // All key taps use hapticTap() only — no audio.
+  // Sound plays only on submit (a meaningful, intentional action).
+
   const tap = useCallback(
     (char: string, opts: { isRepeat?: boolean } = {}) => {
-      // Suppress full feedback on repeats so a held key doesn't
-      // machine-gun the speakers — light haptic only.
-      if (opts.isRepeat) {
-        hapticTap();
-      } else {
-        feedback.tap();
-      }
+      hapticTap();
       const out =
         mode === "letters" && shift !== "off" ? char.toUpperCase() : char;
       onChar(out);
-      // One-shot shift resets after a single character (only on the
-      // initial press — a held key shouldn't keep flipping shift back).
+      // One-shot shift resets after first character (non-repeat only).
       if (!opts.isRepeat && mode === "letters" && shift === "on") {
         setShift("off");
       }
@@ -96,26 +98,25 @@ export function VeilKeyboard({
   );
 
   const handleShift = () => {
-    feedback.tap();
+    hapticTap();
     setShift((s) => (s === "off" ? "on" : s === "on" ? "lock" : "off"));
   };
 
   const handleBackspace = useCallback(
-    (opts: { isRepeat?: boolean } = {}) => {
-      if (opts.isRepeat) hapticTap();
-      else feedback.tap();
+    (_opts: { isRepeat?: boolean } = {}) => {
+      hapticTap();
       onBackspace();
     },
     [onBackspace],
   );
 
   const handleSubmit = () => {
-    feedback.press();
+    feedback.press(); // Send is intentional — play sound + stronger haptic.
     onSubmit();
   };
 
   const switchMode = (next: KeyboardMode) => {
-    feedback.tap();
+    hapticTap();
     setMode(next);
   };
 
@@ -128,43 +129,38 @@ export function VeilKeyboard({
 
   return (
     <div
-      className={
-        "select-none border-t border-line/60 " +
-        "bg-gradient-to-b from-elevated/95 to-elevated " +
-        "shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-      }
+      className="veil-keyboard-bg veil-keyboard-slide-in select-none border-t border-line/30"
       role="group"
       aria-label="VeilChat private keyboard"
     >
-      {/* Privacy badge — always visible so the user *sees* the guarantee */}
-      <div className="flex items-center justify-between px-3.5 pt-2 pb-1.5 text-[10.5px] text-text-muted">
-        <span className="inline-flex items-center gap-1.5 tracking-wide">
+      {/* ── Privacy badge ── */}
+      <div className="flex items-center justify-between px-3.5 pt-2 pb-1.5">
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-medium tracking-wide text-text-muted/80">
           <LockMiniIcon />
-          <span className="font-medium">
-            Private input <span className="opacity-60">·</span> stays on this device
-          </span>
+          Private input · stays on this device
         </span>
         {showCloseButton && onClose && (
           <button
             type="button"
             onClick={() => {
-              feedback.tap();
+              hapticTap();
               onClose();
             }}
             className={
               "size-7 rounded-full grid place-items-center text-text-muted " +
               "hover:text-text hover:bg-text/10 active:bg-text/15 " +
-              "transition-colors duration-150 wa-tap"
+              "transition-colors duration-150 select-none touch-manipulation " +
+              "[&]:[-webkit-tap-highlight-color:transparent]"
             }
             aria-label="Hide keyboard"
-            title="Hide keyboard"
           >
             <ChevronDownMini />
           </button>
         )}
       </div>
 
-      <div className="px-2 pb-2.5 pt-0.5 flex flex-col gap-[7px]">
+      {/* ── Key rows ── */}
+      <div className="px-2.5 pb-3 pt-0.5 flex flex-col gap-[8px]">
         {rows.map((row, idx) => (
           <KeyboardRow
             key={idx}
@@ -180,14 +176,13 @@ export function VeilKeyboard({
           />
         ))}
 
-        {/* Bottom bar: mode switch · space · return */}
-        <div className="flex items-stretch gap-[5px] mt-0.5">
+        {/* ── Bottom bar: mode · space · return ── */}
+        <div className="flex items-stretch gap-[6px] mt-0.5">
           <ModeKey
             label={mode === "letters" ? "123" : "ABC"}
             onClick={() =>
               switchMode(mode === "letters" ? "numbers" : "letters")
             }
-            wide
           />
           {mode !== "letters" && (
             <ModeKey
@@ -195,7 +190,6 @@ export function VeilKeyboard({
               onClick={() =>
                 switchMode(mode === "numbers" ? "symbols" : "numbers")
               }
-              wide
             />
           )}
           <SpaceKey onClick={() => tap(" ")} />
@@ -206,19 +200,18 @@ export function VeilKeyboard({
   );
 }
 
-/* ───────────── Internals ───────────── */
+/* ─────────────────────── Internals ─────────────────────── */
 
 /**
- * Press-and-hold helper. Returns a set of pointer handlers that:
- *   1. Fire `onPress()` immediately on pointerdown (no click latency).
- *   2. After REPEAT_INITIAL_DELAY_MS, start firing `onRepeat()` every
- *      REPEAT_INTERVAL_MS until the pointer is released or cancelled.
- *   3. Use pointer capture so the repeat keeps going even if the
- *      finger drifts off the key — release anywhere ends it.
+ * Press-and-hold helper.
  *
- * Calling preventDefault on pointerdown stops the button from
- * stealing focus from the chat textarea, which is what makes
- * cursor-aware insertion work in the parent.
+ * 1. Fires onPress() immediately on pointerdown (zero click latency).
+ * 2. After REPEAT_INITIAL_DELAY_MS, starts firing onRepeat() every
+ *    REPEAT_INTERVAL_MS until the pointer is released or cancelled.
+ * 3. Uses pointer capture so repeating continues if the finger drifts
+ *    off the key — release anywhere ends it.
+ * 4. Calls preventDefault on pointerdown to keep focus on the textarea,
+ *    which is what makes cursor-aware insertion work in the parent.
  */
 function useRepeatable(onPress: () => void, onRepeat: () => void) {
   const pressRef = useRef(onPress);
@@ -240,18 +233,16 @@ function useRepeatable(onPress: () => void, onRepeat: () => void) {
     }
   }, []);
 
-  // Make sure timers don't outlive the component.
   useEffect(() => stop, [stop]);
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent<HTMLButtonElement>) => {
-      // Only main-button mouse / touch / pen.
       if (e.pointerType === "mouse" && e.button !== 0) return;
-      e.preventDefault(); // keep focus on the chat textarea
+      e.preventDefault();
       try {
         e.currentTarget.setPointerCapture(e.pointerId);
       } catch {
-        /* pointer capture is best-effort */
+        /* best-effort */
       }
       pressRef.current();
       stop();
@@ -269,8 +260,6 @@ function useRepeatable(onPress: () => void, onRepeat: () => void) {
     onPointerUp: stop,
     onPointerCancel: stop,
     onPointerLeave: stop,
-    // We've already handled the press in pointerdown — swallow the
-    // synthetic click so nothing fires twice on tap.
     onClick: (e: React.MouseEvent) => e.preventDefault(),
   };
 }
@@ -296,20 +285,16 @@ function KeyboardRow({
   onShift: () => void;
   onBackspace: (opts?: { isRepeat?: boolean }) => void;
 }) {
-  // Middle row in letter mode is indented by half a key — the classic
-  // "asdfghjkl" stagger, which gives the layout its phone keyboard feel.
+  // Middle row in letter mode gets the classic ASDF stagger indent.
   const indent =
     mode === "letters" && rowIndex === 1 ? "px-[5.5%]" : "px-0";
 
   return (
-    <div className={`flex items-stretch gap-[5px] ${indent}`}>
+    <div className={`flex items-stretch gap-[6px] ${indent}`}>
       {isLastLetterRow && (
-        <ModifierKey
-          label={shift === "lock" ? "⇪" : "⇧"}
+        <ShiftKey
+          shift={shift}
           onClick={onShift}
-          active={shift !== "off"}
-          locked={shift === "lock"}
-          wide
         />
       )}
       {keys.map((k) => (
@@ -327,25 +312,16 @@ function KeyboardRow({
   );
 }
 
-function renderChar(char: string, mode: KeyboardMode, shift: ShiftState): string {
+function renderChar(
+  char: string,
+  mode: KeyboardMode,
+  shift: ShiftState,
+): string {
   if (mode !== "letters") return char;
   return shift === "off" ? char : char.toUpperCase();
 }
 
-/* ───────────── Visual key primitives ───────────── */
-
-/**
- * Shared base classes for every key cap. A subtle vertical gradient
- * + soft drop shadow + 1px highlight on the top edge gives the keys
- * a tactile, slightly raised feel without looking skeuomorphic.
- */
-const KEY_BASE =
-  "relative h-[44px] rounded-[10px] " +
-  "border border-line/40 " +
-  "shadow-[0_1px_0_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.06)] " +
-  "transition-[transform,background-color,box-shadow] duration-100 ease-out " +
-  "active:scale-[0.96] active:shadow-[0_0_0_rgba(0,0,0,0),inset_0_1px_2px_rgba(0,0,0,0.25)] " +
-  "wa-tap select-none touch-manipulation";
+/* ─────────────────────── Key primitives ─────────────────────── */
 
 function KeyCap({
   char,
@@ -357,14 +333,12 @@ function KeyCap({
   onTap: (char: string, opts?: { isRepeat?: boolean }) => void;
 }) {
   const [previewing, setPreviewing] = useState(false);
+
   const handlers = useRepeatable(
     () => onTap(char),
     () => onTap(char, { isRepeat: true }),
   );
 
-  // Compose preview show/hide on top of the repeat handlers so the
-  // bubble follows the entire press lifecycle (including pointer
-  // capture / drift) without breaking key-repeat semantics.
   const onPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
     setPreviewing(true);
     handlers.onPointerDown(e);
@@ -383,11 +357,9 @@ function KeyCap({
       onPointerLeave={dismiss}
       onClick={handlers.onClick}
       className={
-        KEY_BASE +
-        " flex-1 min-w-0 " +
-        "bg-gradient-to-b from-surface to-surface/80 " +
-        "text-text text-[18px] font-medium tracking-tight " +
-        "active:bg-elevated " +
+        KEY_LAYOUT +
+        "veil-key-char flex-1 min-w-0 " +
+        "text-text text-[17px] font-normal tracking-tight " +
         (previewing ? "z-20 " : "")
       }
       aria-label={display}
@@ -399,72 +371,66 @@ function KeyCap({
 }
 
 /**
- * iOS-style enlarged character bubble that floats above a held key.
- * Pointer-events:none so it never intercepts the press, and a tiny
- * pointing nub at the bottom visually anchors it to the key below.
+ * Enlarged character bubble that floats above a held key.
+ * Appears in 120 ms so it feels instant (not a delayed tooltip).
+ * Centered via inset-x-0 + mx-auto to avoid transform conflicts
+ * with the entrance animation.
  */
 function KeyPreview({ display }: { display: string }) {
   return (
     <span
       aria-hidden="true"
       className={
-        "pointer-events-none absolute left-1/2 -translate-x-1/2 " +
+        "pointer-events-none absolute inset-x-0 mx-auto w-fit " +
         "bottom-[calc(100%+6px)] " +
-        "min-w-[44px] h-[58px] px-3 " +
-        "rounded-[14px] " +
-        "bg-gradient-to-b from-surface to-elevated " +
-        "border border-line/60 " +
-        "shadow-[0_8px_24px_rgba(0,0,0,0.45),0_2px_6px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)] " +
+        "min-w-[46px] h-[60px] px-3 " +
+        "rounded-[10px] " +
+        "bg-elevated " +
+        "border border-line/50 " +
+        "shadow-[0_8px_20px_rgba(0,0,0,0.4),0_2px_6px_rgba(0,0,0,0.25)] " +
         "grid place-items-center " +
-        "text-text text-[28px] font-semibold leading-none tracking-tight " +
-        "animate-soft-pop origin-bottom"
+        "text-text text-[30px] font-normal leading-none " +
+        "veil-key-preview-pop"
       }
     >
       {display}
-      {/* Tapered nub pointing down to the key */}
-      <span
-        className={
-          "absolute left-1/2 -translate-x-1/2 -bottom-[5px] " +
-          "size-[12px] rotate-45 " +
-          "bg-elevated border-r border-b border-line/60"
-        }
-      />
     </span>
   );
 }
 
-function ModifierKey({
-  label,
+/**
+ * Shift key with three visual states:
+ *   off  → modifier style (receded)
+ *   on   → accent tint (one-shot armed)
+ *   lock → full accent fill (caps lock)
+ */
+function ShiftKey({
+  shift,
   onClick,
-  active,
-  locked,
-  wide,
 }: {
-  label: string;
+  shift: ShiftState;
   onClick: () => void;
-  active?: boolean;
-  locked?: boolean;
-  wide?: boolean;
 }) {
-  // Modifier keys (shift) are tap-only — no repeat behavior.
   return (
     <button
       type="button"
       onPointerDown={(e) => e.preventDefault()}
       onClick={onClick}
       className={
-        KEY_BASE +
-        " text-[16px] font-semibold " +
-        (wide ? "px-3 min-w-[46px] " : "px-2 ") +
-        (locked
-          ? "bg-gradient-to-b from-wa-green to-wa-green/90 text-text-oncolor border-wa-green "
-          : active
-            ? "bg-gradient-to-b from-wa-green-soft/70 to-wa-green-soft/50 text-text border-wa-green/40 "
-            : "bg-gradient-to-b from-elevated to-elevated/70 text-text border-line/50 ")
+        KEY_LAYOUT +
+        "px-3 min-w-[44px] grid place-items-center " +
+        (shift === "lock"
+          ? "veil-key-send "
+          : shift === "on"
+            ? "veil-key-mod !bg-wa-green/20 "
+            : "veil-key-mod ")
       }
-      aria-pressed={active}
+      aria-pressed={shift !== "off"}
+      aria-label={
+        shift === "lock" ? "Caps lock on" : shift === "on" ? "Shift on" : "Shift"
+      }
     >
-      {label}
+      <ShiftIcon locked={shift === "lock"} active={shift !== "off"} />
     </button>
   );
 }
@@ -483,9 +449,8 @@ function BackspaceKey({
       type="button"
       {...handlers}
       className={
-        KEY_BASE +
-        " grid place-items-center px-3 min-w-[46px] " +
-        "bg-gradient-to-b from-elevated to-elevated/70 text-text border-line/50"
+        KEY_LAYOUT +
+        "veil-key-mod grid place-items-center px-3 min-w-[44px] text-text"
       }
       aria-label="Backspace"
     >
@@ -497,11 +462,9 @@ function BackspaceKey({
 function ModeKey({
   label,
   onClick,
-  wide,
 }: {
   label: string;
   onClick: () => void;
-  wide?: boolean;
 }) {
   return (
     <button
@@ -509,10 +472,8 @@ function ModeKey({
       onPointerDown={(e) => e.preventDefault()}
       onClick={onClick}
       className={
-        KEY_BASE +
-        " text-[13.5px] font-semibold tracking-wide uppercase " +
-        "bg-gradient-to-b from-elevated to-elevated/70 text-text " +
-        (wide ? "px-3 min-w-[54px]" : "px-2")
+        KEY_LAYOUT +
+        "veil-key-mod text-text text-[13px] font-semibold tracking-wide px-2.5 min-w-[46px]"
       }
     >
       {label}
@@ -521,17 +482,15 @@ function ModeKey({
 }
 
 function SpaceKey({ onClick }: { onClick: () => void }) {
-  // Space supports repeat too — useful when padding things out.
   const handlers = useRepeatable(onClick, onClick);
   return (
     <button
       type="button"
       {...handlers}
       className={
-        KEY_BASE +
-        " flex-1 grid place-items-center " +
-        "bg-gradient-to-b from-surface to-surface/80 " +
-        "text-text-muted text-[12px] tracking-[0.18em] uppercase font-medium"
+        KEY_LAYOUT +
+        "veil-key-mod flex-1 grid place-items-center " +
+        "text-text-muted text-[11.5px] tracking-[0.2em] uppercase font-medium"
       }
       aria-label="Space"
     >
@@ -547,12 +506,8 @@ function ReturnKey({ onClick }: { onClick: () => void }) {
       onPointerDown={(e) => e.preventDefault()}
       onClick={onClick}
       className={
-        KEY_BASE +
-        " grid place-items-center px-4 min-w-[68px] " +
-        "bg-gradient-to-b from-wa-green to-wa-green-dark " +
-        "text-text-oncolor " +
-        "border-wa-green/60 " +
-        "shadow-[0_1px_0_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.18)]"
+        KEY_LAYOUT +
+        "veil-key-send grid place-items-center px-4 min-w-[76px] text-text-oncolor"
       }
       aria-label="Send"
     >
@@ -561,7 +516,7 @@ function ReturnKey({ onClick }: { onClick: () => void }) {
   );
 }
 
-/* ───────────── Icons ───────────── */
+/* ─────────────────────── Icons ─────────────────────── */
 
 function LockMiniIcon() {
   return (
@@ -572,7 +527,7 @@ function LockMiniIcon() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="size-3"
+      className="size-3 shrink-0"
       aria-hidden="true"
     >
       <rect x="4" y="11" width="16" height="10" rx="2" />
@@ -587,7 +542,7 @@ function ChevronDownMini() {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
       className="size-3.5"
@@ -598,16 +553,54 @@ function ChevronDownMini() {
   );
 }
 
+/**
+ * Shift arrow — filled when active/locked, outline when off.
+ * The filled version matches how Gboard and iOS render shift-on.
+ */
+function ShiftIcon({
+  locked,
+  active,
+}: {
+  locked: boolean;
+  active: boolean;
+}) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="size-[19px]"
+      aria-hidden="true"
+    >
+      {locked || active ? (
+        /* Filled arrow — shift is engaged */
+        <path
+          d="M12 3L2 14h6v7h8v-7h6L12 3z"
+          fill="currentColor"
+          opacity={locked ? 1 : 0.75}
+        />
+      ) : (
+        /* Outline arrow — shift off */
+        <path
+          d="M12 3L2 14h6v7h8v-7h6L12 3z"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+      )}
+    </svg>
+  );
+}
+
 function BackspaceIcon() {
   return (
     <svg
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.9"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="size-[18px]"
+      className="size-[19px]"
       aria-hidden="true"
     >
       <path d="M21 5H9.5a2 2 0 0 0-1.5.7L3 12l5 6.3A2 2 0 0 0 9.5 19H21a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z" />
@@ -622,7 +615,7 @@ function SendArrowIcon() {
     <svg
       viewBox="0 0 24 24"
       fill="currentColor"
-      className="size-[18px] -translate-x-[1px]"
+      className="size-[18px] -translate-x-px"
       aria-hidden="true"
     >
       <path d="M3.4 20.4l17.45-7.48a1 1 0 0 0 0-1.84L3.4 3.6a1 1 0 0 0-1.39 1.18l2.1 7.04a1 1 0 0 0 .83.71l9.5 1.18c.34.04.34.54 0 .58l-9.5 1.18a1 1 0 0 0-.83.71l-2.1 7.04a1 1 0 0 0 1.39 1.18z" />
