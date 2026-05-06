@@ -49,3 +49,54 @@ export async function verifyFirebaseIdToken(
     phone_number: decoded.phone_number,
   };
 }
+
+/**
+ * Send a single FCM push notification to a device token.
+ *
+ * Returns true if the message was accepted by FCM.
+ * Returns false (instead of throwing) for expected non-retryable errors
+ * (invalid / unregistered token) so callers can prune stale tokens.
+ * Throws for unexpected errors (Firebase misconfigured, network issues).
+ */
+export async function sendFcmMessage(
+  token: string,
+  payload: {
+    title?: string;
+    body?: string;
+    data?: Record<string, string>;
+  },
+): Promise<boolean> {
+  const app = await getFirebaseApp();
+  const { getMessaging } = await import("firebase-admin/messaging");
+
+  try {
+    await getMessaging(app).send({
+      token,
+      notification: {
+        title: payload.title ?? "VeilChat",
+        body: payload.body ?? "You have a new notification.",
+      },
+      data: payload.data ?? {},
+      android: {
+        priority: "high",
+        notification: {
+          // Channel must be created on the Android side in MainActivity.
+          channelId: "veilchat_messages",
+          visibility: "private",
+        },
+      },
+    });
+    return true;
+  } catch (err: unknown) {
+    // FCM error codes that indicate the token is permanently invalid.
+    const msg = err instanceof Error ? err.message : String(err);
+    if (
+      msg.includes("registration-token-not-registered") ||
+      msg.includes("invalid-registration-token") ||
+      msg.includes("UNREGISTERED")
+    ) {
+      return false; // caller should prune this token
+    }
+    throw err;
+  }
+}

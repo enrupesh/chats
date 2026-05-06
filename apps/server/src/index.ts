@@ -9,6 +9,9 @@ import { appRouter, type AppRouter } from "./trpc/routers/index.js";
 import { createContext } from "./trpc/context.js";
 import { registerWebSocketRoutes } from "./lib/wsServer.js";
 import { initPush } from "./lib/push.js";
+import { verifyAccessToken } from "./lib/jwt.js";
+import { getDb, schema } from "./db/index.js";
+import { eq, and } from "drizzle-orm";
 import { startMediaSweeper } from "./lib/mediaSweeper.js";
 import { startMessageSweeper } from "./lib/messageSweeper.js";
 import { startScheduledSweeper } from "./lib/scheduledSweeper.js";
@@ -129,6 +132,83 @@ app.get("/health", async (): Promise<HealthResponse> => {
     timestamp: new Date().toISOString(),
   };
 });
+
+/**
+ * POST /push/fcm-token
+ * Register an FCM device token for the authenticated user (Android app).
+ * Body: { token: string, platform?: string }
+ */
+app.post<{ Body: { token: string; platform?: string } }>(
+  "/push/fcm-token",
+  async (req, reply) => {
+    const auth = req.headers.authorization;
+    if (!auth?.startsWith("Bearer ")) {
+      return reply.status(401).send({ error: "Unauthorized" });
+    }
+    let userId: string;
+    try {
+      const claims = await verifyAccessToken(auth.slice(7).trim());
+      userId = claims.sub;
+    } catch {
+      return reply.status(401).send({ error: "Invalid token" });
+    }
+
+    const { token, platform = "android" } = req.body ?? {};
+    if (!token || typeof token !== "string") {
+      return reply.status(400).send({ error: "token is required" });
+    }
+
+    const db = getDb();
+    await db
+      .insert(schema.fcmTokens)
+      .values({ userId, token, platform })
+      .onConflictDoUpdate({
+        target: schema.fcmTokens.token,
+        set: { userId, platform, updatedAt: new Date() },
+      });
+
+    return reply.send({ ok: true });
+  },
+);
+
+/**
+ * DELETE /push/fcm-token
+ * Unregister an FCM device token for the authenticated user.
+ * Body: { token: string }
+ */
+app.delete<{ Body: { token: string } }>(
+  "/push/fcm-token",
+  async (req, reply) => {
+    const auth = req.headers.authorization;
+    if (!auth?.startsWith("Bearer ")) {
+      return reply.status(401).send({ error: "Unauthorized" });
+    }
+    let userId: string;
+    try {
+      const claims = await verifyAccessToken(auth.slice(7).trim());
+      userId = claims.sub;
+    } catch {
+      return reply.status(401).send({ error: "Invalid token" });
+    }
+
+    const { token } = req.body ?? {};
+    if (!token || typeof token !== "string") {
+      return reply.status(400).send({ error: "token is required" });
+    }
+
+    const db = getDb();
+    await db
+      .delete(schema.fcmTokens)
+      .where(
+        and(
+          eq(schema.fcmTokens.token, token),
+          eq(schema.fcmTokens.userId, userId),
+        ),
+      );
+
+    return reply.send({ ok: true });
+  },
+);
 
 await app.register(fastifyTRPCPlugin, {
   prefix: "/trpc",

@@ -27,7 +27,7 @@ import {
 import { protectedProcedure, router } from "../init.js";
 import { getDb, schema } from "../../db/index.js";
 import { publish } from "../../lib/wsHub.js";
-import { pushToUser } from "../../lib/push.js";
+import { notifyUser } from "../../lib/push.js";
 import { isBlockedEitherWay } from "./privacy.js";
 
 const MAX_FETCH = 200;
@@ -149,8 +149,8 @@ export const messagesRouter = router({
         },
       });
 
-      // Fire-and-forget Web Push; never blocks the send.
-      void pushToUser(peer, {
+      // Fire-and-forget push (Web Push + FCM); never blocks the send.
+      void notifyUser(peer, {
         type: "new_message",
         title: "New message",
         body: "You have a new encrypted message.",
@@ -591,7 +591,7 @@ export const messagesRouter = router({
             groupId: input.groupId,
           },
         });
-        void pushToUser(r.recipientUserId, {
+        void notifyUser(r.recipientUserId, {
           type: "new_message",
           title: "New group message",
           body: "You have a new encrypted group message.",
@@ -720,7 +720,7 @@ export const messagesRouter = router({
             groupId: input.groupId,
           },
         });
-        void pushToUser(row.recipientUserId, {
+        void notifyUser(row.recipientUserId, {
           type: "new_message",
           title: "New group message",
           body: "You have a new encrypted group message.",

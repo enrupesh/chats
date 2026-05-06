@@ -20,6 +20,25 @@ async function ensureSchema(sql: ReturnType<typeof postgres>) {
   await sql.unsafe(
     `CREATE INDEX IF NOT EXISTS "users_discoverable_idx" ON "users" ("is_discoverable") WHERE "is_discoverable" = true`,
   );
+
+  // FCM token table for Android Capacitor push notifications (added after
+  // initial schema; safe to run on every start thanks to IF NOT EXISTS).
+  await sql.unsafe(`
+    CREATE TABLE IF NOT EXISTS "fcm_tokens" (
+      "id"         uuid        PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+      "user_id"    uuid        NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+      "token"      text        NOT NULL,
+      "platform"   text        NOT NULL DEFAULT 'android',
+      "created_at" timestamptz NOT NULL DEFAULT NOW(),
+      "updated_at" timestamptz NOT NULL DEFAULT NOW()
+    )
+  `);
+  await sql.unsafe(
+    `CREATE UNIQUE INDEX IF NOT EXISTS "fcm_tokens_token_idx" ON "fcm_tokens" ("token")`,
+  );
+  await sql.unsafe(
+    `CREATE INDEX IF NOT EXISTS "fcm_tokens_user_idx" ON "fcm_tokens" ("user_id")`,
+  );
 }
 
 export function getDb() {

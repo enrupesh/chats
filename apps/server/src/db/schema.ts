@@ -562,6 +562,38 @@ export const pushSubscriptions = pgTable(
   }),
 );
 
+/* ─────────── fcm_tokens ─────────── */
+/*
+ * FCM device tokens for Android (Capacitor) users.
+ * Web Push (VAPID) subscriptions live in push_subscriptions; FCM tokens
+ * live here. Both tables are fanned-out to when a notification fires so
+ * every platform receives delivery.
+ */
+
+export const fcmTokens = pgTable(
+  "fcm_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** Raw FCM registration token returned by @capacitor/push-notifications. */
+    token: text("token").notNull(),
+    /** "android" or "ios" — reserved for future iOS FCM support. */
+    platform: text("platform").notNull().default("android"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    userIdx: index("fcm_tokens_user_idx").on(t.userId),
+    tokenIdx: uniqueIndex("fcm_tokens_token_idx").on(t.token),
+  }),
+);
+
 /* ─────────── blocks (Phase 6) ─────────── */
 /*
  * Directional block: blocker_user_id has blocked blocked_user_id.
@@ -811,6 +843,7 @@ export type BlockRow = typeof blocks.$inferSelect;
 export type ReportRow = typeof reports.$inferSelect;
 export type MediaBlobRow = typeof mediaBlobs.$inferSelect;
 export type PushSubscriptionRow = typeof pushSubscriptions.$inferSelect;
+export type FcmTokenRow = typeof fcmTokens.$inferSelect;
 export type InviteRow = typeof invites.$inferSelect;
 export type ConnectionRequestRow = typeof connectionRequests.$inferSelect;
 export type ConnectionRow = typeof connections.$inferSelect;

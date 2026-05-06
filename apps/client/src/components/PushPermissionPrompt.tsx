@@ -1,19 +1,40 @@
 import { useEffect, useState } from "react";
+import { Capacitor } from "@capacitor/core";
 import { useAuthStore } from "../lib/store";
 import { ensurePushSubscription } from "../lib/push";
 
 const DISMISS_KEY = "veil:push-prompt:dismissed-at";
+const NATIVE_TOKEN_KEY = "veil:push:fcm_token";
 const DISMISS_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
 const SHOW_DELAY_MS = 2500;
 
+/**
+ * True when running inside the Capacitor Android shell.
+ * Synchronous — safe to call during render.
+ */
+function isNativeAndroid(): boolean {
+  return Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android";
+}
+
+/**
+ * True if the app is "installed" — either a native Capacitor shell or a
+ * PWA running in standalone / fullscreen display mode.
+ */
 function isStandalone(): boolean {
+  if (isNativeAndroid()) return true;
   if (typeof window === "undefined") return false;
   if (window.matchMedia?.("(display-mode: standalone)").matches) return true;
   const nav = window.navigator as Navigator & { standalone?: boolean };
   return nav.standalone === true;
 }
 
+/**
+ * True if push notifications are available on this platform.
+ * On Android native we use FCM via @capacitor/push-notifications.
+ * On web we need the full SW + PushManager stack.
+ */
 function pushSupported(): boolean {
+  if (isNativeAndroid()) return true;
   return (
     typeof window !== "undefined" &&
     "serviceWorker" in navigator &&
@@ -52,8 +73,18 @@ export function PushPermissionPrompt() {
     if (!accessToken) return;
     if (!isStandalone()) return;
     if (!pushSupported()) return;
-    if (Notification.permission !== "default") return;
     if (dismissedRecently()) return;
+
+    if (isNativeAndroid()) {
+      // Don't prompt if the user is already subscribed (FCM token stored).
+      if (localStorage.getItem(NATIVE_TOKEN_KEY)) return;
+      const t = window.setTimeout(() => setShow(true), SHOW_DELAY_MS);
+      return () => window.clearTimeout(t);
+    }
+
+    // Web/PWA: only prompt if permission hasn't been decided yet.
+    // Guard Notification access — it doesn't exist in Android WebView.
+    if (typeof Notification !== "undefined" && Notification.permission !== "default") return;
 
     const t = window.setTimeout(() => setShow(true), SHOW_DELAY_MS);
     return () => window.clearTimeout(t);
@@ -70,8 +101,6 @@ export function PushPermissionPrompt() {
     setBusy(true);
     try {
       const r = await ensurePushSubscription({ requestPermission: true });
-      // Whatever the outcome, hide the banner. Settings → Notifications
-      // remains the place to retry / inspect.
       if (r.state !== "ok") markDismissed();
       setHidden(true);
     } finally {
@@ -94,8 +123,8 @@ export function PushPermissionPrompt() {
           Get notified of new messages
         </p>
         <p className="text-xs text-text-muted mt-0.5 leading-snug">
-          VeilChat only ever shows "New message" — the actual content is decrypted
-          on this device when you open the app.
+          VeilChat only ever shows "New message" — the actual content is
+          decrypted on this device when you open the app.
         </p>
         <div className="flex gap-2 mt-2">
           <button

@@ -22,7 +22,7 @@ import { getDb, schema } from "../../db/index.js";
 import { fingerprintForPublicKey } from "../../lib/fingerprint.js";
 import { env } from "../../env.js";
 import { isBlockedEitherWay } from "./privacy.js";
-import { pushToUser } from "../../lib/push.js";
+import { notifyUser } from "../../lib/push.js";
 
 const SALT_TTL_MS = 5 * 60 * 1000;
 const discoverySalts = new Map<string, { salt: string; expiresAt: number }>();
@@ -341,7 +341,7 @@ export const connectionsRouter = router({
       // Best-effort push so the recipient knows immediately. Body is
       // intentionally generic (no requester name) to avoid leaking who
       // is browsing whom from a notification preview.
-      void pushToUser(peer, {
+      void notifyUser(peer, {
         type: "chat_request",
         title: "New chat request",
         body: "Someone wants to chat with you on Veil.",

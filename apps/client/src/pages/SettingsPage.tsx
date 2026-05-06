@@ -29,6 +29,7 @@ import {
   type WallpaperKind,
 } from "../lib/wallpaperStore";
 import { ensurePushSubscription, disablePushSubscription } from "../lib/push";
+import { isNative, isAndroid } from "../lib/capacitor";
 import { clearIdentity, loadIdentity } from "../lib/db";
 import { useStealthPrefs } from "../lib/stealthPrefs";
 import { useFocusState, formatFocusEnds, focusReasonLabel } from "../lib/focusMode";
@@ -1531,20 +1532,49 @@ function FocusModeStatusRow() {
 }
 
 function PushRow() {
-  const supported =
+  // isNative() / isAndroid() are synchronous Capacitor calls — no flash.
+  const androidNative = isNative() && isAndroid();
+  const webSupported =
+    !androidNative &&
     typeof window !== "undefined" &&
     "serviceWorker" in navigator &&
     "PushManager" in window &&
     "Notification" in window;
+  const supported = androidNative || webSupported;
+
+  // On Android we can't read Notification.permission (the API doesn't exist
+  // in the WebView), so start as "unknown" and populate via an async check.
   const [perm, setPerm] = useState<NotificationPermission | "unknown">(
-    supported ? Notification.permission : "unknown",
+    webSupported ? Notification.permission : "unknown",
   );
   const [subscribed, setSubscribed] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
+  // Android: read the native OS notification permission asynchronously.
   useEffect(() => {
-    if (!supported) return;
+    if (!androidNative) return;
+    void (async () => {
+      try {
+        const { PushNotifications } = await import("@capacitor/push-notifications");
+        const status = await PushNotifications.checkPermissions();
+        if (status.receive === "granted") setPerm("granted");
+        else if (status.receive === "denied") setPerm("denied");
+        else setPerm("default");
+      } catch {
+        setPerm("default");
+      }
+    })();
+  }, [androidNative]);
+
+  // Determine current subscription state.
+  useEffect(() => {
+    if (androidNative) {
+      // Android subscription = FCM token is stored locally after registration.
+      setSubscribed(!!localStorage.getItem("veil:push:fcm_token"));
+      return;
+    }
+    if (!webSupported) return;
     void (async () => {
       try {
         const reg = await navigator.serviceWorker.getRegistration();
@@ -1554,27 +1584,45 @@ function PushRow() {
         setSubscribed(false);
       }
     })();
-  }, [supported]);
+  }, [webSupported, androidNative]);
 
   async function enable() {
     setBusy(true);
     setMsg(null);
     const r = await ensurePushSubscription({ requestPermission: true });
-    setPerm(supported ? Notification.permission : "unknown");
+
+    // Refresh the permission state after the attempt.
+    if (androidNative) {
+      try {
+        const { PushNotifications } = await import("@capacitor/push-notifications");
+        const s = await PushNotifications.checkPermissions();
+        if (s.receive === "granted") setPerm("granted");
+        else if (s.receive === "denied") setPerm("denied");
+        else setPerm("default");
+      } catch { /* ignore */ }
+    } else if (webSupported) {
+      setPerm(Notification.permission);
+    }
+
     if (r.state === "ok") {
       setSubscribed(true);
       setMsg("Notifications enabled.");
     } else if (r.state === "denied") {
-      setMsg("Notification permission was denied. Enable it in your browser settings.");
+      setMsg(
+        androidNative
+          ? "Permission denied. Go to Android Settings → Apps → VeilChat → Notifications to enable them."
+          : "Notification permission was denied. Enable it in your browser settings.",
+      );
     } else if (r.state === "not_configured") {
       setMsg("Push isn't configured on the server yet.");
     } else if (r.state === "unsupported") {
-      setMsg("Your browser doesn't support web push.");
+      setMsg("Push notifications aren't supported on this device.");
     } else {
       setMsg(r.message);
     }
     setBusy(false);
   }
+
   async function disable() {
     setBusy(true);
     setMsg(null);
