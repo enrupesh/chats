@@ -1,5 +1,6 @@
 import type { WsServerEvent } from "@veil/shared";
 import { useAuthStore } from "./store";
+import { getApiBaseUrl } from "./apiBase";
 
 /**
  * Lightweight WebSocket client for live message delivery and receipts.
@@ -13,7 +14,7 @@ import { useAuthStore } from "./store";
 
 type Listener = (event: WsServerEvent) => void;
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "/api";
+const baseUrl = getApiBaseUrl();
 
 function wsUrl(token: string): string {
   let httpBase: string;

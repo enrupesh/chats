@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { useDocumentMeta } from "../lib/useDocumentMeta";
+import { toPublicAbsoluteUrl } from "../lib/publicAppUrl";
 
 /**
  * /download — Android APK download page.
@@ -101,10 +102,7 @@ function DownloadHero() {
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const downloadUrl =
-    typeof window !== "undefined"
-      ? window.location.origin + "/download"
-      : "https://www.veilchat.me/download";
+  const downloadUrl = toPublicAbsoluteUrl("/download");
 
   useEffect(() => {
     QRCode.toDataURL(downloadUrl, {

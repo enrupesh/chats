@@ -63,14 +63,17 @@ import { env } from "../../env.js";
  *
  *   To handle this, verifyRegistration and verifyAuthentication extract
  *   the actual origin from the response's clientDataJSON and — when the
- *   request is coming from our Capacitor app (Origin: https://localhost
- *   or null) — pass that extracted origin as the expectedOrigin to
- *   @simplewebauthn/server.  The rpID stays as `localhost` throughout,
- *   which Android Credential Manager accepts without Digital Asset Links.
+ *   request is coming from our Capacitor app (Origin: https://localhost)
+ *   — pass that extracted origin as an accepted expectedOrigin too.
+ *
+ *   Important: for native Android passkeys, rpID must be a real internet
+ *   domain linked to the APK via Digital Asset Links (e.g. www.veilchat.me),
+ *   not `localhost`.
  */
 
 const RP_NAME = "Veil";
 const APP_NAME = "Veil";
+const PROD_DEFAULT_NATIVE_RP_ID = "www.veilchat.me";
 
 interface RpInfo {
   rpID: string;
@@ -97,7 +100,24 @@ function getRpInfo(req: {
       message: "Invalid Origin header.",
     });
   }
-  return { rpID: url.hostname, origin: url.origin };
+  const headerHost = url.hostname;
+
+  // Capacitor Android WebView runs the app content from https://localhost.
+  // Credential Manager cannot validate localhost as a relying party in
+  // production; it requires a real domain tied to the app via asset links.
+  if (headerHost === "localhost") {
+    return { rpID: resolveNativeAndroidRpId(), origin: url.origin };
+  }
+
+  return { rpID: headerHost, origin: url.origin };
+}
+
+function resolveNativeAndroidRpId(): string {
+  const configured = env.PASSKEY_RP_ID?.trim();
+  if (configured) return configured;
+  return env.NODE_ENV === "production"
+    ? PROD_DEFAULT_NATIVE_RP_ID
+    : "localhost";
 }
 
 /**

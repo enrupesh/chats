@@ -15,7 +15,8 @@
  */
 
 import { trpcClientProxy } from "./trpcClientProxy";
-import { isAndroid } from "./capacitor";
+import { isAndroid, isNative } from "./capacitor";
+import { getApiBaseUrl } from "./apiBase";
 
 const SUBSCRIBED_KEY = "veil:push:endpoint";
 const NATIVE_TOKEN_KEY = "veil:push:fcm_token";
@@ -50,12 +51,17 @@ export type PushSetupResult =
 // ─── Android / FCM path ──────────────────────────────────────────────────────
 
 async function setupNativePush(opts?: { requestPermission?: boolean }): Promise<PushSetupResult> {
+  if (!isNative() || !isAndroid()) {
+    return { state: "unsupported" };
+  }
   try {
     const { PushNotifications } = await import("@capacitor/push-notifications");
 
     let permStatus = await PushNotifications.checkPermissions();
 
-    if (permStatus.receive === "prompt" && opts?.requestPermission) {
+    // On Android the plugin may return "prompt" or "prompt-with-rationale".
+    // If the caller asked to request permission, always do so unless already granted.
+    if (permStatus.receive !== "granted" && opts?.requestPermission) {
       permStatus = await PushNotifications.requestPermissions();
     }
 
@@ -64,9 +70,11 @@ async function setupNativePush(opts?: { requestPermission?: boolean }): Promise<
     }
 
     if (permStatus.receive !== "granted") {
-      return { state: "error", message: "Push permission not granted." };
+      return { state: "denied" };
     }
 
+    // Ensure we don't stack listeners on repeated enable attempts.
+    await PushNotifications.removeAllListeners().catch(() => undefined);
     await PushNotifications.register();
 
     return new Promise<PushSetupResult>((resolve) => {
@@ -74,7 +82,7 @@ async function setupNativePush(opts?: { requestPermission?: boolean }): Promise<
         resolve({ state: "error", message: "FCM registration timed out." });
       }, 15_000);
 
-      PushNotifications.addListener("registration", async (token) => {
+      void PushNotifications.addListener("registration", async (token) => {
         clearTimeout(timeout);
         try {
           const stored = localStorage.getItem(NATIVE_TOKEN_KEY);
@@ -82,9 +90,7 @@ async function setupNativePush(opts?: { requestPermission?: boolean }): Promise<
             // POST the FCM token to the server so it can fan-out via FCM.
             // Uses the REST base URL directly since this is a native path
             // (no Vite proxy, no service worker).
-            const baseUrl =
-              (import.meta.env.VITE_API_BASE_URL as string | undefined) ??
-              "https://chats-fk6e.onrender.com";
+            const baseUrl = getApiBaseUrl();
             const { accessToken } = (await import("./store")).useAuthStore.getState();
             await fetch(`${baseUrl}/push/fcm-token`, {
               method: "POST",
@@ -108,7 +114,7 @@ async function setupNativePush(opts?: { requestPermission?: boolean }): Promise<
         }
       });
 
-      PushNotifications.addListener("registrationError", (err) => {
+      void PushNotifications.addListener("registrationError", (err) => {
         clearTimeout(timeout);
         resolve({ state: "error", message: String(err.error) });
       });
@@ -127,9 +133,7 @@ async function disableNativePush(): Promise<void> {
     await PushNotifications.removeAllListeners();
     const token = localStorage.getItem(NATIVE_TOKEN_KEY);
     if (token) {
-      const baseUrl =
-        (import.meta.env.VITE_API_BASE_URL as string | undefined) ??
-        "https://chats-fk6e.onrender.com";
+      const baseUrl = getApiBaseUrl();
       const { accessToken } = (await import("./store")).useAuthStore.getState();
       await fetch(`${baseUrl}/push/fcm-token`, {
         method: "DELETE",

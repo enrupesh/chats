@@ -2,6 +2,7 @@ import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
 import type { AppRouter } from "../../../server/src/trpc/routers/index.js";
 import { useAuthStore } from "./store";
+import { getApiBaseUrl } from "./apiBase";
 
 /**
  * A direct tRPC proxy client (no React) so non-React code (the chat
@@ -11,7 +12,7 @@ import { useAuthStore } from "./store";
  * client uses, so they stay in sync.
  */
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "/api";
+const baseUrl = getApiBaseUrl();
 
 let cached: ReturnType<typeof createTRPCProxyClient<AppRouter>> | null = null;
 

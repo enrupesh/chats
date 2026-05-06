@@ -22,6 +22,7 @@ import { DailyVerificationGate } from "./components/DailyVerificationGate";
 import { AppErrorBoundary } from "./components/ErrorBoundary";
 import { ToastViewport } from "./lib/toast";
 import { initAndroidNative } from "./lib/androidSetup";
+import { useAppRefreshLoop } from "./lib/appRefresh";
 import { NativeIntro } from "./components/NativeIntro";
 import { isAndroid } from "./lib/capacitor";
 
@@ -104,6 +105,7 @@ export function App() {
       }),
   );
   const [trpcClient] = useState(() => makeTrpcClient());
+  useAppRefreshLoop(queryClient);
 
   // Theme system no longer follows the OS preference — VeilChat always opens
   // in the Light theme unless the user explicitly picked another from

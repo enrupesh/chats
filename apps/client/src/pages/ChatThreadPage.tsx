@@ -3766,9 +3766,19 @@ export async function startRecording(): Promise<
   try {
     stream = await navigator.mediaDevices.getUserMedia({ audio: true });
   } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (
+      /notallowed|permission|denied|security/i.test(msg)
+    ) {
+      return {
+        kind: "err",
+        message:
+          "Microphone permission is blocked. Enable Microphone for VeilChat in Android Settings and try again.",
+      };
+    }
     return {
       kind: "err",
-      message: e instanceof Error ? e.message : "Microphone permission denied.",
+      message: msg || "Microphone permission denied.",
     };
   }
   const mime = pickAudioMime();

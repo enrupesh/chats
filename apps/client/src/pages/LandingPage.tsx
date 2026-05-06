@@ -4,6 +4,7 @@ import QRCode from "qrcode";
 import peopleUsingPhones from "../assets/landing/people-using-phones.jpg";
 import smilingWithPhone from "../assets/landing/smiling-with-phone.jpg";
 import { useDocumentMeta } from "../lib/useDocumentMeta";
+import { toPublicAbsoluteUrl } from "../lib/publicAppUrl";
 
 // Below-the-fold heavy media components are lazy-loaded so the
 // initial paint of the landing page only ships the bytes needed to
@@ -2117,10 +2118,7 @@ function GetTheApp() {
   const [installUrl, setInstallUrl] = useState<string>("");
 
   useEffect(() => {
-    const url =
-      typeof window !== "undefined"
-        ? window.location.origin + "/welcome"
-        : "https://www.veilchat.me/welcome";
+    const url = toPublicAbsoluteUrl("/welcome");
     setInstallUrl(url);
     QRCode.toDataURL(url, {
       errorCorrectionLevel: "M",

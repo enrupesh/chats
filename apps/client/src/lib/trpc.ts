@@ -3,10 +3,11 @@ import { httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
 import type { AppRouter } from "../../../server/src/trpc/routers/index.js";
 import { useAuthStore } from "./store";
+import { getApiBaseUrl } from "./apiBase";
 
 export const trpc = createTRPCReact<AppRouter>();
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "/api";
+const baseUrl = getApiBaseUrl();
 
 export function makeTrpcClient() {
   return trpc.createClient({

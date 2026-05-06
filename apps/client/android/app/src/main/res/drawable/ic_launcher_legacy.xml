@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Legacy launcher icon fallback for Android < 8.0 (pre-adaptive-icon).
+  Keeps the same visual mark as the adaptive icon so home-screen identity
+  stays consistent across devices/launchers.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/ic_launcher_background" />
+    <item
+        android:drawable="@drawable/ic_launcher_foreground"
+        android:gravity="center"
+        android:insetLeft="12dp"
+        android:insetTop="12dp"
+        android:insetRight="12dp"
+        android:insetBottom="12dp" />
+</layer-list>
+

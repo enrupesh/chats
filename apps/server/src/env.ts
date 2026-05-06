@@ -22,6 +22,7 @@ export const env = {
   HOST: process.env.HOST ?? "0.0.0.0",
   PORT: num(process.env.PORT, 3001),
   CORS_ORIGIN: process.env.CORS_ORIGIN ?? "",
+  PASSKEY_RP_ID: str(process.env.PASSKEY_RP_ID),
 
   DATABASE_URL: str(process.env.DATABASE_URL),
 

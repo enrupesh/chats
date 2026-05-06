@@ -2,7 +2,7 @@ import type { FastifyBaseLogger } from "fastify";
 import { and, eq, lte, sql } from "drizzle-orm";
 import { getDb, schema } from "../db/index.js";
 import { publish } from "./wsHub.js";
-import { pushToUser } from "./push.js";
+import { notifyUser } from "./push.js";
 import { isBlockedEitherWay } from "../trpc/routers/privacy.js";
 
 const SWEEP_INTERVAL_MS = 10_000;
@@ -105,7 +105,7 @@ export function startScheduledSweeper(log: FastifyBaseLogger): void {
             },
           });
 
-          void pushToUser(row.recipientUserId, {
+          void notifyUser(row.recipientUserId, {
             type: "new_message",
             title: "New message",
             body: "You have a new encrypted message.",

@@ -20,6 +20,7 @@ import type { InviteSummary } from "@veil/shared";
 import { loadIdentity } from "../lib/db";
 import { base64ToBytes, publicKeyFingerprint } from "../lib/crypto";
 import { useNoindex } from "../lib/useDocumentMeta";
+import { toPublicAbsoluteUrl } from "../lib/publicAppUrl";
 
 export function InvitePage() {
   useNoindex("Invite · VeilChat");
@@ -204,7 +205,7 @@ function InviteCreatedCard({
 }) {
   const fullUrl = useMemo(() => {
     if (!invite.url) return "";
-    return `${window.location.origin}${invite.url}`;
+    return toPublicAbsoluteUrl(invite.url);
   }, [invite.url]);
   const [qr, setQr] = useState<string>("");
   const [copied, setCopied] = useState(false);

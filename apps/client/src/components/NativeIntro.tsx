@@ -6,10 +6,10 @@
  * fades out to reveal the app underneath.
  *
  * Lifecycle:
- *   "in"   (0–350 ms)  — logo scales 0.75 → 1 with spring, tagline slides up
- *   "hold" (350–950 ms) — content visible, no change
- *   "out"  (950–1300 ms) — entire overlay fades to transparent
- *   "done" (1300 ms+)   — component unmounts, parent clears it
+ *   "in"   (0–420 ms)   — logo scales in with spring + soft glow
+ *   "hold" (420–1250 ms) — subtle breathing pulse for premium feel
+ *   "out"  (1250–1650 ms) — overlay fades away
+ *   "done" (1650 ms+)    — component unmounts, parent clears it
  *
  * The overlay is positioned fixed with z-index 9999 so it sits on top of
  * every route, including the RouteFallback spinner and any lazy-loaded chunk.
@@ -30,12 +30,12 @@ export function NativeIntro({ onDone }: { onDone: () => void }) {
   onDoneRef.current = onDone;
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase("hold"), 350);
-    const t2 = setTimeout(() => setPhase("out"), 950);
+    const t1 = setTimeout(() => setPhase("hold"), 420);
+    const t2 = setTimeout(() => setPhase("out"), 1250);
     const t3 = setTimeout(() => {
       setPhase("done");
       onDoneRef.current();
-    }, 1300);
+    }, 1650);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
@@ -46,7 +46,6 @@ export function NativeIntro({ onDone }: { onDone: () => void }) {
   if (phase === "done") return null;
 
   const logoVisible = phase === "hold" || phase === "out";
-  const screenVisible = phase !== "out";
 
   return (
     <div
@@ -60,8 +59,8 @@ export function NativeIntro({ onDone }: { onDone: () => void }) {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        opacity: screenVisible ? 1 : 0,
-        transition: "opacity 350ms ease-in-out",
+        opacity: phase === "out" ? 0 : 1,
+        transition: "opacity 400ms ease-in-out",
         pointerEvents: "none",
         userSelect: "none",
       }}
@@ -69,14 +68,22 @@ export function NativeIntro({ onDone }: { onDone: () => void }) {
       {/* Logo mark — V-chevron + dot */}
       <div
         style={{
-          transform: logoVisible ? "scale(1)" : "scale(0.75)",
+          transform:
+            phase === "hold"
+              ? "scale(1.015)"
+              : logoVisible
+                ? "scale(1)"
+                : "scale(0.74)",
           opacity: logoVisible ? 1 : 0,
-          transition: logoVisible
-            ? "transform 380ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 280ms ease-out"
-            : "none",
+          transition:
+            "transform 520ms cubic-bezier(0.22, 0.9, 0.2, 1), opacity 300ms ease-out",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          filter:
+            phase === "hold"
+              ? "drop-shadow(0 8px 20px rgba(0,168,132,0.22))"
+              : "none",
         }}
       >
         {/* SVG matches ic_launcher_foreground paths, scaled to 88px */}

@@ -144,6 +144,54 @@ Users must enable **"Install from unknown sources"** in Android settings.
 
 ---
 
+## Passkeys on Android (required setup)
+
+Android passkeys require your app package + signing certificate to be linked to
+your web domain through Digital Asset Links.
+
+### 1) Get your signing certificate SHA-256 fingerprint
+
+For your release keystore:
+
+```bash
+keytool -list -v \
+  -keystore /absolute/path/to/veilchat-release.jks \
+  -alias veilchat
+```
+
+Copy the `SHA256:` value exactly (colon-separated hex).
+
+### 2) Update `assetlinks.json`
+
+Edit:
+
+`apps/client/public/.well-known/assetlinks.json`
+
+Replace:
+
+`REPLACE_WITH_RELEASE_SHA256_CERT_FINGERPRINT`
+
+with your real SHA-256 fingerprint.
+
+### 3) Redeploy the frontend
+
+Deploy so this URL is live and returns JSON (HTTP 200):
+
+`https://www.veilchat.me/.well-known/assetlinks.json`
+
+### 4) Set backend RP ID
+
+Set on the Render server:
+
+```env
+PASSKEY_RP_ID=www.veilchat.me
+```
+
+Without these four pieces, Android Credential Manager will reject passkey
+creation with RP-ID validation errors.
+
+---
+
 ## Step 8 — Play Store (when ready)
 
 Build an **AAB** (Android App Bundle) instead of an APK:
