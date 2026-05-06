@@ -4,6 +4,7 @@ import {
   GetObjectCommand,
   HeadObjectCommand,
   DeleteObjectsCommand,
+  PutBucketCorsCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "../env.js";
@@ -93,6 +94,45 @@ export async function headObject(
       .$metadata?.httpStatusCode;
     if (status === 404 || status === 403) return { exists: false, sizeBytes: 0 };
     throw err;
+  }
+}
+
+/**
+ * Apply a CORS policy to the R2 bucket so browsers can PUT directly via
+ * presigned URLs without being blocked by the preflight check.
+ *
+ * Called once at server startup — idempotent, safe to call every time.
+ */
+export async function ensureCorsPolicy(log?: { info: (msg: string) => void; warn: (msg: string, err?: unknown) => void }): Promise<void> {
+  if (!r2Configured()) return;
+  try {
+    await client().send(
+      new PutBucketCorsCommand({
+        Bucket: env.R2_BUCKET!,
+        CORSConfiguration: {
+          CORSRules: [
+            {
+              // Allow presigned-URL uploads from the production domain and
+              // from localhost during development.
+              AllowedOrigins: [
+                "https://www.veilchat.me",
+                "https://veilchat.me",
+                "http://localhost:5000",
+                "http://localhost:4173",
+              ],
+              AllowedMethods: ["GET", "PUT", "HEAD"],
+              AllowedHeaders: ["Content-Type", "Content-Length"],
+              ExposeHeaders: ["ETag"],
+              MaxAgeSeconds: 3600,
+            },
+          ],
+        },
+      }),
+    );
+    log?.info("R2 CORS policy applied successfully.");
+  } catch (err) {
+    // Non-fatal — log and continue. The policy may already be set.
+    log?.warn("R2 CORS setup failed (uploads may not work from browsers):", err);
   }
 }
 

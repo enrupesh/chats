@@ -12,6 +12,7 @@ import { initPush } from "./lib/push.js";
 import { startMediaSweeper } from "./lib/mediaSweeper.js";
 import { startMessageSweeper } from "./lib/messageSweeper.js";
 import { startScheduledSweeper } from "./lib/scheduledSweeper.js";
+import { ensureCorsPolicy } from "./lib/r2.js";
 
 const app = Fastify({
   trustProxy: true,
@@ -167,6 +168,10 @@ initPush(app.log);
 startMediaSweeper(app.log);
 startMessageSweeper(app.log);
 startScheduledSweeper(app.log);
+
+// Apply CORS policy to the R2 bucket so browsers can PUT directly via
+// presigned URLs. Idempotent — safe to call on every cold start.
+ensureCorsPolicy(app.log).catch(() => undefined);
 
 try {
   await app.listen({ host: env.HOST, port: env.PORT });
