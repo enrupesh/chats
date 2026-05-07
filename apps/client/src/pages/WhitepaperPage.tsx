@@ -1362,7 +1362,6 @@ export function WhitepaperPage() {
               borderColor: "rgba(15,42,24,0.15)",
               backgroundColor: "rgba(255,255,255,0.7)",
               color: "#0F2A18",
-              focusRingColor: "rgba(46,111,64,0.4)",
             }}
           >
             {ALL_LANGS.map((l) => (

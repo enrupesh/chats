@@ -2002,7 +2002,7 @@ function VerifiedByOpenSource() {
                 className="text-[12.5px] leading-[1.85] font-mono whitespace-pre"
                 style={{ color: "#CFFFDC" }}
               >
-                {VO_CODE_TABS[tab].lines.map((line, i) => (
+                {(VO_CODE_TABS[tab]?.lines ?? []).map((line, i) => (
                   <div
                     key={i}
                     style={{
@@ -2032,10 +2032,10 @@ function VerifiedByOpenSource() {
               style={{ borderTop: "1px solid rgba(46,111,64,0.15)", backgroundColor: "rgba(46,111,64,0.05)" }}
             >
               <span className="text-[11px] font-mono" style={{ color: "rgba(104,186,127,0.5)" }}>
-                apps/client/src/lib/{VO_CODE_TABS[tab].file}
+                apps/client/src/lib/{VO_CODE_TABS[tab]?.file}
               </span>
               <a
-                href={`https://github.com/rupeshsahu408/VeilChat/blob/main/apps/client/src/lib/${VO_CODE_TABS[tab].file}`}
+                href={`https://github.com/rupeshsahu408/VeilChat/blob/main/apps/client/src/lib/${VO_CODE_TABS[tab]?.file}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[11px] font-medium hover:underline"
