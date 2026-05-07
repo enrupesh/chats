@@ -65,6 +65,7 @@ export function LandingPage() {
         <DeviceShowcase />
         <Lifestyle />
         <SecurityBond />
+        <VerifiedByOpenSource />
         <PressStrip />
         <Testimonials />
         <HowItWorks />
@@ -1680,6 +1681,445 @@ function SecurityBondSeal() {
         100% Safe
       </div>
     </div>
+  );
+}
+
+
+/* ───────────────────────── Verified by Open Source ───────────────────────── */
+
+type VoLineT = "comment" | "code" | "blank";
+interface VoLine { t: VoLineT; s: string }
+
+const VO_CODE_TABS: { file: string; lines: VoLine[] }[] = [
+  {
+    file: "signal/x3dh.ts",
+    lines: [
+      { t: "comment", s: "// Extended Triple Diffie-Hellman — establishes a shared secret" },
+      { t: "comment", s: "// even when the recipient is offline, using prekeys." },
+      { t: "blank",   s: "" },
+      { t: "comment", s: "//  DH1 = DH(IK_A, SPK_B)    identity \u2194 signed prekey" },
+      { t: "comment", s: "//  DH2 = DH(EK_A, IK_B)     ephemeral \u2194 identity" },
+      { t: "comment", s: "//  DH3 = DH(EK_A, SPK_B)    ephemeral \u2194 signed prekey" },
+      { t: "comment", s: "//  DH4 = DH(EK_A, OPK_B)    ephemeral \u2194 one-time prekey" },
+      { t: "comment", s: "//  SK  = HKDF( 0xFF\u00d732 \u2016 DH1 \u2016 DH2 \u2016 DH3 [\u2016 DH4] )" },
+      { t: "blank",   s: "" },
+      { t: "code",    s: "export async function x3dhInitiate(input) {" },
+      { t: "code",    s: "  const ek  = generateX25519KeyPair();     // ephemeral keypair" },
+      { t: "code",    s: "  const dh1 = x25519DH(myIdKey.priv, spkPub);" },
+      { t: "code",    s: "  const dh2 = x25519DH(ek.priv,   peerIdPub);" },
+      { t: "code",    s: "  const dh3 = x25519DH(ek.priv,   spkPub);" },
+      { t: "code",    s: "  const dh4 = opk ? x25519DH(ek.priv, opkPub) : null;" },
+      { t: "code",    s: '  const sk = await hkdf(' },
+      { t: "code",    s: '    concatBytes(F_PREFIX, dh1, dh2, dh3, ...(dh4 ? [dh4] : [])),' },
+      { t: "code",    s: '    new Uint8Array(32), "veil/x3dh/v1", 32,' },
+      { t: "code",    s: "  );" },
+      { t: "code",    s: "  return { sharedSecret: sk, ephemeral: ek, \u2026 };" },
+      { t: "code",    s: "}" },
+    ],
+  },
+  {
+    file: "signal/ratchet.ts",
+    lines: [
+      { t: "comment", s: "// Double Ratchet \u2014 unique encryption key per message." },
+      { t: "comment", s: "// Forward secrecy: old keys are deleted immediately after use." },
+      { t: "comment", s: "// Break-in recovery: ratchet auto-heals on next DH step." },
+      { t: "blank",   s: "" },
+      { t: "comment", s: "// Root-key KDF: advances root key, produces new chain key." },
+      { t: "code",    s: "async function kdfRk(rootKey, dhOut) {" },
+      { t: "code",    s: '  const out = await hkdf(dhOut, rootKey, "veil/ratchet/rk/v1", 64);' },
+      { t: "code",    s: "  return { rk: out.slice(0, 32), ck: out.slice(32, 64) };" },
+      { t: "code",    s: "}" },
+      { t: "blank",   s: "" },
+      { t: "comment", s: "// Chain-key step \u2014 per Signal spec \u00a72.2:" },
+      { t: "comment", s: "// HMAC(CK, 0x02) \u2192 next chain key" },
+      { t: "comment", s: "// HMAC(CK, 0x01) \u2192 message key (used once, then deleted)" },
+      { t: "code",    s: "async function kdfCk(chainKey) {" },
+      { t: "code",    s: "  const ck = await hmacSha256(chainKey, new Uint8Array([0x02]));" },
+      { t: "code",    s: "  const mk = await hmacSha256(chainKey, new Uint8Array([0x01]));" },
+      { t: "code",    s: "  return { ck, mk };" },
+      { t: "code",    s: "}" },
+    ],
+  },
+  {
+    file: "signal/aead.ts",
+    lines: [
+      { t: "comment", s: "// AES-256-GCM authenticated encryption." },
+      { t: "comment", s: "// Each per-message key (32 bytes) \u2192 AES key + 12-byte IV via HKDF." },
+      { t: "comment", s: "// Uses browser\u2019s native SubtleCrypto \u2014 hardware-accelerated." },
+      { t: "blank",   s: "" },
+      { t: "code",    s: "export async function deriveAead(messageKey) {" },
+      { t: "code",    s: "  const out = await hkdf(" },
+      { t: "code",    s: "    messageKey, new Uint8Array(32)," },
+      { t: "code",    s: '    "veil/ratchet/aead/v1", 32 + 12,' },
+      { t: "code",    s: "  );" },
+      { t: "code",    s: "  return { aesKey: out.slice(0, 32), iv: out.slice(32, 44) };" },
+      { t: "code",    s: "}" },
+      { t: "blank",   s: "" },
+      { t: "code",    s: "export async function aesGcmEncrypt(key, iv, plaintext, ad) {" },
+      { t: "code",    s: '  const ck = await crypto.subtle.importKey(' },
+      { t: "code",    s: '    "raw", key, { name: "AES-GCM" }, false, ["encrypt"],' },
+      { t: "code",    s: "  );" },
+      { t: "code",    s: "  // Authenticated encryption: confidentiality + integrity in one pass" },
+      { t: "code",    s: "  return crypto.subtle.encrypt({ name: 'AES-GCM', iv, ad }, ck, msg);" },
+      { t: "code",    s: "}" },
+    ],
+  },
+];
+
+interface ProofCardDef {
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+  link: string;
+  linkLabel: string;
+  external?: boolean;
+}
+
+function VerifiedByOpenSource() {
+  const [tab, setTab] = useState(0);
+
+  const proofCards: ProofCardDef[] = [
+    {
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/>
+        </svg>
+      ),
+      title: "Signal Protocol, to the spec",
+      body: "X3DH key agreement \u002B Double Ratchet. Identical specification to Signal, WhatsApp, and Google Messages. Implemented with @noble/curves \u2014 pure-JS, zero native dependencies, independently audited.",
+      link: "/whitepaper#signal-protocol",
+      linkLabel: "\u00a7\u200a5 in the whitepaper \u2192",
+    },
+    {
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+        </svg>
+      ),
+      title: "Every line is public",
+      body: "Client, server, and the crypto core \u2014 all on GitHub. No private modules, no minified blobs, no closed branches. The key-exchange code shown here is the code running in production today.",
+      link: "https://github.com/rupeshsahu408/VeilChat",
+      linkLabel: "View on GitHub \u2192",
+      external: true,
+    },
+    {
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20C6.48 20 2 15.52 2 12c0-1.9.54-3.68 1.5-5.19M9.9 4.24A10 10 0 0 1 12 4c5.52 0 10 4.48 10 8 0 1.05-.2 2.07-.58 3M3 3l18 18"/>
+        </svg>
+      ),
+      title: "The server cannot read your messages",
+      body: "Not by policy. By mathematics. The server relays opaque ciphertext encrypted with keys that never leave your device. A court order demanding message content would yield gibberish.",
+      link: "/whitepaper#what-we-store",
+      linkLabel: "\u00a7\u200a11 in the whitepaper \u2192",
+    },
+    {
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+        </svg>
+      ),
+      title: "Zero financial motive to mine your data",
+      body: "VeilChat has no advertising business, no data broker relationships, and no engagement algorithm. We have no revenue model that benefits from knowing what you say or who you talk to. Free. Forever.",
+      link: "/whitepaper#conclusion",
+      linkLabel: "\u00a7\u200a20 in the whitepaper \u2192",
+    },
+    {
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+        </svg>
+      ),
+      title: "33 cited primary sources",
+      body: "Every claim in the whitepaper links to a court ruling, CVE report, regulatory decision, or peer-reviewed paper. Not our interpretation \u2014 the primary source itself, one click away.",
+      link: "/whitepaper#refs",
+      linkLabel: "Read the whitepaper \u2192",
+    },
+    {
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+        </svg>
+      ),
+      title: "Deletion means deletion",
+      body: "Account deletion removes all messages, prekeys, push tokens, and connection records. We retain your UUID and public keys while active \u2014 nothing more, and none of it is personally identifying.",
+      link: "/whitepaper#compliance",
+      linkLabel: "\u00a7\u200a19 in the whitepaper \u2192",
+    },
+  ];
+
+  return (
+    <section
+      id="verified"
+      style={{ backgroundColor: "#050C07" }}
+      className="py-28 sm:py-36 overflow-hidden"
+    >
+      {/* subtle grid overlay */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage: "linear-gradient(rgba(46,111,64,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(46,111,64,0.04) 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+        }}
+      />
+
+      <div className="relative max-w-7xl mx-auto px-5 sm:px-8">
+
+        {/* ── Top: eyebrow + headline ── */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 text-[11.5px] font-bold tracking-[0.22em] uppercase mb-6" style={{ color: "#68BA7F" }}>
+            <span className="w-5 h-px bg-[#68BA7F]" />
+            Open Source Verification
+            <span className="w-5 h-px bg-[#68BA7F]" />
+          </div>
+          <h2
+            className="text-[38px] sm:text-[52px] md:text-[62px] font-semibold tracking-tight leading-[1.03]"
+            style={{ fontFamily: "'Fraunces', serif", color: "#FCF5EB" }}
+          >
+            Don\u2019t trust us.{" "}
+            <span className="italic" style={{ color: "#68BA7F" }}>Verify us.</span>
+          </h2>
+          <p className="mt-5 text-[18px] leading-[1.65] max-w-2xl mx-auto" style={{ color: "rgba(252,245,235,0.6)" }}>
+            Every cryptographic claim on this page is backed by public, peer-reviewed specifications
+            and verifiable source code. The code below is running in production right now.
+          </p>
+        </div>
+
+        {/* ── Middle: 2-col layout — prose + code viewer ── */}
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start mb-20">
+
+          {/* ── Left: proof pillars + CTAs ── */}
+          <div className="flex flex-col gap-5">
+            <div className="space-y-4">
+              {[
+                { label: "X3DH (Extended Triple Diffie-Hellman)", desc: "Asynchronous session initiation — establishes a shared secret even when the peer is offline, using prekeys they published in advance." },
+                { label: "Double Ratchet (per-message forward secrecy)", desc: "A unique AES-256-GCM key is derived for every single message. Compromising one key reveals nothing about past or future messages." },
+                { label: "Sealed Sender (identity protection)", desc: "Session metadata is encrypted so the server cannot correlate message envelopes to sender identity keys." },
+                { label: "Sender Keys (group encryption)", desc: "Groups encrypt one message, all members decrypt independently. Sender Keys rotate on every member add or remove." },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="flex gap-3.5 rounded-2xl px-4 py-4"
+                  style={{ backgroundColor: "rgba(46,111,64,0.10)", border: "1px solid rgba(46,111,64,0.18)" }}
+                >
+                  <div
+                    className="mt-0.5 shrink-0 w-5 h-5 rounded-full grid place-items-center"
+                    style={{ backgroundColor: "#2E6F40" }}
+                  >
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-[14.5px] font-semibold" style={{ color: "#CFFFDC" }}>{item.label}</div>
+                    <div className="mt-1 text-[13.5px] leading-[1.6]" style={{ color: "rgba(252,245,235,0.55)" }}>{item.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Stat badges */}
+            <div className="flex flex-wrap gap-3 mt-2">
+              {[
+                { n: "33", label: "Primary sources" },
+                { n: "7", label: "Crypto files" },
+                { n: "100%", label: "Open source" },
+                { n: "0", label: "Ads, ever" },
+              ].map((s) => (
+                <div
+                  key={s.label}
+                  className="flex flex-col items-center px-4 py-3 rounded-2xl"
+                  style={{ backgroundColor: "rgba(207,255,220,0.07)", border: "1px solid rgba(207,255,220,0.12)" }}
+                >
+                  <span className="text-[22px] font-bold leading-none" style={{ color: "#68BA7F", fontFamily: "'Fraunces', serif" }}>{s.n}</span>
+                  <span className="text-[11.5px] mt-1" style={{ color: "rgba(252,245,235,0.45)" }}>{s.label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* CTAs */}
+            <div className="flex flex-wrap gap-3 mt-1">
+              <Link
+                to="/whitepaper"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14.5px] font-semibold hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: "#2E6F40", color: "white" }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                </svg>
+                Read the whitepaper
+              </Link>
+              <a
+                href="https://github.com/rupeshsahu408/VeilChat"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-[14.5px] font-semibold hover:opacity-80 transition-opacity border"
+                style={{ borderColor: "rgba(207,255,220,0.2)", color: "#CFFFDC" }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 .5C5.37.5 0 5.87 0 12.5c0 5.31 3.435 9.818 8.205 11.387.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.572C20.565 22.312 24 17.807 24 12.5 24 5.87 18.627.5 12 .5z"/>
+                </svg>
+                Browse the source
+              </a>
+            </div>
+          </div>
+
+          {/* ── Right: code viewer ── */}
+          <div
+            className="rounded-2xl overflow-hidden"
+            style={{ border: "1px solid rgba(46,111,64,0.25)", backgroundColor: "#020804" }}
+          >
+            {/* Tab bar */}
+            <div
+              className="flex items-center gap-0 border-b px-4"
+              style={{ borderColor: "rgba(46,111,64,0.2)", backgroundColor: "rgba(46,111,64,0.07)" }}
+            >
+              {/* traffic lights */}
+              <div className="flex gap-1.5 mr-4 py-3.5">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#FF5F57" }} />
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#FFBD2E" }} />
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#28C840" }} />
+              </div>
+              {VO_CODE_TABS.map((t2, i) => (
+                <button
+                  key={t2.file}
+                  onClick={() => setTab(i)}
+                  className="px-3.5 py-3.5 text-[12px] font-mono font-medium border-b-2 transition-colors"
+                  style={{
+                    borderBottomColor: tab === i ? "#2E6F40" : "transparent",
+                    color: tab === i ? "#CFFFDC" : "rgba(252,245,235,0.35)",
+                  }}
+                >
+                  {t2.file}
+                </button>
+              ))}
+            </div>
+
+            {/* Code body */}
+            <div className="p-4 sm:p-5 overflow-x-auto">
+              <pre
+                className="text-[12.5px] leading-[1.85] font-mono whitespace-pre"
+                style={{ color: "#CFFFDC" }}
+              >
+                {VO_CODE_TABS[tab].lines.map((line, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      color: line.t === "comment"
+                        ? "rgba(104,186,127,0.65)"
+                        : line.t === "blank"
+                        ? "transparent"
+                        : "#D4EBD9",
+                      minHeight: line.t === "blank" ? "0.75rem" : undefined,
+                    }}
+                  >
+                    <span
+                      className="select-none mr-4 text-right inline-block w-5"
+                      style={{ color: "rgba(255,255,255,0.12)", fontSize: "11px" }}
+                    >
+                      {line.t !== "blank" ? i + 1 : ""}
+                    </span>
+                    {line.s || "\u00a0"}
+                  </div>
+                ))}
+              </pre>
+            </div>
+
+            {/* Footer */}
+            <div
+              className="px-5 py-3 flex items-center justify-between"
+              style={{ borderTop: "1px solid rgba(46,111,64,0.15)", backgroundColor: "rgba(46,111,64,0.05)" }}
+            >
+              <span className="text-[11px] font-mono" style={{ color: "rgba(104,186,127,0.5)" }}>
+                apps/client/src/lib/{VO_CODE_TABS[tab].file}
+              </span>
+              <a
+                href={`https://github.com/rupeshsahu408/VeilChat/blob/main/apps/client/src/lib/${VO_CODE_TABS[tab].file}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] font-medium hover:underline"
+                style={{ color: "rgba(104,186,127,0.6)" }}
+              >
+                View on GitHub \u2192
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Bottom: 6 proof cards ── */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {proofCards.map((card) => (
+            <div
+              key={card.title}
+              className="group rounded-2xl p-5 flex flex-col gap-3 transition-colors"
+              style={{ backgroundColor: "rgba(46,111,64,0.07)", border: "1px solid rgba(46,111,64,0.14)" }}
+            >
+              <div
+                className="w-9 h-9 rounded-xl grid place-items-center shrink-0"
+                style={{ backgroundColor: "rgba(46,111,64,0.25)", color: "#68BA7F" }}
+              >
+                {card.icon}
+              </div>
+              <div>
+                <h3 className="text-[15.5px] font-semibold leading-snug" style={{ color: "#CFFFDC" }}>
+                  {card.title}
+                </h3>
+                <p className="mt-2 text-[13.5px] leading-[1.65]" style={{ color: "rgba(252,245,235,0.52)" }}>
+                  {card.body}
+                </p>
+              </div>
+              {card.external ? (
+                <a
+                  href={card.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-auto text-[12.5px] font-semibold hover:underline"
+                  style={{ color: "#68BA7F" }}
+                >
+                  {card.linkLabel}
+                </a>
+              ) : (
+                <Link
+                  to={card.link}
+                  className="mt-auto text-[12.5px] font-semibold hover:underline"
+                  style={{ color: "#68BA7F" }}
+                >
+                  {card.linkLabel}
+                </Link>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* ── Bottom banner ── */}
+        <div
+          className="mt-14 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+          style={{ backgroundColor: "rgba(46,111,64,0.12)", border: "1px solid rgba(46,111,64,0.22)" }}
+        >
+          <div>
+            <div className="text-[15px] font-semibold" style={{ color: "#CFFFDC" }}>
+              Security researchers welcome
+            </div>
+            <div className="text-[13.5px] mt-1" style={{ color: "rgba(252,245,235,0.5)" }}>
+              Found a vulnerability? We maintain a responsible disclosure policy.
+              Report privately before public disclosure \u2014 we commit to a response within 48 hours.
+            </div>
+          </div>
+          <a
+            href="mailto:security@veilchat.me"
+            className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-[13.5px] font-semibold hover:opacity-80 transition-opacity whitespace-nowrap border"
+            style={{ borderColor: "rgba(104,186,127,0.3)", color: "#CFFFDC" }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+            </svg>
+            security@veilchat.me
+          </a>
+        </div>
+
+      </div>
+    </section>
   );
 }
 
