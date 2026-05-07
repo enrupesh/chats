@@ -2533,6 +2533,7 @@ function Footer() {
             internal
             links={[
               { label: "Blog", to: "/blog" },
+              { label: "Security Whitepaper", to: "/whitepaper" },
               { label: "About us", to: "/about" },
               { label: "Open source", to: "/open-source" },
               { label: "GitHub repository", href: "https://github.com/rupeshsahu408/VeilChat" },

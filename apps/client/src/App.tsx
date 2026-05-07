@@ -71,6 +71,7 @@ const AboutPage = lazy(() => import("./pages/AboutPage").then((m) => ({ default:
 const OpenSourcePage = lazy(() => import("./pages/OpenSourcePage").then((m) => ({ default: m.OpenSourcePage })));
 const DownloadPage = lazy(() => import("./pages/DownloadPage").then((m) => ({ default: m.DownloadPage })));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })));
+const WhitepaperPage = lazy(() => import("./pages/WhitepaperPage").then((m) => ({ default: m.WhitepaperPage })));
 
 // Quiet, branded fallback shown while a route chunk is fetched. Sized
 // like the app shell so layout doesn't visibly jump when it appears.
@@ -208,6 +209,7 @@ export function App() {
               <Route path="/blog/how-to-choose-encrypted-messenger-2026" element={<HowToChooseEncryptedMessengerPage />} />
               <Route path="/blog/messenger-metadata-leaks" element={<MessengerMetadataLeaksPage />} />
               <Route path="/blog/messenger-without-phone-number" element={<MessengerWithoutPhoneNumberPage />} />
+              <Route path="/whitepaper" element={<WhitepaperPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
               <Route path="/terms" element={<TermsPage />} />
               <Route path="/about" element={<AboutPage />} />
