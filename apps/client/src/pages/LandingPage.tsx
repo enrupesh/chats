@@ -557,7 +557,24 @@ function Hero() {
               </a>
             </div>
 
-            <div className="mt-9 flex flex-wrap gap-x-7 gap-y-2.5 text-[14px] text-[#3C5A47]">
+            <a
+              href="https://www.veilchat.me/download"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex items-center gap-2 text-[14px] font-medium text-[#2E6F40] hover:text-[#253D2C] transition-colors group"
+            >
+              <span className="grid place-items-center w-6 h-6 rounded-full bg-[#CFFFDC] group-hover:bg-[#68BA7F]/40 transition-colors">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="#2E6F40" aria-hidden="true">
+                  <path d="M17.523 15.341a.854.854 0 0 1-.857.857.854.854 0 0 1-.857-.857.854.854 0 0 1 .857-.857.854.854 0 0 1 .857.857M7.19 15.341a.854.854 0 0 1-.857.857.854.854 0 0 1-.857-.857.854.854 0 0 1 .857-.857.854.854 0 0 1 .857.857M17.79 10l1.5-2.598a.313.313 0 0 0-.114-.427.313.313 0 0 0-.427.114L17.23 9.56A8.99 8.99 0 0 0 12 8.25a8.99 8.99 0 0 0-5.23 1.31L5.25 7.089a.313.313 0 0 0-.427-.114.313.313 0 0 0-.114.427L6.21 10C4.246 11.221 3 13.232 3 15.5h18c0-2.268-1.246-4.279-3.21-5.5" />
+                </svg>
+              </span>
+              Download APK for Android
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="opacity-60 transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden="true">
+                <path d="M5 12h14M13 5l7 7-7 7" />
+              </svg>
+            </a>
+
+            <div className="mt-6 flex flex-wrap gap-x-7 gap-y-2.5 text-[14px] text-[#3C5A47]">
               <span className="inline-flex items-center gap-2">
                 <CheckDot /> No phone number required
               </span>
@@ -2966,6 +2983,7 @@ function Footer() {
               { label: "Sign up", to: "/welcome" },
               { label: "Sign in", to: "/login" },
               { label: "Install as PWA", href: "#install" },
+              { label: "Download APK for Android", href: "https://www.veilchat.me/download" },
             ]}
           />
           <FooterCol
