@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
-import { useState } from "react";
 import { AppBar, PrimaryButton } from "../components/Layout";
 import { useDocumentMeta } from "../lib/useDocumentMeta";
 
@@ -17,7 +16,6 @@ import { useDocumentMeta } from "../lib/useDocumentMeta";
  */
 export function EncryptionPage() {
   const navigate = useNavigate();
-  const [storyComingSoon, setStoryComingSoon] = useState(false);
   useDocumentMeta({
     title: "End-to-end encryption explained · VeilChat",
     description:
@@ -247,38 +245,13 @@ export function EncryptionPage() {
           </button>
           <button
             type="button"
-            onClick={() => setStoryComingSoon(true)}
+            onClick={() => navigate("/our-story")}
             className="px-4 py-2.5 rounded-xl bg-surface border border-line text-text text-[13px] font-semibold hover:bg-elevated/60 wa-tap"
           >
             Our Story
           </button>
         </div>
       </div>
-
-      {/* Coming soon popup */}
-      {storyComingSoon && (
-        <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-          style={{ backgroundColor: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}
-          onClick={() => setStoryComingSoon(false)}
-        >
-          <div
-            className="bg-panel rounded-2xl px-8 py-7 max-w-xs w-full text-center shadow-2xl border border-line"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="text-3xl mb-3">🕐</div>
-            <p className="text-[16px] font-semibold text-text mb-1">Coming soon</p>
-            <p className="text-[14px] text-text-muted leading-relaxed">The story is coming soon.</p>
-            <button
-              type="button"
-              onClick={() => setStoryComingSoon(false)}
-              className="mt-5 w-full py-2.5 rounded-xl bg-wa-green text-text-oncolor text-[14px] font-semibold hover:opacity-90 transition-opacity"
-            >
-              Got it
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
