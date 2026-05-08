@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { motion, useInView } from "framer-motion";
 import { useDocumentMeta } from "../lib/useDocumentMeta";
 
 /**
@@ -311,32 +312,64 @@ function ThePhilosophy() {
 
 /* ─────────────────────────── The Founder ─────────────────────────── */
 
+const EASE_OUT = [0.22, 1, 0.36, 1] as const;
+
+function fadeUp(delay = 0) {
+  return {
+    initial: { opacity: 0, y: 28 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.55, ease: EASE_OUT, delay },
+  } as const;
+}
+
+function slideLeft(delay = 0) {
+  return {
+    initial: { opacity: 0, x: -32 },
+    animate: { opacity: 1, x: 0 },
+    transition: { duration: 0.65, ease: EASE_OUT, delay },
+  } as const;
+}
+
 function TheFounder() {
+  const ref = useRef<HTMLElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-80px 0px" });
+
+  const vis = { opacity: 1, y: 0, x: 0, scale: 1 };
+
   return (
-    <section className="py-20 sm:py-28">
+    <section ref={ref} className="py-20 sm:py-28">
       <div className="mx-auto max-w-3xl px-5 sm:px-8">
-        <SectionLabel>The Person Behind It</SectionLabel>
+        {/* Section label */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? vis : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.5, ease: EASE_OUT }}
+        >
+          <SectionLabel>The Person Behind It</SectionLabel>
+        </motion.div>
 
         <div className="mt-10 flex flex-col sm:flex-row gap-10 sm:gap-14 items-start">
-          {/* Photo */}
-          <div className="flex-shrink-0 flex flex-col items-center sm:items-start">
+          {/* Photo — slides in from the left */}
+          <motion.div
+            className="flex-shrink-0 flex flex-col items-center sm:items-start"
+            initial={{ opacity: 0, x: -32 }}
+            animate={inView ? vis : { opacity: 0, x: -32 }}
+            transition={{ duration: 0.65, ease: EASE_OUT, delay: 0.1 }}
+          >
             <div
               className="relative w-[148px] h-[148px] rounded-3xl overflow-hidden shadow-[0_20px_48px_-12px_rgba(46,111,64,0.35)] border-4 border-white"
               style={{ outline: "2px solid rgba(46,111,64,0.15)" }}
             >
-              {/* object-position crops the top-right (emoji) corner */}
               <img
                 src="/founder-rupesh.png"
                 alt="Rupesh Gupta — Founder of VeilChat"
                 className="w-full h-full object-cover"
                 style={{ objectPosition: "35% 20%" }}
               />
-              {/* Subtle green gradient overlay at bottom */}
               <div
                 className="absolute inset-x-0 bottom-0 h-12 pointer-events-none"
                 style={{
-                  background:
-                    "linear-gradient(to top, rgba(46,111,64,0.18), transparent)",
+                  background: "linear-gradient(to top, rgba(46,111,64,0.18), transparent)",
                 }}
               />
             </div>
@@ -347,45 +380,53 @@ function TheFounder() {
               </svg>
               Founder & Builder
             </div>
-          </div>
+          </motion.div>
 
-          {/* Bio */}
+          {/* Bio — staggered fade-up */}
           <div>
-            <h2
+            {/* Name */}
+            <motion.h2
               className="text-[28px] sm:text-[32px] font-semibold tracking-tight text-[#253D2C]"
               style={{ fontFamily: "'Fraunces', serif" }}
+              initial={{ opacity: 0, y: 22 }}
+              animate={inView ? vis : { opacity: 0, y: 22 }}
+              transition={{ duration: 0.5, ease: EASE_OUT, delay: 0.18 }}
             >
               Rupesh Gupta
-            </h2>
+            </motion.h2>
+
+            {/* Chips — each pops in with a small stagger */}
             <div className="mt-2 flex flex-wrap gap-1.5">
-              {["Student", "Entrepreneur", "India", "Solo Founder"].map((tag) => (
-                <span
+              {["Student", "Entrepreneur", "India", "Solo Founder"].map((tag, i) => (
+                <motion.span
                   key={tag}
+                  initial={{ opacity: 0, scale: 0.8, y: 6 }}
+                  animate={inView ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.8, y: 6 }}
+                  transition={{ duration: 0.35, ease: EASE_OUT, delay: 0.26 + i * 0.07 }}
                   className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold tracking-wide text-[#2E6F40] bg-[#CFFFDC] border border-[#68BA7F]/35"
                 >
                   {tag}
-                </span>
+                </motion.span>
               ))}
             </div>
 
+            {/* Bio paragraphs */}
             <div className="mt-5 space-y-4 text-[15.5px] text-[#3C5A47] leading-[1.75]">
-              <p>
-                Rupesh isn't a tech giant. He doesn't run a team of hundreds or
-                operate from a glass office. He's a student and entrepreneur from India who
-                decided that good ideas don't wait for permission — and that
-                privacy is too important to be left to people who don't
-                genuinely care about it.
-              </p>
-              <p>
-                He designed VeilChat, wrote its Signal Protocol
-                implementation, built its server infrastructure, designed every
-                screen, and shipped it to the world — alone. Not because he had
-                to, but because he chose to own it completely.
-              </p>
-              <p className="font-medium text-[#253D2C]">
-                The same student and entrepreneur who sat alone on the night of April 5, 2025,
-                is the same person still building this — every single day.
-              </p>
+              {[
+                { text: "Rupesh isn't a tech giant. He doesn't run a team of hundreds or operate from a glass office. He's a student and entrepreneur from India who decided that good ideas don't wait for permission — and that privacy is too important to be left to people who don't genuinely care about it.", bold: false },
+                { text: "He designed VeilChat, wrote its Signal Protocol implementation, built its server infrastructure, designed every screen, and shipped it to the world — alone. Not because he had to, but because he chose to own it completely.", bold: false },
+                { text: "The same student and entrepreneur who sat alone on the night of April 5, 2025, is the same person still building this — every single day.", bold: true },
+              ].map(({ text, bold }, i) => (
+                <motion.p
+                  key={i}
+                  className={bold ? "font-medium text-[#253D2C]" : ""}
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={inView ? vis : { opacity: 0, y: 18 }}
+                  transition={{ duration: 0.5, ease: EASE_OUT, delay: 0.42 + i * 0.1 }}
+                >
+                  {text}
+                </motion.p>
+              ))}
             </div>
 
             {/* Social links */}
