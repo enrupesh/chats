@@ -13,7 +13,7 @@ export function OurStoryPage() {
   useDocumentMeta({
     title: "Our Story · VeilChat",
     description:
-      "One student, one quiet night, one idea that refused to leave. This is the story of why VeilChat exists — and what we believe privacy should mean for everyone.",
+      "One student and entrepreneur, one quiet night, one idea that refused to leave. This is the story of why VeilChat exists — and what we believe privacy should mean for everyone.",
     canonical: "/our-story",
     ogType: "article",
   });
@@ -124,7 +124,7 @@ function StoryHero() {
 
         <p className="mt-7 text-[18px] sm:text-[20px] text-[#3C5A47] max-w-xl mx-auto leading-[1.6]">
           VeilChat wasn't born in a boardroom or a Silicon Valley office. It was
-          born on a quiet night in India, in the mind of a student who simply
+          born on a quiet night in India, in the mind of a student and entrepreneur who simply
           asked: <em>"Why can't private communication be free, beautiful, and
           truly secure — for everyone?"</em>
         </p>
@@ -345,7 +345,7 @@ function TheFounder() {
             <div className="mt-5 space-y-4 text-[15.5px] text-[#3C5A47] leading-[1.75]">
               <p>
                 Rupesh isn't a tech giant. He doesn't run a team of hundreds or
-                operate from a glass office. He's a student from India who
+                operate from a glass office. He's a student and entrepreneur from India who
                 decided that good ideas don't wait for permission — and that
                 privacy is too important to be left to people who don't
                 genuinely care about it.
@@ -357,7 +357,7 @@ function TheFounder() {
                 to, but because he chose to own it completely.
               </p>
               <p className="font-medium text-[#253D2C]">
-                The same student who sat alone on the night of April 5, 2025,
+                The same student and entrepreneur who sat alone on the night of April 5, 2025,
                 is the same person still building this — every single day.
               </p>
             </div>
