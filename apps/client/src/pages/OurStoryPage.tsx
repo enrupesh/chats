@@ -357,9 +357,16 @@ function TheFounder() {
             >
               Rupesh Gupta
             </h2>
-            <p className="mt-1 text-[13.5px] font-medium text-[#2E6F40] tracking-wide uppercase">
-              Student · India · Solo Founder
-            </p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {["Student", "Entrepreneur", "India", "Solo Founder"].map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11.5px] font-semibold tracking-wide text-[#2E6F40] bg-[#CFFFDC] border border-[#68BA7F]/35"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
 
             <div className="mt-5 space-y-4 text-[15.5px] text-[#3C5A47] leading-[1.75]">
               <p>
@@ -821,6 +828,35 @@ function StoryFooter() {
           <Link to="/privacy-policy" className="hover:text-[#2E6F40] transition-colors">Privacy</Link>
           <Link to="/terms" className="hover:text-[#2E6F40] transition-colors">Terms</Link>
           <Link to="/about" className="hover:text-[#2E6F40] transition-colors">About</Link>
+        </div>
+      </div>
+
+      {/* Credit strip */}
+      <div className="mt-6 pt-5 border-t border-[#253D2C]/8 mx-5 sm:mx-8">
+        <div className="mx-auto max-w-3xl flex flex-col sm:flex-row items-center justify-center gap-1.5 text-[12px] text-[#3C5A47]/60">
+          <span>This story was written by the</span>
+          <a
+            href="https://www.instagram.com/zyntra___x/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 font-semibold text-[#2E6F40] hover:text-[#253D2C] transition-colors group"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="5" />
+              <circle cx="12" cy="12" r="4" />
+              <circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none" />
+            </svg>
+            Zyntra Team
+          </a>
+          <span className="hidden sm:inline text-[#3C5A47]/40">·</span>
+          <a
+            href="https://www.instagram.com/zyntra___x/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#3C5A47]/50 hover:text-[#2E6F40] transition-colors"
+          >
+            @zyntra___x
+          </a>
         </div>
       </div>
     </footer>
