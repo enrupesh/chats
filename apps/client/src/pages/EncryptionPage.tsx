@@ -243,6 +243,13 @@ export function EncryptionPage() {
           >
             Under the hood
           </button>
+          <button
+            type="button"
+            onClick={() => navigate("/our-story")}
+            className="px-4 py-2.5 rounded-xl bg-surface border border-line text-text text-[13px] font-semibold hover:bg-elevated/60 wa-tap"
+          >
+            Our Story
+          </button>
         </div>
       </div>
     </div>

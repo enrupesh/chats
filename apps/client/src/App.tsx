@@ -70,6 +70,7 @@ const TermsPage = lazy(() => import("./pages/TermsPage").then((m) => ({ default:
 const AboutPage = lazy(() => import("./pages/AboutPage").then((m) => ({ default: m.AboutPage })));
 const OpenSourcePage = lazy(() => import("./pages/OpenSourcePage").then((m) => ({ default: m.OpenSourcePage })));
 const DownloadPage = lazy(() => import("./pages/DownloadPage").then((m) => ({ default: m.DownloadPage })));
+const OurStoryPage = lazy(() => import("./pages/OurStoryPage").then((m) => ({ default: m.OurStoryPage })));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })));
 const WhitepaperPage = lazy(() => import("./pages/WhitepaperPage").then((m) => ({ default: m.WhitepaperPage })));
 
@@ -215,6 +216,7 @@ export function App() {
               <Route path="/about" element={<AboutPage />} />
               <Route path="/open-source" element={<OpenSourcePage />} />
               <Route path="/download" element={<DownloadPage />} />
+              <Route path="/our-story" element={<OurStoryPage />} />
               <Route path="/i/:token" element={<InviteRedeemPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

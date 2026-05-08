@@ -310,6 +310,11 @@ export function SettingsPage() {
               sub="Field-by-field: ciphertext vs metadata in our database"
               to="/what-we-store"
             />
+            <SettingsRow
+              label="Our Story"
+              sub="Why we built VeilChat, what we believe, and where we're going"
+              to="/our-story"
+            />
           </SettingsSectionPanel>
         ),
       },

@@ -2990,6 +2990,7 @@ function Footer() {
             title="Resources"
             internal
             links={[
+              { label: "Our Story", to: "/our-story" },
               { label: "Blog", to: "/blog" },
               { label: "Security Whitepaper", to: "/whitepaper" },
               { label: "About us", to: "/about" },
