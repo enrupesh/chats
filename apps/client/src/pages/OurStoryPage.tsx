@@ -362,23 +362,38 @@ function TheFounder() {
               </p>
             </div>
 
-            {/* Social link */}
-            <a
-              href="https://github.com/rupeshsahu408"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-6 inline-flex items-center gap-2.5 text-[13.5px] font-semibold text-[#253D2C] hover:text-[#2E6F40] transition-colors group"
-            >
-              <span className="grid place-items-center w-8 h-8 rounded-full bg-[#253D2C] text-white group-hover:bg-[#2E6F40] transition-colors">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2.16c-3.2.7-3.87-1.36-3.87-1.36-.52-1.31-1.27-1.66-1.27-1.66-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.69 1.24 3.34.95.1-.74.4-1.24.72-1.53-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.45.11-3.02 0 0 .96-.31 3.15 1.18a10.93 10.93 0 0 1 5.74 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.57.23 2.73.11 3.02.74.81 1.18 1.84 1.18 3.1 0 4.42-2.7 5.4-5.27 5.68.41.36.78 1.06.78 2.13v3.16c0 .31.21.67.8.55C20.71 21.39 24 17.08 24 12 24 5.65 18.35.5 12 .5z" />
-                </svg>
-              </span>
-              @rupeshsahu408 on GitHub
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" aria-hidden="true">
-                <path d="M5 12h14M13 5l7 7-7 7" />
-              </svg>
-            </a>
+            {/* Social links */}
+            <div className="mt-6">
+              <p className="text-[11.5px] font-semibold tracking-[0.16em] uppercase text-[#3C5A47]/60 mb-3">
+                Find Rupesh online
+              </p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <FounderSocialIcon label="GitHub" href="https://github.com/rupeshsahu408">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2.16c-3.2.7-3.87-1.36-3.87-1.36-.52-1.31-1.27-1.66-1.27-1.66-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.69 1.24 3.34.95.1-.74.4-1.24.72-1.53-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.45.11-3.02 0 0 .96-.31 3.15 1.18a10.93 10.93 0 0 1 5.74 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.57.23 2.73.11 3.02.74.81 1.18 1.84 1.18 3.1 0 4.42-2.7 5.4-5.27 5.68.41.36.78 1.06.78 2.13v3.16c0 .31.21.67.8.55C20.71 21.39 24 17.08 24 12 24 5.65 18.35.5 12 .5z" />
+                  </svg>
+                  GitHub
+                </FounderSocialIcon>
+                <FounderSocialIcon label="X (Twitter)" href="https://x.com">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                  X (Twitter)
+                </FounderSocialIcon>
+                <FounderSocialIcon label="Instagram" href="https://www.instagram.com/rupesh_gupta___/">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="5" />
+                    <circle cx="12" cy="12" r="4" />
+                    <circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none" />
+                  </svg>
+                  Instagram
+                </FounderSocialIcon>
+                <FounderSocialIcon label="Sendora" href="https://sendora.me">
+                  <span className="text-[13px] font-bold tracking-tight leading-none" style={{ fontFamily: "'Fraunces', serif" }}>S</span>
+                  Sendora
+                </FounderSocialIcon>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -623,16 +638,40 @@ function StoryFooter() {
       className="py-10 border-t border-[#253D2C]/10"
       style={{ backgroundColor: "#FCF5EB" }}
     >
-      <div className="mx-auto max-w-3xl px-5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[13px] text-[#3C5A47]">
+      <div className="mx-auto max-w-3xl px-5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-6 text-[13px] text-[#3C5A47]">
         <Link to="/" className="flex items-center gap-2 font-semibold text-[#253D2C] hover:text-[#2E6F40] transition-colors">
           <BrandMark size={24} />
           VeilChat
         </Link>
+
+        {/* Social icons row */}
+        <div className="flex items-center gap-2">
+          <FooterSocialIcon label="GitHub" href="https://github.com/rupeshsahu408">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2.16c-3.2.7-3.87-1.36-3.87-1.36-.52-1.31-1.27-1.66-1.27-1.66-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.69 1.24 3.34.95.1-.74.4-1.24.72-1.53-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.45.11-3.02 0 0 .96-.31 3.15 1.18a10.93 10.93 0 0 1 5.74 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.57.23 2.73.11 3.02.74.81 1.18 1.84 1.18 3.1 0 4.42-2.7 5.4-5.27 5.68.41.36.78 1.06.78 2.13v3.16c0 .31.21.67.8.55C20.71 21.39 24 17.08 24 12 24 5.65 18.35.5 12 .5z" />
+            </svg>
+          </FooterSocialIcon>
+          <FooterSocialIcon label="X (Twitter)" href="https://x.com">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
+          </FooterSocialIcon>
+          <FooterSocialIcon label="Instagram" href="https://www.instagram.com/rupesh_gupta___/">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="5" />
+              <circle cx="12" cy="12" r="4" />
+              <circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none" />
+            </svg>
+          </FooterSocialIcon>
+          <FooterSocialIcon label="Sendora" href="https://sendora.me">
+            <span className="text-[13px] font-bold tracking-tight leading-none" style={{ fontFamily: "'Fraunces', serif" }}>S</span>
+          </FooterSocialIcon>
+        </div>
+
         <div className="flex items-center gap-5">
           <Link to="/privacy-policy" className="hover:text-[#2E6F40] transition-colors">Privacy</Link>
           <Link to="/terms" className="hover:text-[#2E6F40] transition-colors">Terms</Link>
           <Link to="/about" className="hover:text-[#2E6F40] transition-colors">About</Link>
-          <Link to="/open-source" className="hover:text-[#2E6F40] transition-colors">Open Source</Link>
         </div>
       </div>
     </footer>
@@ -669,5 +708,51 @@ function SparkIcon() {
     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
     </svg>
+  );
+}
+
+/** Pill-style social button used inside the founder card (light background). */
+function FounderSocialIcon({
+  label,
+  href,
+  children,
+}: {
+  label: string;
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12.5px] font-medium text-[#253D2C] bg-white border border-[#253D2C]/12 hover:bg-[#CFFFDC] hover:border-[#68BA7F]/40 hover:text-[#2E6F40] transition-colors shadow-[0_1px_4px_-2px_rgba(17,27,33,0.1)]"
+    >
+      {children}
+    </a>
+  );
+}
+
+/** Icon-only circle used in the page footer. */
+function FooterSocialIcon({
+  label,
+  href,
+  children,
+}: {
+  label: string;
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      className="grid place-items-center w-8 h-8 rounded-full text-[#3C5A47] bg-[#253D2C]/6 border border-[#253D2C]/10 hover:bg-[#2E6F40] hover:text-white hover:border-[#2E6F40] transition-colors"
+    >
+      {children}
+    </a>
   );
 }
