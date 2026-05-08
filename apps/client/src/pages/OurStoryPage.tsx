@@ -255,36 +255,54 @@ function ThePhilosophy() {
         </p>
 
         <div className="mt-12 grid sm:grid-cols-3 gap-5">
-          {[
-            {
-              icon: "🔥",
-              title: "Solo by choice",
-              body: "No investors. No co-founders. No committee. Every decision, every line of code, every late night — one person fully accountable to the idea.",
-            },
-            {
-              icon: "⚡",
-              title: "Failure as fuel",
-              body: "Building alone means failing without an audience. It also means learning without compromise. Every bug fixed, every feature shipped is a lesson owned completely.",
-            },
-            {
-              icon: "🎯",
-              title: "Win on merit",
-              body: "VeilChat earns its place by being genuinely better — not by outspending competitors, but by outbuilding them with clarity of purpose.",
-            },
-          ].map((card) => (
-            <div
-              key={card.title}
-              className="rounded-2xl p-6 bg-white border border-[#253D2C]/8 shadow-[0_2px_12px_-6px_rgba(17,27,33,0.1)]"
-            >
-              <div className="text-[28px] mb-3">{card.icon}</div>
-              <div className="text-[15px] font-semibold text-[#253D2C] mb-2">
-                {card.title}
-              </div>
-              <p className="text-[13.5px] text-[#3C5A47] leading-relaxed">
-                {card.body}
-              </p>
+          {/* Solo by choice */}
+          <div className="rounded-2xl p-6 bg-white border border-[#253D2C]/8 shadow-[0_2px_12px_-6px_rgba(17,27,33,0.1)]">
+            <div className="mb-3 w-10 h-10 rounded-xl bg-[#F0F9F2] flex items-center justify-center">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E6F40" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 2c0 0-4 4-4 8a4 4 0 0 0 8 0c0-4-4-8-4-8z" fill="#CFFFDC" stroke="#2E6F40" strokeWidth="1.8"/>
+                <path d="M12 10c0 0-2 2-2 4a2 2 0 0 0 4 0c0-2-2-4-2-4z" fill="#2E6F40" stroke="none"/>
+                <path d="M8.5 18.5c-.5 1-.5 2 0 3" strokeWidth="1.6"/>
+                <path d="M15.5 18.5c.5 1 .5 2 0 3" strokeWidth="1.6"/>
+                <path d="M9 21.5h6" strokeWidth="1.6"/>
+              </svg>
             </div>
-          ))}
+            <div className="text-[15px] font-semibold text-[#253D2C] mb-2">Solo by choice</div>
+            <p className="text-[13.5px] text-[#3C5A47] leading-relaxed">
+              No investors. No co-founders. No committee. Every decision, every line of code, every late night — one person fully accountable to the idea.
+            </p>
+          </div>
+
+          {/* Failure as fuel */}
+          <div className="rounded-2xl p-6 bg-white border border-[#253D2C]/8 shadow-[0_2px_12px_-6px_rgba(17,27,33,0.1)]">
+            <div className="mb-3 w-10 h-10 rounded-xl bg-[#F0F9F2] flex items-center justify-center">
+              <svg width="20" height="22" viewBox="0 0 20 24" fill="none" aria-hidden="true">
+                <polygon points="11,1 2,14 9,14 9,23 18,10 11,10" fill="#CFFFDC" stroke="#2E6F40" strokeWidth="1.7" strokeLinejoin="round" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <div className="text-[15px] font-semibold text-[#253D2C] mb-2">Failure as fuel</div>
+            <p className="text-[13.5px] text-[#3C5A47] leading-relaxed">
+              Building alone means failing without an audience. It also means learning without compromise. Every bug fixed, every feature shipped is a lesson owned completely.
+            </p>
+          </div>
+
+          {/* Win on merit */}
+          <div className="rounded-2xl p-6 bg-white border border-[#253D2C]/8 shadow-[0_2px_12px_-6px_rgba(17,27,33,0.1)]">
+            <div className="mb-3 w-10 h-10 rounded-xl bg-[#F0F9F2] flex items-center justify-center">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E6F40" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" stroke="#2E6F40" strokeWidth="1.8"/>
+                <circle cx="12" cy="12" r="6" stroke="#2E6F40" strokeWidth="1.5" fill="#CFFFDC"/>
+                <circle cx="12" cy="12" r="2.5" fill="#2E6F40" stroke="none"/>
+                <line x1="12" y1="2" x2="12" y2="5" strokeWidth="2"/>
+                <line x1="12" y1="19" x2="12" y2="22" strokeWidth="2"/>
+                <line x1="2" y1="12" x2="5" y2="12" strokeWidth="2"/>
+                <line x1="19" y1="12" x2="22" y2="12" strokeWidth="2"/>
+              </svg>
+            </div>
+            <div className="text-[15px] font-semibold text-[#253D2C] mb-2">Win on merit</div>
+            <p className="text-[13.5px] text-[#3C5A47] leading-relaxed">
+              VeilChat earns its place by being genuinely better — not by outspending competitors, but by outbuilding them with clarity of purpose.
+            </p>
+          </div>
         </div>
       </div>
     </section>
