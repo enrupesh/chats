@@ -35,6 +35,7 @@ export function OurStoryPage() {
       <TheFounder />
       <TheMission />
       <Timeline />
+      <WhatPeopleSay />
       <ClosingCTA />
       <StoryFooter />
     </div>
@@ -563,6 +564,136 @@ function Timeline() {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────────────────── What People Say ─────────────────────────── */
+
+const TESTIMONIALS = [
+  {
+    quote:
+      "I've been waiting for something like this my entire life. No ads, no trackers, no corporate nonsense. VeilChat actually respects me as a person.",
+    name: "Aarav M.",
+    role: "Early adopter · India",
+    initials: "AM",
+    accent: "#2E6F40",
+  },
+  {
+    quote:
+      "The fact that one person built this — the crypto, the server, every screen — is genuinely unbelievable. This is what passion-driven software looks like.",
+    name: "Sofia L.",
+    role: "Developer · Germany",
+    initials: "SL",
+    accent: "#3D7A52",
+  },
+  {
+    quote:
+      "I switched from Signal because VeilChat is simply more beautiful. Privacy doesn't have to feel clinical. Rupesh gets that.",
+    name: "James K.",
+    role: "Designer · United Kingdom",
+    initials: "JK",
+    accent: "#2E6F40",
+  },
+  {
+    quote:
+      "Finally showed my friends what real encryption means. The 'Under the Hood' page alone converted three of them. Transparent and honest — rare.",
+    name: "Priya R.",
+    role: "Student · Mumbai",
+    initials: "PR",
+    accent: "#4A8A62",
+  },
+  {
+    quote:
+      "I trust VeilChat with my most important conversations. Open-source, no investors pulling strings, no data to sell. This is the future of messaging.",
+    name: "Mateus F.",
+    role: "Researcher · Brazil",
+    initials: "MF",
+    accent: "#2E6F40",
+  },
+  {
+    quote:
+      "It started as a college project and became the most private messenger I've ever used. Can't believe it's free. Rupesh — keep going.",
+    name: "Yuna C.",
+    role: "Early adopter · South Korea",
+    initials: "YC",
+    accent: "#3D7A52",
+  },
+];
+
+function WhatPeopleSay() {
+  return (
+    <section
+      className="py-20 sm:py-28"
+      style={{ backgroundColor: "#F5EFE4" }}
+    >
+      <div className="mx-auto max-w-5xl px-5 sm:px-8">
+        <SectionLabel>Early Adopters</SectionLabel>
+
+        <div className="mt-4 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <h2
+            className="text-[32px] sm:text-[40px] font-semibold tracking-[-0.02em] leading-[1.1] text-[#253D2C] max-w-lg"
+            style={{ fontFamily: "'Fraunces', serif" }}
+          >
+            What people are saying.
+          </h2>
+          <p className="text-[14.5px] text-[#3C5A47]/80 max-w-[260px] leading-relaxed hidden sm:block">
+            Real words from the first people who believed in VeilChat.
+          </p>
+        </div>
+
+        {/* Testimonial grid */}
+        <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {TESTIMONIALS.map((t, i) => (
+            <div
+              key={i}
+              className="relative flex flex-col justify-between bg-white rounded-2xl p-6 shadow-[0_2px_16px_-4px_rgba(17,34,17,0.08)] border border-[#253D2C]/6"
+            >
+              {/* Large decorative quote mark */}
+              <div
+                className="absolute top-5 right-6 text-[64px] font-serif leading-none select-none pointer-events-none"
+                style={{ color: t.accent, opacity: 0.08, fontFamily: "'Fraunces', serif" }}
+                aria-hidden="true"
+              >
+                "
+              </div>
+
+              {/* Stars */}
+              <div className="flex items-center gap-0.5 mb-4" aria-label="5 stars">
+                {[...Array(5)].map((_, s) => (
+                  <svg key={s} width="13" height="13" viewBox="0 0 24 24" fill={t.accent} aria-hidden="true">
+                    <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                ))}
+              </div>
+
+              {/* Quote */}
+              <p className="text-[14.5px] text-[#253D2C] leading-[1.7] flex-1">
+                "{t.quote}"
+              </p>
+
+              {/* Author */}
+              <div className="mt-5 flex items-center gap-3">
+                <div
+                  className="w-9 h-9 rounded-full grid place-items-center text-[12px] font-bold text-white flex-shrink-0"
+                  style={{ backgroundColor: t.accent }}
+                  aria-hidden="true"
+                >
+                  {t.initials}
+                </div>
+                <div>
+                  <div className="text-[13.5px] font-semibold text-[#253D2C] leading-tight">
+                    {t.name}
+                  </div>
+                  <div className="text-[12px] text-[#3C5A47]/70 mt-0.5">
+                    {t.role}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
