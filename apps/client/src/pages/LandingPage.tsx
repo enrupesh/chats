@@ -2917,8 +2917,6 @@ function FinalCTA() {
 /* ───────────────────────── Footer ───────────────────────── */
 
 function Footer() {
-  const [storyComingSoon, setStoryComingSoon] = useState(false);
-
   return (
     <footer style={{ backgroundColor: "#111B21", color: "#FCF5EB" }}>
       <div className="mx-auto max-w-7xl px-5 sm:px-8 py-16">
@@ -2992,7 +2990,7 @@ function Footer() {
             title="Resources"
             internal
             links={[
-              { label: "Our Story", onClick: () => setStoryComingSoon(true) },
+              { label: "Our Story", to: "/our-story" },
               { label: "Blog", to: "/blog" },
               { label: "Security Whitepaper", to: "/whitepaper" },
               { label: "About us", to: "/about" },
@@ -3017,30 +3015,6 @@ function Footer() {
         </div>
       </div>
 
-      {/* Coming soon popup */}
-      {storyComingSoon && (
-        <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-          style={{ backgroundColor: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}
-          onClick={() => setStoryComingSoon(false)}
-        >
-          <div
-            className="bg-white rounded-2xl px-8 py-7 max-w-xs w-full text-center shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="text-3xl mb-3">🕐</div>
-            <p className="text-[16px] font-semibold text-[#253D2C] mb-1">Coming soon</p>
-            <p className="text-[14px] text-[#3C5A47]/80 leading-relaxed">The story is coming soon.</p>
-            <button
-              type="button"
-              onClick={() => setStoryComingSoon(false)}
-              className="mt-5 w-full py-2.5 rounded-xl bg-[#2E6F40] text-white text-[14px] font-semibold hover:bg-[#253D2C] transition-colors"
-            >
-              Got it
-            </button>
-          </div>
-        </div>
-      )}
     </footer>
   );
 }

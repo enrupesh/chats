@@ -84,15 +84,17 @@ export function WelcomePage() {
             />
 
             <div className="mt-5">
-              <SectionLabel>More ways, soon</SectionLabel>
+              <SectionLabel>More ways to join</SectionLabel>
               <div className="flex flex-col gap-2">
-                <ComingSoonOption
+                <SignupOptionCard
+                  to="/signup/phone"
                   title="Phone number"
-                  sub="SMS verification"
+                  sub="SMS verification — your number stays private"
                 />
-                <ComingSoonOption
-                  title="Email"
+                <SignupOptionCard
+                  to="/signup/email"
                   sub="6-digit code to your inbox"
+                  title="Email address"
                 />
               </div>
             </div>
@@ -220,26 +222,34 @@ function FeaturedSignupCard({
   );
 }
 
-function ComingSoonOption({ title, sub }: { title: string; sub: string }) {
+function SignupOptionCard({
+  to,
+  title,
+  sub,
+}: {
+  to: string;
+  title: string;
+  sub: string;
+}) {
   return (
-    <div
-      aria-disabled="true"
+    <Link
+      to={to}
+      onClick={() => feedback.tap()}
       className={
-        "w-full text-left rounded-xl bg-surface/50 border border-line/60 " +
+        "group w-full text-left rounded-xl bg-surface border border-line/60 " +
         "px-3.5 py-2.5 flex items-center justify-between gap-3 " +
-        "select-none"
+        "hover:border-wa-green/40 hover:bg-surface/80 " +
+        "transition-[border-color,background-color] duration-150 ease-veil-soft wa-tap"
       }
     >
       <div className="min-w-0">
-        <div className="font-medium text-[13.5px] text-text/75 flex items-center gap-2">
+        <div className="font-medium text-[13.5px] text-text flex items-center gap-2">
           <span>{title}</span>
-          <span className="text-[9.5px] uppercase tracking-[0.10em] font-semibold px-1.5 py-[2px] rounded-full bg-text/5 text-text-muted">
-            Soon
-          </span>
         </div>
-        <div className="text-[11.5px] text-text-faint truncate">{sub}</div>
+        <div className="text-[11.5px] text-text-muted truncate">{sub}</div>
       </div>
-    </div>
+      <ChevronRightIcon className="text-text-faint group-hover:text-wa-green shrink-0 transition-colors duration-150" />
+    </Link>
   );
 }
 

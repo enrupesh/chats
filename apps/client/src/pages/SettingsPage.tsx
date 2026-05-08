@@ -109,7 +109,6 @@ export function SettingsPage() {
   });
   const logout = trpc.auth.logout.useMutation();
   const [scheduledOpen, setScheduledOpen] = useState(false);
-  const [storyComingSoon, setStoryComingSoon] = useState(false);
   const scheduledList = trpc.scheduled.list.useQuery(undefined, {
     enabled: !!accessToken,
     refetchInterval: 30_000,
@@ -314,7 +313,7 @@ export function SettingsPage() {
             <SettingsRow
               label="Our Story"
               sub="Why we built VeilChat, what we believe, and where we're going"
-              onClick={() => setStoryComingSoon(true)}
+              to="/our-story"
             />
           </SettingsSectionPanel>
         ),
@@ -500,30 +499,6 @@ export function SettingsPage() {
         />
       )}
 
-      {/* Coming soon popup — Our Story */}
-      {storyComingSoon && (
-        <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-          style={{ backgroundColor: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}
-          onClick={() => setStoryComingSoon(false)}
-        >
-          <div
-            className="bg-panel rounded-2xl px-8 py-7 max-w-xs w-full text-center shadow-2xl border border-line"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="text-3xl mb-3">🕐</div>
-            <p className="text-[16px] font-semibold text-text mb-1">Coming soon</p>
-            <p className="text-[14px] text-text-muted leading-relaxed">The story is coming soon.</p>
-            <button
-              type="button"
-              onClick={() => setStoryComingSoon(false)}
-              className="mt-5 w-full py-2.5 rounded-xl bg-wa-green text-text-oncolor text-[14px] font-semibold hover:opacity-90 transition-opacity"
-            >
-              Got it
-            </button>
-          </div>
-        </div>
-      )}
     </MainShell>
   );
 }
