@@ -1,5 +1,6 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import { resolve4 } from "node:dns/promises";
 import { env } from "../env.js";
 import * as schema from "./schema.js";
 
@@ -49,29 +50,99 @@ async function ensureSchema(sql: ReturnType<typeof postgres>) {
   );
 }
 
+/**
+ * Resolve a hostname to its first IPv4 address.
+ *
+ * Render's infrastructure cannot route IPv6 outbound connections.
+ * Supabase's direct-connection hostname (db.*.supabase.co) resolves to an
+ * IPv6 address by default, which causes every query to fail with ENETUNREACH.
+ * By resolving to IPv4 here we guarantee the postgres client dials an
+ * address that Render can actually reach.
+ */
+async function resolveToIPv4(hostname: string): Promise<string> {
+  // Already a raw IPv4 literal — nothing to resolve.
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(hostname)) return hostname;
+  try {
+    const addrs = await resolve4(hostname);
+    if (addrs.length > 0) return addrs[0]!;
+  } catch {
+    // DNS failure or no A records — fall back to the original hostname
+    // and let the OS try (may still fail on Render if only AAAA exists).
+  }
+  return hostname;
+}
+
+function buildSqlClient(
+  host: string,
+  url: URL,
+): ReturnType<typeof postgres> {
+  return postgres({
+    host,
+    port: Number(url.port) || 5432,
+    database: url.pathname.slice(1),
+    username: decodeURIComponent(url.username),
+    password: decodeURIComponent(url.password),
+    // Supabase requires SSL; never hard-fail on self-signed certs.
+    ssl: url.searchParams.get("sslmode") !== "disable"
+      ? { rejectUnauthorized: false }
+      : false,
+    max: 10,
+    idle_timeout: 20,
+    prepare: false,
+  });
+}
+
+/**
+ * Asynchronously bootstraps the database connection with IPv4 DNS resolution.
+ *
+ * Always await this at server startup (before registering routes or starting
+ * sweepers). Once it resolves, getDb() returns the IPv4-connected client
+ * instantly for all subsequent callers.
+ */
+export async function awaitDbBootstrap(): Promise<void> {
+  if (!env.DATABASE_URL) return;
+
+  if (!_bootstrapPromise) {
+    _bootstrapPromise = (async () => {
+      const url = new URL(env.DATABASE_URL!);
+      const host = await resolveToIPv4(url.hostname);
+      _sql = buildSqlClient(host, url);
+      _db = drizzle(_sql, { schema });
+      await ensureSchema(_sql).catch((err: unknown) => {
+        // eslint-disable-next-line no-console
+        console.error("[db] ensureSchema failed:", err);
+      });
+    })();
+  }
+
+  await _bootstrapPromise;
+}
+
 export function getDb() {
   if (!env.DATABASE_URL) {
     throw new Error(
-      "DATABASE_URL is not set. Add your Neon connection string to apps/server/.env",
+      "DATABASE_URL is not set. Add your Supabase connection string to apps/server/.env",
     );
   }
-  if (!_db) {
-    _sql = postgres(env.DATABASE_URL, {
-      max: 10,
-      idle_timeout: 20,
-      prepare: false,
-    });
-    _db = drizzle(_sql, { schema });
+
+  if (_db) return _db;
+
+  // Synchronous fallback — hit only if getDb() is called before
+  // awaitDbBootstrap() resolves (should not happen after the startup change).
+  // Uses the raw URL string which may resolve to IPv6 on some hosts.
+  _sql = postgres(env.DATABASE_URL, {
+    max: 10,
+    idle_timeout: 20,
+    prepare: false,
+  });
+  _db = drizzle(_sql, { schema });
+  if (!_bootstrapPromise) {
     _bootstrapPromise = ensureSchema(_sql).catch((err: unknown) => {
       // eslint-disable-next-line no-console
       console.error("[db] ensureSchema failed:", err);
     });
   }
   return _db;
-}
-
-export async function awaitDbBootstrap(): Promise<void> {
-  if (_bootstrapPromise) await _bootstrapPromise;
 }
 
 export { schema };

@@ -10,7 +10,7 @@ import { createContext } from "./trpc/context.js";
 import { registerWebSocketRoutes } from "./lib/wsServer.js";
 import { initPush } from "./lib/push.js";
 import { verifyAccessToken } from "./lib/jwt.js";
-import { getDb, schema } from "./db/index.js";
+import { getDb, awaitDbBootstrap, schema } from "./db/index.js";
 import { eq, and } from "drizzle-orm";
 import { startMediaSweeper } from "./lib/mediaSweeper.js";
 import { startMessageSweeper } from "./lib/messageSweeper.js";
@@ -249,6 +249,11 @@ if (!env.RESEND_API_KEY && isDev) {
     "RESEND_API_KEY not set — OTP codes will be logged to this console (dev only).",
   );
 }
+
+// Resolve the DB hostname to IPv4 before any query fires.
+// Render's infrastructure cannot route IPv6; Supabase's direct-connection
+// hostname resolves to an IPv6 address which causes ENETUNREACH on every tick.
+await awaitDbBootstrap();
 
 initPush(app.log);
 startMediaSweeper(app.log);
