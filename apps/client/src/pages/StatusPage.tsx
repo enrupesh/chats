@@ -378,7 +378,7 @@ export function StatusPage() {
         <SectionLabel>Service Health</SectionLabel>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(310px,1fr))", gap:14, marginTop:18 }}>
           {SERVICES.map((svc) => (
-            <ServiceCard key={svc.id} service={svc} result={results[svc.id]} history={history} />
+            <ServiceCard key={svc.id} service={svc} result={results[svc.id]!} history={history} />
           ))}
         </div>
 
@@ -386,7 +386,7 @@ export function StatusPage() {
         <SectionLabel style={{ marginTop:56 }}>Response Times</SectionLabel>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))", gap:12, marginTop:18 }}>
           {SERVICES.filter((s) => results[s.id]?.latency !== null).map((svc) => {
-            const r = results[svc.id];
+            const r = results[svc.id]!;
             const ms = r.latency!;
             const fill = ms < 400 ? "#10B981" : ms < 1200 ? "#F59E0B" : "#EF4444";
             const pct = Math.min(100, (ms / 1500) * 100);
