@@ -24,6 +24,7 @@ import { initAndroidNative } from "./lib/androidSetup";
 import { useAppRefreshLoop } from "./lib/appRefresh";
 import { NativeIntro } from "./components/NativeIntro";
 import { isAndroid } from "./lib/capacitor";
+import { usePresence } from "./lib/usePresence";
 
 // All non-landing routes are code-split. Each chunk only downloads when
 // the user navigates there, so the initial JS bundle stays tiny and the
@@ -127,6 +128,10 @@ export function App() {
   // up a one-shot unlocker so our send/receive tones can fire as soon
   // as the user actually does anything.
   useEffect(() => unlockAudioOnFirstGesture(), []);
+
+  // Silent presence beacon — pings the server every 30s so the admin
+  // panel can report how many users are live on the site right now.
+  usePresence();
 
   // Privacy: blur the entire app when the tab loses focus or is hidden,
   // making screenshots / app-switcher previews far less useful to a

@@ -133,6 +133,36 @@ app.get("/health", async (): Promise<HealthResponse> => {
   };
 });
 
+// ── Presence tracking ─────────────────────────────────────────────────────────
+// Each browser tab POSTs /ping every 30 s with a stable session ID.
+// Active = seen within the last 2 minutes.
+const presenceSessions = new Map<string, number>(); // sid → last-seen ms
+const PRESENCE_TTL = 120_000;
+
+setInterval(() => {
+  const cutoff = Date.now() - PRESENCE_TTL;
+  for (const [sid, ts] of presenceSessions) {
+    if (ts < cutoff) presenceSessions.delete(sid);
+  }
+}, 30_000).unref();
+
+app.post<{ Body: { sid?: string } }>("/ping", async (req, reply) => {
+  const sid = (req.body as Record<string, unknown>)?.sid;
+  if (sid && typeof sid === "string" && sid.length <= 128) {
+    presenceSessions.set(sid, Date.now());
+  }
+  return reply.status(204).send();
+});
+
+app.get("/active-users", async () => {
+  const cutoff = Date.now() - PRESENCE_TTL;
+  let count = 0;
+  for (const ts of presenceSessions.values()) {
+    if (ts >= cutoff) count++;
+  }
+  return { count };
+});
+
 /**
  * POST /push/fcm-token
  * Register an FCM device token for the authenticated user (Android app).
