@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: veil-server
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: corepack enable pnpm && pnpm install --frozen-lockfile && pnpm --filter @veil/shared build && pnpm --filter @veil/server build
+    startCommand: node apps/server/dist/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: REFRESH_TOKEN_SECRET
+        sync: false
+      - key: IDENTIFIER_HMAC_PEPPER
+        sync: false
