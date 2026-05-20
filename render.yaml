@@ -5,7 +5,7 @@ services:
     region: oregon
     plan: free
     buildCommand: npm install pnpm@10.26.1 --no-save && ./node_modules/.bin/pnpm install --frozen-lockfile && ./node_modules/.bin/pnpm --filter @veil/shared build && ./node_modules/.bin/pnpm --filter @veil/server build
-    startCommand: node apps/server/dist/index.js
+    startCommand: node /opt/render/project/src/apps/server/dist/index.js
     envVars:
       - key: NODE_ENV
         value: production

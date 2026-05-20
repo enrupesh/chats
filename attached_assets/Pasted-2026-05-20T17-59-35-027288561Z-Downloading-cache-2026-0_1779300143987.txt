@@ -1,0 +1,56 @@
+2026-05-20T17:59:35.027288561Z ==> Downloading cache...
+2026-05-20T17:59:35.078345258Z ==> Cloning from https://github.com/rupeshsahu408/chats
+2026-05-20T17:59:36.862397951Z ==> Checking out commit a71eae627bfe961da6c1370bfed01ad5247fe954 in branch main
+2026-05-20T17:59:42.467593695Z ==> Downloaded 232MB in 1s. Extraction took 5s.
+2026-05-20T17:59:48.016514407Z ==> Requesting Node.js version 20
+2026-05-20T17:59:49.220072351Z ==> Using Node.js version 20.20.2 via /opt/render/project/src/.node-version
+2026-05-20T17:59:49.220091881Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2026-05-20T17:59:49.263298849Z ==> Running build command 'npm install pnpm@10.26.1 --no-save && ./node_modules/.bin/pnpm install --frozen-lockfile && ./node_modules/.bin/pnpm --filter @veil/shared build && ./node_modules/.bin/pnpm --filter @veil/server build'...
+2026-05-20T17:59:51.211538262Z 
+2026-05-20T17:59:51.211557152Z added 27 packages, and audited 28 packages in 2s
+2026-05-20T17:59:51.211566902Z 
+2026-05-20T17:59:51.211580573Z 7 packages are looking for funding
+2026-05-20T17:59:51.211747308Z   run `npm fund` for details
+2026-05-20T17:59:51.229593236Z 
+2026-05-20T17:59:51.229612797Z 1 high severity vulnerability
+2026-05-20T17:59:51.229616837Z 
+2026-05-20T17:59:51.229620347Z To address all issues, run:
+2026-05-20T17:59:51.229624667Z   npm audit fix --force
+2026-05-20T17:59:51.229628237Z 
+2026-05-20T17:59:51.229631237Z Run `npm audit` for details.
+2026-05-20T17:59:59.061414195Z 
+2026-05-20T17:59:59.061442436Z > @veil/server@0.0.0 build /opt/render/project/src/apps/server
+2026-05-20T17:59:59.061446066Z > tsc -p tsconfig.json
+2026-05-20T17:59:59.061448156Z 
+2026-05-20T18:00:07.057127047Z ==> Uploading build...
+2026-05-20T18:00:21.276456514Z ==> Uploaded in 7.5s. Compression took 6.7s
+2026-05-20T18:00:21.34610011Z ==> Build successful 🎉
+2026-05-20T18:00:25.915358464Z ==> Deploying...
+2026-05-20T18:00:26.047210984Z ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+2026-05-20T18:01:15.915949024Z Node.js v20.20.2
+2026-05-20T18:01:16.114670324Z /opt/render/project/src/apps/server:
+2026-05-20T18:01:16.114743546Z  ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @veil/server@0.0.0 start: `node dist/index.js`
+2026-05-20T18:01:16.114747706Z Exit status 1
+2026-05-20T18:01:18.930977268Z ==> Exited with status 1
+2026-05-20T18:01:18.934207537Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+2026-05-20T18:01:26.093338686Z ==> Running 'pnpm --filter @veil/server start'
+2026-05-20T18:01:29.693419023Z 
+2026-05-20T18:01:29.693455114Z > @veil/server@0.0.0 start /opt/render/project/src/apps/server
+2026-05-20T18:01:29.693462494Z > node dist/index.js
+2026-05-20T18:01:29.693465684Z 
+2026-05-20T18:01:31.282209209Z node:internal/modules/esm/get_format:189
+2026-05-20T18:01:31.28223405Z   throw new ERR_UNKNOWN_FILE_EXTENSION(ext, filepath);
+2026-05-20T18:01:31.28223735Z         ^
+2026-05-20T18:01:31.28224015Z 
+2026-05-20T18:01:31.2822435Z TypeError [ERR_UNKNOWN_FILE_EXTENSION]: Unknown file extension ".ts" for /opt/render/project/src/packages/shared/src/index.ts
+2026-05-20T18:01:31.28224852Z     at Object.getFileProtocolModuleFormat [as file:] (node:internal/modules/esm/get_format:189:9)
+2026-05-20T18:01:31.282252321Z     at defaultGetFormat (node:internal/modules/esm/get_format:232:36)
+2026-05-20T18:01:31.282254981Z     at defaultLoad (node:internal/modules/esm/load:145:22)
+2026-05-20T18:01:31.28225847Z     at async ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:543:45) {
+2026-05-20T18:01:31.282261351Z   code: 'ERR_UNKNOWN_FILE_EXTENSION'
+2026-05-20T18:01:31.282263981Z }
+2026-05-20T18:01:31.282266411Z 
+2026-05-20T18:01:31.282269561Z Node.js v20.20.2
+2026-05-20T18:01:31.392561152Z /opt/render/project/src/apps/server:
+2026-05-20T18:01:31.392582503Z  ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @veil/server@0.0.0 start: `node dist/index.js`
+2026-05-20T18:01:31.392587033Z Exit status 1
