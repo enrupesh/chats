@@ -3008,6 +3008,32 @@ function Footer() {
             © {new Date().getFullYear()} VeilChat. Made with care for the people
             who deserve privacy.
           </div>
+          <div style={{ fontSize: 11, color: "rgba(252,245,235,0.28)", letterSpacing: "0.04em", textAlign: "center" }}>
+            Owned and funded by{" "}
+            <a
+              href="https://company.plyndrox.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: "rgba(252,245,235,0.45)",
+                textDecoration: "none",
+                borderBottom: "1px solid rgba(252,245,235,0.15)",
+                paddingBottom: 1,
+                transition: "color 0.2s, border-color 0.2s",
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.color = "rgba(252,245,235,0.8)";
+                e.currentTarget.style.borderColor = "rgba(252,245,235,0.4)";
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.color = "rgba(252,245,235,0.45)";
+                e.currentTarget.style.borderColor = "rgba(252,245,235,0.15)";
+              }}
+            >
+              Company Plyndrox
+            </a>
+            {" –"}&#x202F;Company
+          </div>
           <Link
             to="/status"
             className="flex items-center gap-2 hover:text-[#FCF5EB] transition-colors"
