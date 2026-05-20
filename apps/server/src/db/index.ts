@@ -14,6 +14,14 @@ let _bootstrapPromise: Promise<void> | null = null;
  * with `IF NOT EXISTS` guards. Safe to run on every server start.
  */
 async function ensureSchema(sql: ReturnType<typeof postgres>) {
+  // username column — added after initial schema; safe to run on every start.
+  await sql.unsafe(
+    `ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "username" text`,
+  );
+  await sql.unsafe(
+    `CREATE UNIQUE INDEX IF NOT EXISTS "users_username_idx" ON "users" (lower("username")) WHERE "username" IS NOT NULL`,
+  );
+
   await sql.unsafe(
     `ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "is_discoverable" boolean NOT NULL DEFAULT false`,
   );
