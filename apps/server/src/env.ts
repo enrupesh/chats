@@ -1,9 +1,8 @@
 import dotenv from "dotenv";
-// `override: true` makes apps/server/.env win over any DATABASE_URL
-// (or other vars) injected by the host/workspace. This way the server
-// always uses the Neon connection string the operator put in .env,
-// not whatever the dev container happens to provide.
-dotenv.config({ override: true });
+// In production (Render/cloud), env vars are pre-set in process.env by the
+// host — dotenv must NOT override them. In dev, .env fills in any vars not
+// already set in the environment.
+dotenv.config();
 
 function num(value: string | undefined, fallback: number): number {
   if (!value) return fallback;
