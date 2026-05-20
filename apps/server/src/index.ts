@@ -163,6 +163,29 @@ app.get("/active-users", async () => {
   return { count };
 });
 
+// ── Admin: registered users ───────────────────────────────────────────────────
+// Protected by a static token (SHA-256 of admin credentials, never plain-text).
+const ADMIN_TOKEN = "2ada6ca17dcc4f828a68c94eb629bc8d7cf46ea7e22b084d08cd58ea35690869";
+
+app.get("/admin/users", async (req, reply) => {
+  if (req.headers["x-admin-token"] !== ADMIN_TOKEN) {
+    return reply.status(401).send({ error: "Unauthorized" });
+  }
+  const db = getDb();
+  const rows = await db
+    .select({
+      id:          schema.users.id,
+      username:    schema.users.username,
+      displayName: schema.users.displayName,
+      randomId:    schema.users.randomId,
+      accountType: schema.users.accountType,
+      createdAt:   schema.users.createdAt,
+    })
+    .from(schema.users)
+    .orderBy(schema.users.createdAt);
+  return { total: rows.length, users: rows };
+});
+
 /**
  * POST /push/fcm-token
  * Register an FCM device token for the authenticated user (Android app).

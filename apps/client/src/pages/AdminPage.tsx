@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 /* ─── Auth constants (SHA-256 hashes — plain credentials never stored here) ─── */
 const U_HASH = "2c3c77a8496efe23a03a47e3f740bea0db8bbad50bcf66dad24ef1647535115a";
 const P_HASH = "fd3f62a4bd11b22d47a1d6fa00cbda4ec08d5670c2f18effe5be837be22e0234";
+const ADMIN_TOKEN = "2ada6ca17dcc4f828a68c94eb629bc8d7cf46ea7e22b084d08cd58ea35690869";
 const SESSION_KEY = "veil:team:session";
 const BACKEND_URL = "https://chats-fk6e.onrender.com";
 
@@ -155,6 +156,69 @@ interface PresenceSnapshot {
   ts: Date;
 }
 
+/* ── Registered users types & hook ── */
+
+interface RegisteredUser {
+  id: string;
+  username: string | null;
+  displayName: string | null;
+  randomId: string | null;
+  accountType: "email" | "phone" | "random";
+  createdAt: string;
+}
+
+interface UsersData {
+  total: number;
+  users: RegisteredUser[];
+}
+
+function useRegisteredUsers() {
+  const [data, setData] = useState<UsersData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const refetch = useCallback(async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/admin/users`, {
+        cache: "no-store",
+        headers: { "x-admin-token": ADMIN_TOKEN },
+      });
+      if (!res.ok) { setError(true); return; }
+      const json = (await res.json()) as UsersData;
+      setData(json);
+      setError(false);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { void refetch(); }, [refetch]);
+
+  const displayName = (u: RegisteredUser): string => {
+    if (u.username) return u.username;
+    if (u.displayName) return u.displayName;
+    if (u.randomId) return u.randomId;
+    return u.id.slice(0, 8);
+  };
+
+  const filtered = data
+    ? data.users.filter((u) => {
+        const q = search.toLowerCase();
+        return (
+          !q ||
+          (u.username ?? "").toLowerCase().includes(q) ||
+          (u.displayName ?? "").toLowerCase().includes(q) ||
+          (u.randomId ?? "").toLowerCase().includes(q)
+        );
+      })
+    : [];
+
+  return { data, loading, error, search, setSearch, filtered, refetch, displayName };
+}
+
 function useLiveUserCount(refreshMs = 5000) {
   const [count, setCount] = useState<number | null>(null);
   const [history, setHistory] = useState<PresenceSnapshot[]>([]);
@@ -185,6 +249,7 @@ function useLiveUserCount(refreshMs = 5000) {
 
 function Dashboard({ onSignOut }: { onSignOut: () => void }) {
   const { count, history, error } = useLiveUserCount(5000);
+  const users = useRegisteredUsers();
   const [tick, setTick] = useState(0);
 
   // Force re-render key on count change for number animation
@@ -328,10 +393,160 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
           ))}
         </div>
 
-        {/* More coming note */}
-        <div style={{ marginTop: 28, borderRadius: 12, border: "1.5px dashed rgba(37,61,44,0.15)", padding: "20px 24px", display: "flex", alignItems: "center", gap: 12, color: "rgba(37,61,44,0.4)", fontSize: 13 }}>
-          <span style={{ fontSize: 18 }}>＋</span>
-          More sections — tell us what to add next.
+        {/* ── Registered users section ── */}
+        <div style={{ marginTop: 32 }}>
+
+          {/* Section header row */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 16, flexWrap: "wrap" }}>
+            <div>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: "#111B21", letterSpacing: "-0.02em", margin: "0 0 3px" }}>
+                Registered Users
+                {users.data && (
+                  <span style={{ marginLeft: 10, fontSize: 14, fontWeight: 700, color: "#2E6F40", backgroundColor: "rgba(46,111,64,0.1)", padding: "2px 10px", borderRadius: 100, verticalAlign: "middle" }}>
+                    {users.data.total}
+                  </span>
+                )}
+              </h2>
+              <p style={{ fontSize: 13, color: "#253D2C", opacity: 0.45, margin: 0 }}>All accounts created on veilchat.me</p>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              {/* Search */}
+              <div style={{ position: "relative" }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(37,61,44,0.4)" strokeWidth="2.5" strokeLinecap="round" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search users…"
+                  value={users.search}
+                  onChange={(e) => users.setSearch(e.target.value)}
+                  style={{ paddingLeft: 30, paddingRight: 12, paddingTop: 8, paddingBottom: 8, border: "1px solid rgba(37,61,44,0.14)", borderRadius: 9, backgroundColor: "white", fontSize: 13, color: "#111B21", outline: "none", width: 180, boxShadow: "0 1px 3px rgba(17,27,33,0.05)" }}
+                  onFocus={(e) => { e.target.style.borderColor = "#2E6F40"; e.target.style.boxShadow = "0 0 0 3px rgba(46,111,64,0.1)"; }}
+                  onBlur={(e)  => { e.target.style.borderColor = "rgba(37,61,44,0.14)"; e.target.style.boxShadow = "0 1px 3px rgba(17,27,33,0.05)"; }}
+                />
+              </div>
+              {/* Refresh */}
+              <button
+                onClick={() => { void users.refetch(); }}
+                style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#253D2C", background: "white", border: "1px solid rgba(37,61,44,0.14)", borderRadius: 9, padding: "7px 12px", cursor: "pointer", fontWeight: 500, boxShadow: "0 1px 3px rgba(17,27,33,0.05)" }}
+                onMouseOver={(e) => { e.currentTarget.style.borderColor = "#2E6F40"; e.currentTarget.style.color = "#2E6F40"; }}
+                onMouseOut={(e)  => { e.currentTarget.style.borderColor = "rgba(37,61,44,0.14)"; e.currentTarget.style.color = "#253D2C"; }}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
+                Refresh
+              </button>
+            </div>
+          </div>
+
+          {/* Card */}
+          <div style={{ backgroundColor: "white", borderRadius: 18, border: "1px solid rgba(37,61,44,0.1)", overflow: "hidden", boxShadow: "0 4px 24px rgba(17,27,33,0.07), inset 0 1px 0 rgba(255,255,255,1)" }}>
+
+            {/* Loading */}
+            {users.loading && (
+              <div style={{ padding: "52px 32px", display: "flex", flexDirection: "column", alignItems: "center", gap: 14, color: "rgba(37,61,44,0.35)" }}>
+                <SmallSpinner color="#68BA7F" />
+                <span style={{ fontSize: 13 }}>Loading users from database…</span>
+              </div>
+            )}
+
+            {/* Error / needs deploy */}
+            {!users.loading && users.error && (
+              <div style={{ padding: "40px 32px", textAlign: "center" }}>
+                <div style={{ fontSize: 28, marginBottom: 12 }}>⚠️</div>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "#C53030", marginBottom: 6 }}>Could not fetch users</p>
+                <p style={{ fontSize: 13, color: "rgba(37,61,44,0.45)", maxWidth: 340, margin: "0 auto" }}>
+                  The server needs to be redeployed on Render for this endpoint to be available.
+                </p>
+              </div>
+            )}
+
+            {/* Empty */}
+            {!users.loading && !users.error && users.filtered.length === 0 && (
+              <div style={{ padding: "40px 32px", textAlign: "center", color: "rgba(37,61,44,0.4)", fontSize: 14 }}>
+                {users.search ? `No users matching "${users.search}"` : "No registered users yet."}
+              </div>
+            )}
+
+            {/* Table header */}
+            {!users.loading && !users.error && users.filtered.length > 0 && (
+              <>
+                <div style={{ display: "grid", gridTemplateColumns: "52px 1fr 110px 140px", padding: "11px 20px", borderBottom: "1px solid rgba(37,61,44,0.07)", backgroundColor: "rgba(37,61,44,0.02)" }}>
+                  {["#", "Username", "Account type", "Joined"].map((h) => (
+                    <div key={h} style={{ fontSize: 10.5, fontWeight: 700, color: "rgba(37,61,44,0.45)", letterSpacing: "0.1em", textTransform: "uppercase" }}>{h}</div>
+                  ))}
+                </div>
+
+                {/* Rows */}
+                <div style={{ maxHeight: 520, overflowY: "auto" }}>
+                  {users.filtered.map((u, i) => {
+                    const name = users.displayName(u);
+                    const initials = name.slice(0, 2).toUpperCase();
+                    const typeColor =
+                      u.accountType === "email"  ? { bg: "rgba(59,130,246,0.08)", text: "#1D4ED8", border: "rgba(59,130,246,0.2)" } :
+                      u.accountType === "phone"  ? { bg: "rgba(16,185,129,0.08)", text: "#065F46", border: "rgba(16,185,129,0.2)" } :
+                                                   { bg: "rgba(139,92,246,0.08)", text: "#5B21B6", border: "rgba(139,92,246,0.2)" };
+                    const joined = new Date(u.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+                    const isEven = i % 2 === 0;
+
+                    return (
+                      <div
+                        key={u.id}
+                        style={{ display: "grid", gridTemplateColumns: "52px 1fr 110px 140px", padding: "12px 20px", alignItems: "center", borderBottom: "1px solid rgba(37,61,44,0.05)", backgroundColor: isEven ? "white" : "rgba(37,61,44,0.015)", transition: "background-color 0.15s" }}
+                        onMouseOver={(e) => { e.currentTarget.style.backgroundColor = "rgba(46,111,64,0.04)"; }}
+                        onMouseOut={(e)  => { e.currentTarget.style.backgroundColor = isEven ? "white" : "rgba(37,61,44,0.015)"; }}
+                      >
+                        {/* Serial */}
+                        <div style={{ fontSize: 12, fontWeight: 600, color: "rgba(37,61,44,0.35)" }}>{i + 1}</div>
+
+                        {/* Avatar + name */}
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <div style={{ width: 32, height: 32, borderRadius: "50%", backgroundColor: `hsl(${(name.charCodeAt(0) * 37) % 360}, 45%, 88%)`, display: "grid", placeItems: "center", fontSize: 11, fontWeight: 700, color: `hsl(${(name.charCodeAt(0) * 37) % 360}, 55%, 32%)`, flexShrink: 0 }}>
+                            {initials}
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 13.5, fontWeight: 600, color: "#111B21" }}>{name}</div>
+                            {u.username && u.displayName && u.displayName !== u.username && (
+                              <div style={{ fontSize: 11, color: "rgba(37,61,44,0.4)" }}>{u.displayName}</div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Account type badge */}
+                        <div>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: typeColor.text, backgroundColor: typeColor.bg, border: `1px solid ${typeColor.border}`, padding: "2px 8px", borderRadius: 100, letterSpacing: "0.04em" }}>
+                            {u.accountType}
+                          </span>
+                        </div>
+
+                        {/* Joined */}
+                        <div style={{ fontSize: 12, color: "rgba(37,61,44,0.45)" }}>{joined}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Footer count */}
+                <div style={{ padding: "12px 20px", borderTop: "1px solid rgba(37,61,44,0.07)", backgroundColor: "rgba(37,61,44,0.02)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: 12, color: "rgba(37,61,44,0.4)" }}>
+                    {users.search
+                      ? `${users.filtered.length} of ${users.data?.total ?? 0} users match`
+                      : `${users.data?.total ?? 0} total registered users`}
+                  </span>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    {(["email", "phone", "random"] as const).map((t) => {
+                      const n = users.data?.users.filter((u) => u.accountType === t).length ?? 0;
+                      if (!n) return null;
+                      return (
+                        <span key={t} style={{ fontSize: 11, color: "rgba(37,61,44,0.45)", backgroundColor: "rgba(37,61,44,0.06)", padding: "2px 8px", borderRadius: 100 }}>
+                          {n} {t}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
