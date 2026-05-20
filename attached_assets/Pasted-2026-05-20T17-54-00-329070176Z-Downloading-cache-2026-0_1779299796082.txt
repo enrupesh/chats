@@ -1,0 +1,30 @@
+2026-05-20T17:54:00.329070176Z ==> Downloading cache...
+2026-05-20T17:54:00.36836538Z ==> Cloning from https://github.com/rupeshsahu408/chats
+2026-05-20T17:54:02.052449376Z ==> Checking out commit faa3eb55a4127b52f9d0c8d424c8fa29c534547c in branch main
+2026-05-20T17:54:07.704602614Z ==> Downloaded 219MB in 1s. Extraction took 5s.
+2026-05-20T17:54:12.361080346Z ==> Requesting Node.js version 20
+2026-05-20T17:54:13.610105273Z ==> Using Node.js version 20.20.2 via /opt/render/project/src/.node-version
+2026-05-20T17:54:13.610136864Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2026-05-20T17:54:13.65655009Z ==> Running build command 'npm install pnpm@10.26.1 && ./node_modules/.bin/pnpm install --frozen-lockfile && ./node_modules/.bin/pnpm --filter @veil/shared build && ./node_modules/.bin/pnpm --filter @veil/server build'...
+2026-05-20T17:54:16.035299598Z 
+2026-05-20T17:54:16.035320119Z added 27 packages, and audited 28 packages in 2s
+2026-05-20T17:54:16.035335131Z 
+2026-05-20T17:54:16.035342331Z 7 packages are looking for funding
+2026-05-20T17:54:16.035348821Z   run `npm fund` for details
+2026-05-20T17:54:16.046665418Z 
+2026-05-20T17:54:16.046679099Z 1 high severity vulnerability
+2026-05-20T17:54:16.046682539Z 
+2026-05-20T17:54:16.046685759Z To address all issues, run:
+2026-05-20T17:54:16.046689569Z   npm audit fix --force
+2026-05-20T17:54:16.046692589Z 
+2026-05-20T17:54:16.046695829Z Run `npm audit` for details.
+2026-05-20T17:54:16.504116824Z  ERR_PNPM_OUTDATED_LOCKFILE  Cannot install with "frozen-lockfile" because pnpm-lock.yaml is not up to date with <ROOT>/package.json
+2026-05-20T17:54:16.504143146Z 
+2026-05-20T17:54:16.504148656Z Note that in CI environments this setting is true by default. If you still need to run install in such cases, use "pnpm install --no-frozen-lockfile"
+2026-05-20T17:54:16.504152646Z 
+2026-05-20T17:54:16.504157706Z   Failure reason:
+2026-05-20T17:54:16.504162156Z   specifiers in the lockfile don't match specifiers in package.json:
+2026-05-20T17:54:16.504166557Z * 1 dependencies were added: pnpm@^10.26.1
+2026-05-20T17:54:16.504170337Z 
+2026-05-20T17:54:16.558221135Z ==> Build failed 😞
+2026-05-20T17:54:16.558255248Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
