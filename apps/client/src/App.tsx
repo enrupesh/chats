@@ -16,7 +16,6 @@ import { SessionSync } from "./lib/SessionSync";
 import { SessionGuard } from "./components/SessionGuard";
 import { useStealthPrefs } from "./lib/stealthPrefs";
 import { unlockAudioOnFirstGesture } from "./lib/sound";
-import { InstallPrompt } from "./components/InstallPrompt";
 import { PushPermissionPrompt } from "./components/PushPermissionPrompt";
 import { DailyVerificationGate } from "./components/DailyVerificationGate";
 import { AppErrorBoundary } from "./components/ErrorBoundary";
@@ -221,7 +220,6 @@ export function App() {
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
-          <InstallPrompt />
           <PushPermissionPrompt />
           <DailyVerificationGate />
           <ToastViewport />
