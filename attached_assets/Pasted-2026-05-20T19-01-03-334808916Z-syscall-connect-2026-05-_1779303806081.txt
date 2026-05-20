@@ -1,0 +1,500 @@
+2026-05-20T19:01:03.334808916Z   syscall: 'connect',
+2026-05-20T19:01:03.334813516Z   address: '2406:da1a:82a:9d02:4f45:a304:4940:b0fb',
+2026-05-20T19:01:03.334817486Z   port: 5432
+2026-05-20T19:01:03.334821776Z }
+2026-05-20T19:01:03.874900699Z [19:01:02] WARN (71): scheduled sweeper tick failed
+2026-05-20T19:01:03.874925149Z     err: {
+2026-05-20T19:01:03.874930279Z       "type": "DrizzleQueryError",
+2026-05-20T19:01:03.874934609Z       "message": "Failed query: select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3\nparams: pending,2026-05-20T19:01:02.893Z,50: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)",
+2026-05-20T19:01:03.87493796Z       "stack":
+2026-05-20T19:01:03.87494345Z           Error: Failed query: select "id", "sender_user_id", "recipient_user_id", "conversation_id", "header", "ciphertext", "expires_in_seconds", "scheduled_for", "status", "delivered_message_id", "delivered_at", "failed_at", "fail_reason", "attempts", "created_at" from "scheduled_messages" where ("scheduled_messages"."status" = $1 and "scheduled_messages"."scheduled_for" <= $2) order by "scheduled_messages"."scheduled_for" limit $3
+2026-05-20T19:01:03.87494727Z           params: pending,2026-05-20T19:01:02.893Z,50
+2026-05-20T19:01:03.87495124Z               at PostgresJsPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2026-05-20T19:01:03.87495478Z               at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-05-20T19:01:03.87495971Z               at async file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/postgres-js/session.js:37:20
+2026-05-20T19:01:03.87496371Z               at async tick (file:///opt/render/project/src/apps/server/dist/lib/scheduledSweeper.js:26:29)
+2026-05-20T19:01:03.87496684Z           caused by: Error: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)
+2026-05-20T19:01:03.87497016Z               at internalConnect (node:net:1098:16)
+2026-05-20T19:01:03.87497341Z               at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+2026-05-20T19:01:03.87497663Z               at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1497:9)
+2026-05-20T19:01:03.87497993Z               at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:134:8)
+2026-05-20T19:01:03.874984821Z       "query": "select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3",
+2026-05-20T19:01:03.874996211Z       "params": [
+2026-05-20T19:01:03.874998291Z         "pending",
+2026-05-20T19:01:03.875000291Z         "2026-05-20T19:01:02.893Z",
+2026-05-20T19:01:03.875002311Z         50
+2026-05-20T19:01:03.875004441Z       ]
+2026-05-20T19:01:03.875006431Z     }
+2026-05-20T19:01:03.919513514Z [19:01:03] WARN (70): Generated ephemeral VAPID keys (dev only).
+2026-05-20T19:01:03.919544385Z   VAPID_PUBLIC_KEY=BLeIPS38UKSdz7R_Bo9U7UPU31tKkflb4wbhDSzT9n-nE0oYpJJ-gKR37RSYDa_OW23DFvB8U2W-E5AUZ3lxKhs
+2026-05-20T19:01:03.919550485Z   VAPID_PRIVATE_KEY=q_AWLObIPyvMolmEafSat3azfgluKiSR7sOtDff2Lko
+2026-05-20T19:01:03.919555145Z Add these to apps/server/.env to make push subscriptions survive restarts.
+2026-05-20T19:01:03.91979552Z [19:01:03] INFO (70): Server listening at http://127.0.0.1:3001
+2026-05-20T19:01:03.919811471Z [19:01:03] INFO (70): Server listening at http://10.28.71.20:3001
+2026-05-20T19:01:03.919820241Z [19:01:03] INFO (70): veil-server listening on http://0.0.0.0:3001
+2026-05-20T19:01:04.084414222Z [19:01:04] INFO (70): incoming request
+2026-05-20T19:01:04.084443033Z     reqId: "req-1"
+2026-05-20T19:01:04.084448363Z     req: {
+2026-05-20T19:01:04.084453093Z       "method": "HEAD",
+2026-05-20T19:01:04.084457873Z       "url": "/",
+2026-05-20T19:01:04.084463403Z       "host": "chats-fk6e.onrender.com",
+2026-05-20T19:01:04.084468793Z       "remoteAddress": "127.0.0.1",
+2026-05-20T19:01:04.084473613Z       "remotePort": 36260
+2026-05-20T19:01:04.084478683Z     }
+2026-05-20T19:01:04.120141456Z [19:01:04] INFO (70): Route HEAD:/ not found
+2026-05-20T19:01:04.120161136Z     reqId: "req-1"
+2026-05-20T19:01:04.120165806Z [19:01:04] INFO (70): request completed
+2026-05-20T19:01:04.120170186Z     reqId: "req-1"
+2026-05-20T19:01:04.120174697Z     res: {
+2026-05-20T19:01:04.120178886Z       "statusCode": 404
+2026-05-20T19:01:04.120183017Z     }
+2026-05-20T19:01:04.120187747Z     responseTime: 16.468921184539795
+2026-05-20T19:01:04.633631011Z [19:01:04] WARN (70): R2 CORS setup failed (uploads may not work from browsers):
+2026-05-20T19:01:06.684545067Z [19:01:06] WARN (70): scheduled sweeper tick failed
+2026-05-20T19:01:06.684570038Z     err: {
+2026-05-20T19:01:06.684578108Z       "type": "DrizzleQueryError",
+2026-05-20T19:01:06.684584908Z       "message": "Failed query: select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3\nparams: pending,2026-05-20T19:01:06.341Z,50: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)",
+2026-05-20T19:01:06.684607058Z       "stack":
+2026-05-20T19:01:06.684611558Z           Error: Failed query: select "id", "sender_user_id", "recipient_user_id", "conversation_id", "header", "ciphertext", "expires_in_seconds", "scheduled_for", "status", "delivered_message_id", "delivered_at", "failed_at", "fail_reason", "attempts", "created_at" from "scheduled_messages" where ("scheduled_messages"."status" = $1 and "scheduled_messages"."scheduled_for" <= $2) order by "scheduled_messages"."scheduled_for" limit $3
+2026-05-20T19:01:06.684615168Z           params: pending,2026-05-20T19:01:06.341Z,50
+2026-05-20T19:01:06.684617799Z               at PostgresJsPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2026-05-20T19:01:06.684621108Z               at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-05-20T19:01:06.684624609Z               at async file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/postgres-js/session.js:37:20
+2026-05-20T19:01:06.684627409Z               at async tick (file:///opt/render/project/src/apps/server/dist/lib/scheduledSweeper.js:26:29)
+2026-05-20T19:01:06.684629459Z           caused by: Error: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)
+2026-05-20T19:01:06.684631449Z               at internalConnect (node:net:1098:16)
+2026-05-20T19:01:06.684633569Z               at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+2026-05-20T19:01:06.684635609Z               at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1497:9)
+2026-05-20T19:01:06.684637779Z               at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:134:8)
+2026-05-20T19:01:06.684641229Z       "query": "select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3",
+2026-05-20T19:01:06.684644069Z       "params": [
+2026-05-20T19:01:06.684646129Z         "pending",
+2026-05-20T19:01:06.684648159Z         "2026-05-20T19:01:06.341Z",
+2026-05-20T19:01:06.684650169Z         50
+2026-05-20T19:01:06.684652189Z       ]
+2026-05-20T19:01:06.684654179Z     }
+2026-05-20T19:01:08.736015835Z [19:01:08] WARN (70): media sweeper failed
+2026-05-20T19:01:08.736048956Z     err: {
+2026-05-20T19:01:08.736054866Z       "type": "DrizzleQueryError",
+2026-05-20T19:01:08.736060236Z       "message": "Failed query: delete from \"media_blobs\" where \"media_blobs\".\"expires_at\" < $1 returning \"id\", \"r2_key\"\nparams: 2026-05-20T19:01:08.341Z: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)",
+2026-05-20T19:01:08.736063526Z       "stack":
+2026-05-20T19:01:08.736068636Z           Error: Failed query: delete from "media_blobs" where "media_blobs"."expires_at" < $1 returning "id", "r2_key"
+2026-05-20T19:01:08.736072036Z           params: 2026-05-20T19:01:08.341Z
+2026-05-20T19:01:08.736075656Z               at PostgresJsPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2026-05-20T19:01:08.736096497Z               at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-05-20T19:01:08.736101957Z               at async file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/postgres-js/session.js:37:20
+2026-05-20T19:01:08.736105687Z               at async tick (file:///opt/render/project/src/apps/server/dist/lib/mediaSweeper.js:14:29)
+2026-05-20T19:01:08.736108737Z           caused by: Error: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)
+2026-05-20T19:01:08.736112077Z               at internalConnect (node:net:1098:16)
+2026-05-20T19:01:08.736117047Z               at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+2026-05-20T19:01:08.736120397Z               at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1497:9)
+2026-05-20T19:01:08.736123117Z               at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:134:8)
+2026-05-20T19:01:08.736125157Z       "query": "delete from \"media_blobs\" where \"media_blobs\".\"expires_at\" < $1 returning \"id\", \"r2_key\"",
+2026-05-20T19:01:08.736127767Z       "params": [
+2026-05-20T19:01:08.736129848Z         "2026-05-20T19:01:08.341Z"
+2026-05-20T19:01:08.736131828Z       ]
+2026-05-20T19:01:08.736134217Z     }
+2026-05-20T19:01:08.753091351Z ==> Your service is live 🎉
+2026-05-20T19:01:08.978911648Z ==> 
+2026-05-20T19:01:08.982289229Z ==> ///////////////////////////////////////////////////////////
+2026-05-20T19:01:08.984646053Z ==> 
+2026-05-20T19:01:08.987281381Z ==> Available at your primary URL https://chats-fk6e.onrender.com
+2026-05-20T19:01:08.989331249Z ==> 
+2026-05-20T19:01:08.991390836Z ==> ///////////////////////////////////////////////////////////
+2026-05-20T19:01:08.992950882Z [19:01:08] INFO (70): incoming request
+2026-05-20T19:01:08.992976843Z     reqId: "req-2"
+2026-05-20T19:01:08.992979712Z     req: {
+2026-05-20T19:01:08.992981872Z       "method": "GET",
+2026-05-20T19:01:08.992995773Z       "url": "/",
+2026-05-20T19:01:08.992999053Z       "host": "chats-fk6e.onrender.com",
+2026-05-20T19:01:08.993001193Z       "remoteAddress": "34.145.120.165",
+2026-05-20T19:01:08.993004103Z       "remotePort": 36270
+2026-05-20T19:01:08.993006143Z     }
+2026-05-20T19:01:08.993557575Z [19:01:08] INFO (70): Route GET:/ not found
+2026-05-20T19:01:08.993575636Z     reqId: "req-2"
+2026-05-20T19:01:08.993579336Z [19:01:08] INFO (70): request completed
+2026-05-20T19:01:08.993582146Z     reqId: "req-2"
+2026-05-20T19:01:08.993584706Z     res: {
+2026-05-20T19:01:08.993587336Z       "statusCode": 404
+2026-05-20T19:01:08.993589826Z     }
+2026-05-20T19:01:08.993593326Z     responseTime: 0.5250911712646484
+2026-05-20T19:01:11.045559025Z [19:01:10] WARN (70): message sweeper failed
+2026-05-20T19:01:11.045603116Z     err: {
+2026-05-20T19:01:11.045607306Z       "type": "DrizzleQueryError",
+2026-05-20T19:01:11.045613616Z       "message": "Failed query: delete from \"messages\" where (\"messages\".\"expires_at\" is not null and \"messages\".\"expires_at\" < $1) returning \"id\"\nparams: 2026-05-20T19:01:10.340Z: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)",
+2026-05-20T19:01:11.045617296Z       "stack":
+2026-05-20T19:01:11.045621646Z           Error: Failed query: delete from "messages" where ("messages"."expires_at" is not null and "messages"."expires_at" < $1) returning "id"
+2026-05-20T19:01:11.045624276Z           params: 2026-05-20T19:01:10.340Z
+2026-05-20T19:01:11.045627846Z               at PostgresJsPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2026-05-20T19:01:11.045631426Z               at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-05-20T19:01:11.045652097Z               at async file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/postgres-js/session.js:37:20
+2026-05-20T19:01:11.045655667Z               at async tick (file:///opt/render/project/src/apps/server/dist/lib/messageSweeper.js:14:29)
+2026-05-20T19:01:11.045658327Z           caused by: Error: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)
+2026-05-20T19:01:11.045661277Z               at internalConnect (node:net:1098:16)
+2026-05-20T19:01:11.045664347Z               at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+2026-05-20T19:01:11.045666937Z               at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1497:9)
+2026-05-20T19:01:11.045669737Z               at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:134:8)
+2026-05-20T19:01:11.045673507Z       "query": "delete from \"messages\" where (\"messages\".\"expires_at\" is not null and \"messages\".\"expires_at\" < $1) returning \"id\"",
+2026-05-20T19:01:11.045676898Z       "params": [
+2026-05-20T19:01:11.045679668Z         "2026-05-20T19:01:10.340Z"
+2026-05-20T19:01:11.045682318Z       ]
+2026-05-20T19:01:11.045684958Z     }
+2026-05-20T19:01:12.933519224Z [19:01:12] WARN (71): scheduled sweeper tick failed
+2026-05-20T19:01:12.933542095Z     err: {
+2026-05-20T19:01:12.933547765Z       "type": "DrizzleQueryError",
+2026-05-20T19:01:12.933554565Z       "message": "Failed query: select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3\nparams: pending,2026-05-20T19:01:12.898Z,50: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)",
+2026-05-20T19:01:12.933559285Z       "stack":
+2026-05-20T19:01:12.933565396Z           Error: Failed query: select "id", "sender_user_id", "recipient_user_id", "conversation_id", "header", "ciphertext", "expires_in_seconds", "scheduled_for", "status", "delivered_message_id", "delivered_at", "failed_at", "fail_reason", "attempts", "created_at" from "scheduled_messages" where ("scheduled_messages"."status" = $1 and "scheduled_messages"."scheduled_for" <= $2) order by "scheduled_messages"."scheduled_for" limit $3
+2026-05-20T19:01:12.933570466Z           params: pending,2026-05-20T19:01:12.898Z,50
+2026-05-20T19:01:12.933575546Z               at PostgresJsPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2026-05-20T19:01:12.933580856Z               at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-05-20T19:01:12.933587176Z               at async file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/postgres-js/session.js:37:20
+2026-05-20T19:01:12.933593616Z               at async tick (file:///opt/render/project/src/apps/server/dist/lib/scheduledSweeper.js:26:29)
+2026-05-20T19:01:12.933598296Z           caused by: Error: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)
+2026-05-20T19:01:12.933602566Z               at internalConnect (node:net:1098:16)
+2026-05-20T19:01:12.933607146Z               at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+2026-05-20T19:01:12.933611257Z               at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1497:9)
+2026-05-20T19:01:12.933615467Z               at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:134:8)
+2026-05-20T19:01:12.933621177Z       "query": "select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3",
+2026-05-20T19:01:12.933626287Z       "params": [
+2026-05-20T19:01:12.933630457Z         "pending",
+2026-05-20T19:01:12.933634697Z         "2026-05-20T19:01:12.898Z",
+2026-05-20T19:01:12.933638937Z         50
+2026-05-20T19:01:12.933642957Z       ]
+2026-05-20T19:01:12.933647047Z     }
+2026-05-20T19:01:14.220227846Z [19:01:13] WARN (70): scheduled sweeper tick failed
+2026-05-20T19:01:14.220246886Z     err: {
+2026-05-20T19:01:14.220252696Z       "type": "DrizzleQueryError",
+2026-05-20T19:01:14.220258016Z       "message": "Failed query: select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3\nparams: pending,2026-05-20T19:01:13.340Z,50: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)",
+2026-05-20T19:01:14.220261507Z       "stack":
+2026-05-20T19:01:14.220266347Z           Error: Failed query: select "id", "sender_user_id", "recipient_user_id", "conversation_id", "header", "ciphertext", "expires_in_seconds", "scheduled_for", "status", "delivered_message_id", "delivered_at", "failed_at", "fail_reason", "attempts", "created_at" from "scheduled_messages" where ("scheduled_messages"."status" = $1 and "scheduled_messages"."scheduled_for" <= $2) order by "scheduled_messages"."scheduled_for" limit $3
+2026-05-20T19:01:14.220270837Z           params: pending,2026-05-20T19:01:13.340Z,50
+2026-05-20T19:01:14.220274107Z               at PostgresJsPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2026-05-20T19:01:14.220278457Z               at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-05-20T19:01:14.220281717Z               at async file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/postgres-js/session.js:37:20
+2026-05-20T19:01:14.220285037Z               at async tick (file:///opt/render/project/src/apps/server/dist/lib/scheduledSweeper.js:26:29)
+2026-05-20T19:01:14.220288047Z           caused by: Error: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)
+2026-05-20T19:01:14.220291297Z               at internalConnect (node:net:1098:16)
+2026-05-20T19:01:14.220296447Z               at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+2026-05-20T19:01:14.220299567Z               at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1497:9)
+2026-05-20T19:01:14.220310997Z               at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:134:8)
+2026-05-20T19:01:14.220315508Z       "query": "select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3",
+2026-05-20T19:01:14.220319968Z       "params": [
+2026-05-20T19:01:14.220323028Z         "pending",
+2026-05-20T19:01:14.220326218Z         "2026-05-20T19:01:13.340Z",
+2026-05-20T19:01:14.220329078Z         50
+2026-05-20T19:01:14.220332658Z       ]
+2026-05-20T19:01:14.220382249Z     }
+2026-05-20T19:01:22.995010656Z [19:01:22] WARN (71): message sweeper failed
+2026-05-20T19:01:22.995032447Z     err: {
+2026-05-20T19:01:22.995038327Z       "type": "DrizzleQueryError",
+2026-05-20T19:01:22.995045897Z       "message": "Failed query: delete from \"messages\" where (\"messages\".\"expires_at\" is not null and \"messages\".\"expires_at\" < $1) returning \"id\"\nparams: 2026-05-20T19:01:22.534Z: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)",
+2026-05-20T19:01:22.995051317Z       "stack":
+2026-05-20T19:01:22.995057207Z           Error: Failed query: delete from "messages" where ("messages"."expires_at" is not null and "messages"."expires_at" < $1) returning "id"
+2026-05-20T19:01:22.995062158Z           params: 2026-05-20T19:01:22.534Z
+2026-05-20T19:01:22.995067518Z               at PostgresJsPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2026-05-20T19:01:22.995072918Z               at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-05-20T19:01:22.995080038Z               at async file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/postgres-js/session.js:37:20
+2026-05-20T19:01:22.995085918Z               at async tick (file:///opt/render/project/src/apps/server/dist/lib/messageSweeper.js:14:29)
+2026-05-20T19:01:22.995090638Z           caused by: Error: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)
+2026-05-20T19:01:22.995095738Z               at internalConnect (node:net:1098:16)
+2026-05-20T19:01:22.995100808Z               at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+2026-05-20T19:01:22.995105768Z               at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1497:9)
+2026-05-20T19:01:22.995110608Z               at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:134:8)
+2026-05-20T19:01:22.995115579Z       "query": "delete from \"messages\" where (\"messages\".\"expires_at\" is not null and \"messages\".\"expires_at\" < $1) returning \"id\"",
+2026-05-20T19:01:22.995120529Z       "params": [
+2026-05-20T19:01:22.995125029Z         "2026-05-20T19:01:22.534Z"
+2026-05-20T19:01:22.995129919Z       ]
+2026-05-20T19:01:22.995134719Z     }
+2026-05-20T19:01:22.996436629Z [19:01:22] WARN (71): scheduled sweeper tick failed
+2026-05-20T19:01:22.996449619Z     err: {
+2026-05-20T19:01:22.99645479Z       "type": "DrizzleQueryError",
+2026-05-20T19:01:22.99646215Z       "message": "Failed query: select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3\nparams: pending,2026-05-20T19:01:22.898Z,50: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)",
+2026-05-20T19:01:22.9964671Z       "stack":
+2026-05-20T19:01:22.99647179Z           Error: Failed query: select "id", "sender_user_id", "recipient_user_id", "conversation_id", "header", "ciphertext", "expires_in_seconds", "scheduled_for", "status", "delivered_message_id", "delivered_at", "failed_at", "fail_reason", "attempts", "created_at" from "scheduled_messages" where ("scheduled_messages"."status" = $1 and "scheduled_messages"."scheduled_for" <= $2) order by "scheduled_messages"."scheduled_for" limit $3
+2026-05-20T19:01:22.99648436Z           params: pending,2026-05-20T19:01:22.898Z,50
+2026-05-20T19:01:22.99648773Z               at PostgresJsPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2026-05-20T19:01:22.996490991Z               at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-05-20T19:01:22.996494571Z               at async file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/postgres-js/session.js:37:20
+2026-05-20T19:01:22.996497991Z               at async tick (file:///opt/render/project/src/apps/server/dist/lib/scheduledSweeper.js:26:29)
+2026-05-20T19:01:22.996502911Z           caused by: Error: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)
+2026-05-20T19:01:22.996505791Z               at internalConnect (node:net:1098:16)
+2026-05-20T19:01:22.996508761Z               at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+2026-05-20T19:01:22.996512291Z               at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1497:9)
+2026-05-20T19:01:22.996515161Z               at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:134:8)
+2026-05-20T19:01:22.996518511Z       "query": "select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3",
+2026-05-20T19:01:22.996521711Z       "params": [
+2026-05-20T19:01:22.996524361Z         "pending",
+2026-05-20T19:01:22.996527121Z         "2026-05-20T19:01:22.898Z",
+2026-05-20T19:01:22.996529781Z         50
+2026-05-20T19:01:22.996532371Z       ]
+2026-05-20T19:01:22.996534832Z     }
+2026-05-20T19:01:24.277239343Z [19:01:23] WARN (70): scheduled sweeper tick failed
+2026-05-20T19:01:24.277271754Z     err: {
+2026-05-20T19:01:24.277280055Z       "type": "DrizzleQueryError",
+2026-05-20T19:01:24.277286375Z       "message": "Failed query: select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3\nparams: pending,2026-05-20T19:01:23.341Z,50: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)",
+2026-05-20T19:01:24.277289285Z       "stack":
+2026-05-20T19:01:24.277293485Z           Error: Failed query: select "id", "sender_user_id", "recipient_user_id", "conversation_id", "header", "ciphertext", "expires_in_seconds", "scheduled_for", "status", "delivered_message_id", "delivered_at", "failed_at", "fail_reason", "attempts", "created_at" from "scheduled_messages" where ("scheduled_messages"."status" = $1 and "scheduled_messages"."scheduled_for" <= $2) order by "scheduled_messages"."scheduled_for" limit $3
+2026-05-20T19:01:24.277297125Z           params: pending,2026-05-20T19:01:23.341Z,50
+2026-05-20T19:01:24.277300085Z               at PostgresJsPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2026-05-20T19:01:24.277303155Z               at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-05-20T19:01:24.277306275Z               at async file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/postgres-js/session.js:37:20
+2026-05-20T19:01:24.277309325Z               at async tick (file:///opt/render/project/src/apps/server/dist/lib/scheduledSweeper.js:26:29)
+2026-05-20T19:01:24.277311845Z           caused by: Error: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)
+2026-05-20T19:01:24.277314365Z               at internalConnect (node:net:1098:16)
+2026-05-20T19:01:24.277316985Z               at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+2026-05-20T19:01:24.277319575Z               at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1497:9)
+2026-05-20T19:01:24.277322105Z               at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:134:8)
+2026-05-20T19:01:24.277325645Z       "query": "select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3",
+2026-05-20T19:01:24.277358006Z       "params": [
+2026-05-20T19:01:24.277363276Z         "pending",
+2026-05-20T19:02:03.563879058Z       "remotePort": 36270
+2026-05-20T19:02:03.563883298Z     }
+2026-05-20T19:02:03.5639812Z [19:02:03] INFO (70): request completed
+2026-05-20T19:02:03.56398955Z     reqId: "req-4"
+2026-05-20T19:02:03.56399397Z     res: {
+2026-05-20T19:02:03.563998401Z       "statusCode": 204
+2026-05-20T19:02:03.564002921Z     }
+2026-05-20T19:02:03.564007871Z     responseTime: 0.856959342956543
+2026-05-20T19:02:03.564012681Z [19:02:03] WARN (70): scheduled sweeper tick failed
+2026-05-20T19:02:03.564017141Z     err: {
+2026-05-20T19:02:03.564021431Z       "type": "DrizzleQueryError",
+2026-05-20T19:02:03.564067752Z       "message": "Failed query: select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3\nparams: pending,2026-05-20T19:02:03.344Z,50: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)",
+2026-05-20T19:02:03.564072962Z       "stack":
+2026-05-20T19:02:03.564080482Z           Error: Failed query: select "id", "sender_user_id", "recipient_user_id", "conversation_id", "header", "ciphertext", "expires_in_seconds", "scheduled_for", "status", "delivered_message_id", "delivered_at", "failed_at", "fail_reason", "attempts", "created_at" from "scheduled_messages" where ("scheduled_messages"."status" = $1 and "scheduled_messages"."scheduled_for" <= $2) order by "scheduled_messages"."scheduled_for" limit $3
+2026-05-20T19:02:03.564085042Z           params: pending,2026-05-20T19:02:03.344Z,50
+2026-05-20T19:02:03.564090352Z               at PostgresJsPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2026-05-20T19:02:03.564097612Z               at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-05-20T19:02:03.564116503Z               at async file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/postgres-js/session.js:37:20
+2026-05-20T19:02:03.564120353Z               at async tick (file:///opt/render/project/src/apps/server/dist/lib/scheduledSweeper.js:26:29)
+2026-05-20T19:02:03.564123263Z           caused by: Error: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)
+2026-05-20T19:02:03.564126123Z               at internalConnect (node:net:1098:16)
+2026-05-20T19:02:03.564129503Z               at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+2026-05-20T19:02:03.564132043Z               at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1497:9)
+2026-05-20T19:02:03.564134684Z               at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:134:8)
+2026-05-20T19:02:03.564137824Z       "query": "select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3",
+2026-05-20T19:02:03.564140633Z       "params": [
+2026-05-20T19:02:03.564143124Z         "pending",
+2026-05-20T19:02:03.564145714Z         "2026-05-20T19:02:03.344Z",
+2026-05-20T19:02:03.564148434Z         50
+2026-05-20T19:02:03.564151364Z       ]
+2026-05-20T19:02:03.564154574Z     }
+2026-05-20T19:02:04.077150809Z [19:02:04] INFO (70): incoming request
+2026-05-20T19:02:04.07717956Z     reqId: "req-5"
+2026-05-20T19:02:04.07718294Z     req: {
+2026-05-20T19:02:04.07718559Z       "method": "POST",
+2026-05-20T19:02:04.07718814Z       "url": "/trpc/auth.issueBotChallenge?batch=1",
+2026-05-20T19:02:04.07719138Z       "host": "chats-fk6e.onrender.com",
+2026-05-20T19:02:04.07719394Z       "remoteAddress": "152.58.134.180",
+2026-05-20T19:02:04.077197341Z       "remotePort": 36270
+2026-05-20T19:02:04.077199841Z     }
+2026-05-20T19:02:04.077365954Z [19:02:04] INFO (70): request completed
+2026-05-20T19:02:04.077383494Z     reqId: "req-5"
+2026-05-20T19:02:04.077388365Z     res: {
+2026-05-20T19:02:04.077392545Z       "statusCode": 200
+2026-05-20T19:02:04.077395125Z     }
+2026-05-20T19:02:04.077398335Z     responseTime: 5.945111274719238
+2026-05-20T19:02:07.128031701Z [19:02:06] INFO (70): incoming request
+2026-05-20T19:02:07.128057372Z     reqId: "req-6"
+2026-05-20T19:02:07.128063152Z     req: {
+2026-05-20T19:02:07.128068822Z       "method": "OPTIONS",
+2026-05-20T19:02:07.128073972Z       "url": "/trpc/auth.verifyBotChallenge?batch=1",
+2026-05-20T19:02:07.128080352Z       "host": "chats-fk6e.onrender.com",
+2026-05-20T19:02:07.128085592Z       "remoteAddress": "152.58.134.180",
+2026-05-20T19:02:07.128090392Z       "remotePort": 36270
+2026-05-20T19:02:07.128095032Z     }
+2026-05-20T19:02:07.128564113Z [19:02:06] INFO (70): request completed
+2026-05-20T19:02:07.128579563Z     reqId: "req-6"
+2026-05-20T19:02:07.128584543Z     res: {
+2026-05-20T19:02:07.128588914Z       "statusCode": 204
+2026-05-20T19:02:07.128593314Z     }
+2026-05-20T19:02:07.128597904Z     responseTime: 0.43218994140625
+2026-05-20T19:02:07.128602114Z [19:02:06] INFO (70): incoming request
+2026-05-20T19:02:07.128606354Z     reqId: "req-7"
+2026-05-20T19:02:07.128610524Z     req: {
+2026-05-20T19:02:07.128625755Z       "method": "POST",
+2026-05-20T19:02:07.128628555Z       "url": "/trpc/auth.verifyBotChallenge?batch=1",
+2026-05-20T19:02:07.128631115Z       "host": "chats-fk6e.onrender.com",
+2026-05-20T19:02:07.128633555Z       "remoteAddress": "152.58.134.180",
+2026-05-20T19:02:07.128636415Z       "remotePort": 36270
+2026-05-20T19:02:07.128638895Z     }
+2026-05-20T19:02:07.128641385Z [19:02:06] INFO (70): request completed
+2026-05-20T19:02:07.128643795Z     reqId: "req-7"
+2026-05-20T19:02:07.128646175Z     res: {
+2026-05-20T19:02:07.128648675Z       "statusCode": 200
+2026-05-20T19:02:07.128651105Z     }
+2026-05-20T19:02:07.128653505Z     responseTime: 3.8707680702209473
+2026-05-20T19:02:14.18319423Z [19:02:13] WARN (70): scheduled sweeper tick failed
+2026-05-20T19:02:14.183221341Z     err: {
+2026-05-20T19:02:14.183225581Z       "type": "DrizzleQueryError",
+2026-05-20T19:02:14.183231091Z       "message": "Failed query: select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3\nparams: pending,2026-05-20T19:02:13.344Z,50: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)",
+2026-05-20T19:02:14.183234431Z       "stack":
+2026-05-20T19:02:14.183238191Z           Error: Failed query: select "id", "sender_user_id", "recipient_user_id", "conversation_id", "header", "ciphertext", "expires_in_seconds", "scheduled_for", "status", "delivered_message_id", "delivered_at", "failed_at", "fail_reason", "attempts", "created_at" from "scheduled_messages" where ("scheduled_messages"."status" = $1 and "scheduled_messages"."scheduled_for" <= $2) order by "scheduled_messages"."scheduled_for" limit $3
+2026-05-20T19:02:14.183242161Z           params: pending,2026-05-20T19:02:13.344Z,50
+2026-05-20T19:02:14.183245811Z               at PostgresJsPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2026-05-20T19:02:14.183249331Z               at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-05-20T19:02:14.183252881Z               at async file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/postgres-js/session.js:37:20
+2026-05-20T19:02:14.183255851Z               at async tick (file:///opt/render/project/src/apps/server/dist/lib/scheduledSweeper.js:26:29)
+2026-05-20T19:02:14.183258712Z           caused by: Error: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)
+2026-05-20T19:02:14.183261701Z               at internalConnect (node:net:1098:16)
+2026-05-20T19:02:14.183264741Z               at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+2026-05-20T19:02:14.183267922Z               at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1497:9)
+2026-05-20T19:02:14.183271192Z               at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:134:8)
+2026-05-20T19:02:14.183276342Z       "query": "select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3",
+2026-05-20T19:02:14.183291922Z       "params": [
+2026-05-20T19:02:14.183295582Z         "pending",
+2026-05-20T19:02:14.183298692Z         "2026-05-20T19:02:13.344Z",
+2026-05-20T19:02:14.183301582Z         50
+2026-05-20T19:02:14.183304362Z       ]
+2026-05-20T19:02:14.183307422Z     }
+2026-05-20T19:02:20.237220367Z [19:02:19] INFO (70): incoming request
+2026-05-20T19:02:20.237248798Z     reqId: "req-8"
+2026-05-20T19:02:20.237254698Z     req: {
+2026-05-20T19:02:20.237259048Z       "method": "OPTIONS",
+2026-05-20T19:02:20.237262258Z       "url": "/trpc/auth.signupRandomV2?batch=1",
+2026-05-20T19:02:20.237266128Z       "host": "chats-fk6e.onrender.com",
+2026-05-20T19:02:20.237269408Z       "remoteAddress": "152.58.134.180",
+2026-05-20T19:02:20.237275869Z       "remotePort": 36270
+2026-05-20T19:02:20.237279119Z     }
+2026-05-20T19:02:20.237817851Z [19:02:19] INFO (70): request completed
+2026-05-20T19:02:20.237831711Z     reqId: "req-8"
+2026-05-20T19:02:20.237839541Z     res: {
+2026-05-20T19:02:20.237844281Z       "statusCode": 204
+2026-05-20T19:02:20.237848522Z     }
+2026-05-20T19:02:20.237852822Z     responseTime: 0.43035030364990234
+2026-05-20T19:02:20.237856912Z [19:02:20] INFO (70): incoming request
+2026-05-20T19:02:20.237861112Z     reqId: "req-9"
+2026-05-20T19:02:20.237865252Z     req: {
+2026-05-20T19:02:20.237869312Z       "method": "POST",
+2026-05-20T19:02:20.237873492Z       "url": "/trpc/auth.signupRandomV2?batch=1",
+2026-05-20T19:02:20.237877612Z       "host": "chats-fk6e.onrender.com",
+2026-05-20T19:02:20.237881852Z       "remoteAddress": "152.58.134.180",
+2026-05-20T19:02:20.237886182Z       "remotePort": 36270
+2026-05-20T19:02:20.237890292Z     }
+2026-05-20T19:02:20.237894623Z [19:02:20] ERROR (70): tRPC error
+2026-05-20T19:02:20.237898843Z     path: "auth.signupRandomV2"
+2026-05-20T19:02:20.237903053Z     code: "INTERNAL_SERVER_ERROR"
+2026-05-20T19:02:20.237907253Z     cause: {
+2026-05-20T19:02:20.237912303Z       "pgMsg": "Failed query: select \"id\" from \"users\" where \"users\".\"username\" = $1 limit $2\nparams: uuuu,1"
+2026-05-20T19:02:20.237917023Z     }
+2026-05-20T19:02:20.237923883Z [19:02:20] INFO (70): request completed
+2026-05-20T19:02:20.237928663Z     reqId: "req-9"
+2026-05-20T19:02:20.237932793Z     res: {
+2026-05-20T19:02:20.237937264Z       "statusCode": 500
+2026-05-20T19:02:20.237941424Z     }
+2026-05-20T19:02:20.237945514Z     responseTime: 9.10469388961792
+2026-05-20T19:02:24.289110799Z [19:02:23] WARN (70): scheduled sweeper tick failed
+2026-05-20T19:02:24.2891386Z     err: {
+2026-05-20T19:02:24.28914346Z       "type": "DrizzleQueryError",
+2026-05-20T19:02:24.28914903Z       "message": "Failed query: select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3\nparams: pending,2026-05-20T19:02:23.346Z,50: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)",
+2026-05-20T19:02:24.28915239Z       "stack":
+2026-05-20T19:02:24.28915761Z           Error: Failed query: select "id", "sender_user_id", "recipient_user_id", "conversation_id", "header", "ciphertext", "expires_in_seconds", "scheduled_for", "status", "delivered_message_id", "delivered_at", "failed_at", "fail_reason", "attempts", "created_at" from "scheduled_messages" where ("scheduled_messages"."status" = $1 and "scheduled_messages"."scheduled_for" <= $2) order by "scheduled_messages"."scheduled_for" limit $3
+2026-05-20T19:02:24.289183101Z           params: pending,2026-05-20T19:02:23.346Z,50
+2026-05-20T19:02:24.289186021Z               at PostgresJsPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2026-05-20T19:02:24.289188891Z               at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-05-20T19:02:24.289192981Z               at async file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/postgres-js/session.js:37:20
+2026-05-20T19:02:24.289195921Z               at async tick (file:///opt/render/project/src/apps/server/dist/lib/scheduledSweeper.js:26:29)
+2026-05-20T19:02:24.289198051Z           caused by: Error: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)
+2026-05-20T19:02:24.289200101Z               at internalConnect (node:net:1098:16)
+2026-05-20T19:02:24.289202262Z               at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+2026-05-20T19:02:24.289204311Z               at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1497:9)
+2026-05-20T19:02:24.289206311Z               at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:134:8)
+2026-05-20T19:02:24.289209882Z       "query": "select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3",
+2026-05-20T19:02:24.289212572Z       "params": [
+2026-05-20T19:02:24.289214542Z         "pending",
+2026-05-20T19:02:24.289216582Z         "2026-05-20T19:02:23.346Z",
+2026-05-20T19:02:24.289218592Z         50
+2026-05-20T19:02:24.289220582Z       ]
+2026-05-20T19:02:24.289222602Z     }
+2026-05-20T19:02:34.347015567Z [19:02:33] WARN (70): scheduled sweeper tick failed
+2026-05-20T19:02:34.347040118Z     err: {
+2026-05-20T19:02:34.347048128Z       "type": "DrizzleQueryError",
+2026-05-20T19:02:34.347055088Z       "message": "Failed query: select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3\nparams: pending,2026-05-20T19:02:33.347Z,50: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)",
+2026-05-20T19:02:34.347059679Z       "stack":
+2026-05-20T19:02:34.347064099Z           Error: Failed query: select "id", "sender_user_id", "recipient_user_id", "conversation_id", "header", "ciphertext", "expires_in_seconds", "scheduled_for", "status", "delivered_message_id", "delivered_at", "failed_at", "fail_reason", "attempts", "created_at" from "scheduled_messages" where ("scheduled_messages"."status" = $1 and "scheduled_messages"."scheduled_for" <= $2) order by "scheduled_messages"."scheduled_for" limit $3
+2026-05-20T19:02:34.347068429Z           params: pending,2026-05-20T19:02:33.347Z,50
+2026-05-20T19:02:34.347083089Z               at PostgresJsPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2026-05-20T19:02:34.347086699Z               at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-05-20T19:02:34.347090239Z               at async file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/postgres-js/session.js:37:20
+2026-05-20T19:02:34.347092949Z               at async tick (file:///opt/render/project/src/apps/server/dist/lib/scheduledSweeper.js:26:29)
+2026-05-20T19:02:34.347094929Z           caused by: Error: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)
+2026-05-20T19:02:34.347096949Z               at internalConnect (node:net:1098:16)
+2026-05-20T19:02:34.347099129Z               at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+2026-05-20T19:02:34.347101199Z               at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1497:9)
+2026-05-20T19:02:34.347103189Z               at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:134:8)
+2026-05-20T19:02:34.3471074Z       "query": "select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3",
+2026-05-20T19:02:34.347111309Z       "params": [
+2026-05-20T19:02:34.34711382Z         "pending",
+2026-05-20T19:02:34.34711593Z         "2026-05-20T19:02:33.347Z",
+2026-05-20T19:02:34.34711795Z         50
+2026-05-20T19:02:34.34711993Z       ]
+2026-05-20T19:02:34.34712193Z     }
+2026-05-20T19:02:43.404249701Z [19:02:43] WARN (70): scheduled sweeper tick failed
+2026-05-20T19:02:43.404274431Z     err: {
+2026-05-20T19:02:43.404280172Z       "type": "DrizzleQueryError",
+2026-05-20T19:02:43.404285782Z       "message": "Failed query: select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3\nparams: pending,2026-05-20T19:02:43.348Z,50: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)",
+2026-05-20T19:02:43.404290252Z       "stack":
+2026-05-20T19:02:43.404297602Z           Error: Failed query: select "id", "sender_user_id", "recipient_user_id", "conversation_id", "header", "ciphertext", "expires_in_seconds", "scheduled_for", "status", "delivered_message_id", "delivered_at", "failed_at", "fail_reason", "attempts", "created_at" from "scheduled_messages" where ("scheduled_messages"."status" = $1 and "scheduled_messages"."scheduled_for" <= $2) order by "scheduled_messages"."scheduled_for" limit $3
+2026-05-20T19:02:43.404302592Z           params: pending,2026-05-20T19:02:43.348Z,50
+2026-05-20T19:02:43.404307682Z               at PostgresJsPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2026-05-20T19:02:43.404314212Z               at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-05-20T19:02:43.404355593Z               at async file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/postgres-js/session.js:37:20
+2026-05-20T19:02:43.404362564Z               at async tick (file:///opt/render/project/src/apps/server/dist/lib/scheduledSweeper.js:26:29)
+2026-05-20T19:02:43.404365453Z           caused by: Error: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)
+2026-05-20T19:02:43.404368594Z               at internalConnect (node:net:1098:16)
+2026-05-20T19:02:43.404371334Z               at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+2026-05-20T19:02:43.404374644Z               at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1497:9)
+2026-05-20T19:02:43.404377154Z               at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:134:8)
+2026-05-20T19:02:43.404381664Z       "query": "select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3",
+2026-05-20T19:02:43.404385064Z       "params": [
+2026-05-20T19:02:43.404387634Z         "pending",
+2026-05-20T19:02:43.404390974Z         "2026-05-20T19:02:43.348Z",
+2026-05-20T19:02:43.404393504Z         50
+2026-05-20T19:02:43.404396014Z       ]
+2026-05-20T19:02:43.404398654Z     }
+2026-05-20T19:02:53.462071454Z [19:02:53] WARN (70): scheduled sweeper tick failed
+2026-05-20T19:02:53.464013668Z     err: {
+2026-05-20T19:02:53.464025138Z       "type": "DrizzleQueryError",
+2026-05-20T19:02:53.464030408Z       "message": "Failed query: select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3\nparams: pending,2026-05-20T19:02:53.350Z,50: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)",
+2026-05-20T19:02:53.464043689Z       "stack":
+2026-05-20T19:02:53.464048129Z           Error: Failed query: select "id", "sender_user_id", "recipient_user_id", "conversation_id", "header", "ciphertext", "expires_in_seconds", "scheduled_for", "status", "delivered_message_id", "delivered_at", "failed_at", "fail_reason", "attempts", "created_at" from "scheduled_messages" where ("scheduled_messages"."status" = $1 and "scheduled_messages"."scheduled_for" <= $2) order by "scheduled_messages"."scheduled_for" limit $3
+2026-05-20T19:02:53.464052369Z           params: pending,2026-05-20T19:02:53.350Z,50
+2026-05-20T19:02:53.464055789Z               at PostgresJsPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2026-05-20T19:02:53.464060159Z               at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-05-20T19:02:53.464066939Z               at async file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/postgres-js/session.js:37:20
+2026-05-20T19:02:53.464070219Z               at async tick (file:///opt/render/project/src/apps/server/dist/lib/scheduledSweeper.js:26:29)
+2026-05-20T19:02:53.464084079Z           caused by: Error: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)
+2026-05-20T19:02:53.46408703Z               at internalConnect (node:net:1098:16)
+2026-05-20T19:02:53.464090279Z               at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+2026-05-20T19:02:53.46409294Z               at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1497:9)
+2026-05-20T19:02:53.46409561Z               at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:134:8)
+2026-05-20T19:02:53.46409979Z       "query": "select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3",
+2026-05-20T19:02:53.46410315Z       "params": [
+2026-05-20T19:02:53.46410592Z         "pending",
+2026-05-20T19:02:53.46410851Z         "2026-05-20T19:02:53.350Z",
+2026-05-20T19:02:53.46411116Z         50
+2026-05-20T19:02:53.46411381Z       ]
+2026-05-20T19:02:53.46411646Z     }
+2026-05-20T19:03:03.521956235Z [19:03:03] WARN (70): scheduled sweeper tick failed
+2026-05-20T19:03:03.521979746Z     err: {
+2026-05-20T19:03:03.521986016Z       "type": "DrizzleQueryError",
+2026-05-20T19:03:03.521991616Z       "message": "Failed query: select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3\nparams: pending,2026-05-20T19:03:03.350Z,50: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)",
+2026-05-20T19:03:03.521996636Z       "stack":
+2026-05-20T19:03:03.522004447Z           Error: Failed query: select "id", "sender_user_id", "recipient_user_id", "conversation_id", "header", "ciphertext", "expires_in_seconds", "scheduled_for", "status", "delivered_message_id", "delivered_at", "failed_at", "fail_reason", "attempts", "created_at" from "scheduled_messages" where ("scheduled_messages"."status" = $1 and "scheduled_messages"."scheduled_for" <= $2) order by "scheduled_messages"."scheduled_for" limit $3
+2026-05-20T19:03:03.522009967Z           params: pending,2026-05-20T19:03:03.350Z,50
+2026-05-20T19:03:03.522016047Z               at PostgresJsPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2026-05-20T19:03:03.522021957Z               at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-05-20T19:03:03.522027607Z               at async file:///opt/render/project/src/node_modules/.pnpm/drizzle-orm@0.45.2_@opentelemetry+api@1.9.1_postgres@3.4.9/node_modules/drizzle-orm/postgres-js/session.js:37:20
+2026-05-20T19:03:03.522033027Z               at async tick (file:///opt/render/project/src/apps/server/dist/lib/scheduledSweeper.js:26:29)
+2026-05-20T19:03:03.522037957Z           caused by: Error: connect ENETUNREACH 2406:da1a:82a:9d02:4f45:a304:4940:b0fb:5432 - Local (:::0)
+2026-05-20T19:03:03.522043237Z               at internalConnect (node:net:1098:16)
+2026-05-20T19:03:03.522047868Z               at defaultTriggerAsyncIdScope (node:internal/async_hooks:464:18)
+2026-05-20T19:03:03.522063618Z               at GetAddrInfoReqWrap.emitLookup [as callback] (node:net:1497:9)
+2026-05-20T19:03:03.522067378Z               at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:134:8)
+2026-05-20T19:03:03.522072328Z       "query": "select \"id\", \"sender_user_id\", \"recipient_user_id\", \"conversation_id\", \"header\", \"ciphertext\", \"expires_in_seconds\", \"scheduled_for\", \"status\", \"delivered_message_id\", \"delivered_at\", \"failed_at\", \"fail_reason\", \"attempts\", \"created_at\" from \"scheduled_messages\" where (\"scheduled_messages\".\"status\" = $1 and \"scheduled_messages\".\"scheduled_for\" <= $2) order by \"scheduled_messages\".\"scheduled_for\" limit $3",
+2026-05-20T19:03:03.522075028Z       "params": [
+2026-05-20T19:03:03.522077078Z         "pending",
+2026-05-20T19:03:03.522079248Z         "2026-05-20T19:03:03.350Z",
+2026-05-20T19:03:03.522081268Z         50
+2026-05-20T19:03:03.522083338Z       ]
+2026-05-20T19:03:03.522085368Z     }
