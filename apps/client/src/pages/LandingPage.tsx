@@ -3008,10 +3008,13 @@ function Footer() {
             © {new Date().getFullYear()} VeilChat. Made with care for the people
             who deserve privacy.
           </div>
-          <div className="flex items-center gap-2">
+          <Link
+            to="/status"
+            className="flex items-center gap-2 hover:text-[#FCF5EB] transition-colors"
+          >
             <span className="w-1.5 h-1.5 rounded-full bg-[#68BA7F]" />
             All systems operational
-          </div>
+          </Link>
         </div>
       </div>
 

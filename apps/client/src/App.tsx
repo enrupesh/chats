@@ -72,6 +72,7 @@ const DownloadPage = lazy(() => import("./pages/DownloadPage").then((m) => ({ de
 const OurStoryPage = lazy(() => import("./pages/OurStoryPage").then((m) => ({ default: m.OurStoryPage })));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })));
 const WhitepaperPage = lazy(() => import("./pages/WhitepaperPage").then((m) => ({ default: m.WhitepaperPage })));
+const StatusPage = lazy(() => import("./pages/StatusPage").then((m) => ({ default: m.StatusPage })));
 
 // Quiet, branded fallback shown while a route chunk is fetched. Sized
 // like the app shell so layout doesn't visibly jump when it appears.
@@ -216,6 +217,7 @@ export function App() {
               <Route path="/open-source" element={<OpenSourcePage />} />
               <Route path="/download" element={<DownloadPage />} />
               <Route path="/our-story" element={<OurStoryPage />} />
+              <Route path="/status" element={<StatusPage />} />
               <Route path="/i/:token" element={<InviteRedeemPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
