@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Logo,
   PrimaryButton,
@@ -109,6 +109,9 @@ export function WelcomePage() {
           >
             I already have an account →
           </Link>
+
+          {/* ── Watch intro video ── */}
+          <WatchIntroCard />
         </div>
       </div>
 
@@ -142,6 +145,100 @@ export function WelcomePage() {
         </div>
       </div>
     </main>
+  );
+}
+
+/* ─────────────────────────── Watch intro card ─────────────────────────── */
+
+const YT_ID = "bmTKkXD_bqY";
+
+function WatchIntroCard() {
+  const [open, setOpen] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  return (
+    <div
+      className="w-full mt-6 animate-fade-in"
+      style={{ animationDelay: "400ms" }}
+    >
+      {!open ? (
+        /* Collapsed pill — thumbnail + label */
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className={
+            "w-full flex items-center gap-3 rounded-2xl border border-line/60 " +
+            "bg-surface/60 backdrop-blur-sm px-3 py-2.5 " +
+            "hover:border-wa-green/40 hover:bg-surface " +
+            "transition-[border-color,background-color] duration-150 wa-tap text-left"
+          }
+        >
+          {/* Thumbnail */}
+          <div className="relative shrink-0 w-[72px] h-[40px] rounded-lg overflow-hidden bg-black">
+            <img
+              src={`https://img.youtube.com/vi/${YT_ID}/mqdefault.jpg`}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover opacity-80"
+            />
+            {/* Play icon */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-6 h-6 rounded-full bg-wa-green/90 flex items-center justify-center shadow">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="white" aria-hidden="true" className="ml-0.5">
+                  <path d="M5 3l14 9-14 9V3z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Label */}
+          <div className="min-w-0 flex-1">
+            <div className="text-[12.5px] font-semibold text-text leading-tight">
+              Watch the intro
+            </div>
+            <div className="text-[11px] text-text-muted mt-0.5">
+              See how VeilChat works · ~2 min
+            </div>
+          </div>
+
+          {/* Arrow */}
+          <svg
+            width="14" height="14" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" strokeWidth="2.2"
+            strokeLinecap="round" strokeLinejoin="round"
+            className="text-text-faint shrink-0"
+            aria-hidden="true"
+          >
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </button>
+      ) : (
+        /* Expanded inline player */
+        <div className="rounded-2xl overflow-hidden border border-line/60 bg-black">
+          {/* Close bar */}
+          <div className="flex items-center justify-between px-3 py-2 bg-surface/80 backdrop-blur-sm border-b border-line/40">
+            <span className="text-[11.5px] font-semibold text-text">VeilChat — Introduction</span>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="text-[10.5px] text-text-muted hover:text-text transition-colors px-2 py-1 rounded-lg hover:bg-white/10 wa-tap"
+            >
+              Close ✕
+            </button>
+          </div>
+          {/* 16:9 iframe */}
+          <div className="relative w-full" style={{ aspectRatio: "16/9" }}>
+            <iframe
+              ref={iframeRef}
+              src={`https://www.youtube.com/embed/${YT_ID}?autoplay=1&rel=0&modestbranding=1`}
+              title="VeilChat Introduction"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="absolute inset-0 w-full h-full border-0"
+            />
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
