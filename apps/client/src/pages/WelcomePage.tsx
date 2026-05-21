@@ -285,12 +285,7 @@ function ServerStatusBadge({ status }: { status: ServerStatus }) {
       </div>
     );
   }
-  return (
-    <div className="flex items-center gap-2 text-[10.5px] text-red-500">
-      <span className="size-1.5 rounded-full bg-red-500" />
-      Server unreachable
-    </div>
-  );
+  return null;
 }
 
 /* ─────────────────────────── icons ─────────────────────────── */
