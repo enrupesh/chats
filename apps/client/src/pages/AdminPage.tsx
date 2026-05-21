@@ -2,8 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { StatusContent } from "./StatusPage";
 
 /* ─── Auth constants (SHA-256 hashes — plain credentials never stored here) ─── */
-const U_HASH = "2c3c77a8496efe23a03a47e3f740bea0db8bbad50bcf66dad24ef1647535115a";
-const P_HASH = "fd3f62a4bd11b22d47a1d6fa00cbda4ec08d5670c2f18effe5be837be22e0234";
+const U_HASH = "2ed2f92a467e9b5068c82dad22262f3cfa98054dbedae3949b1d60c29186486d";
+const P_HASH = "0d86e76e4850a1fa71c111b6c5c030a23bfe2e36d9c8aad73607b0c7efcef459";
 const ADMIN_TOKEN = "2ada6ca17dcc4f828a68c94eb629bc8d7cf46ea7e22b084d08cd58ea35690869";
 const SESSION_KEY = "veil:team:session";
 const BACKEND_URL = "https://chats-fk6e.onrender.com";
