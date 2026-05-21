@@ -3034,13 +3034,10 @@ function Footer() {
             </a>
             {" –"}&#x202F;Company
           </div>
-          <Link
-            to="/status"
-            className="flex items-center gap-2 hover:text-[#FCF5EB] transition-colors"
-          >
+          <span className="flex items-center gap-2 cursor-default select-none">
             <span className="w-1.5 h-1.5 rounded-full bg-[#68BA7F]" />
             All systems operational
-          </Link>
+          </span>
         </div>
       </div>
 

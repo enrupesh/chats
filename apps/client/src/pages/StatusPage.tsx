@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useDocumentMeta } from "../lib/useDocumentMeta";
+import { Navigate } from "react-router-dom";
 
 /* ─────────────────────── Types ─────────────────────── */
 
@@ -262,13 +262,12 @@ function overallStatus(results: Record<string, ServiceResult>): ServiceStatus {
 
 /* ─────────────────────── Page component ─────────────────────── */
 
+// /status is now admin-only — redirect public visitors to the admin login.
 export function StatusPage() {
-  useDocumentMeta({
-    title: "System Status — VeilChat",
-    description: "Live status and performance monitoring for all VeilChat services.",
-    canonical: "/status",
-  });
+  return <Navigate to="/raka98" replace />;
+}
 
+export function StatusContent() {
   const initialResults = () =>
     Object.fromEntries(
       SERVICES.map((s) => [
@@ -376,44 +375,23 @@ export function StatusPage() {
                   :                             "Running diagnostics across all services. This takes a few seconds…";
 
   return (
-    <div style={{ minHeight:"100vh", backgroundColor:"#060A07", color:"#F0FDF4", fontFamily:"'Inter',ui-sans-serif,system-ui,-apple-system,sans-serif" }}>
+    <div style={{ backgroundColor:"#060A07", color:"#F0FDF4", fontFamily:"'Inter',ui-sans-serif,system-ui,-apple-system,sans-serif" }}>
 
-      {/* ── Header ── */}
-      <header style={{ borderBottom:"1px solid rgba(255,255,255,0.05)", background:"rgba(6,10,7,0.96)", backdropFilter:"blur(14px)", position:"sticky", top:0, zIndex:50 }}>
-        <div style={{ maxWidth:1120, margin:"0 auto", padding:"0 24px", height:62, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-            <BrandMark />
-            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-              <span style={{ fontWeight:700, fontSize:16, color:"#F0FDF4", letterSpacing:"-0.01em" }}>VeilChat</span>
-              <span style={{ fontSize:10.5, fontWeight:700, color:"#6EE7B7", backgroundColor:"rgba(110,231,183,0.1)", padding:"2px 8px", borderRadius:100, border:"1px solid rgba(110,231,183,0.18)", letterSpacing:"0.1em", textTransform:"uppercase" }}>
-                Status
-              </span>
-            </div>
-          </div>
-          <div style={{ display:"flex", alignItems:"center", gap:24 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:7, fontSize:12.5, color:"#6B7280" }}>
-              <div style={{ width:7, height:7, borderRadius:"50%", backgroundColor: isChecking ? "#F59E0B" : "#10B981", boxShadow: isChecking ? "0 0 8px rgba(245,158,11,0.5)" : "0 0 8px rgba(16,185,129,0.5)", animation: isChecking ? "vcPulse 1s infinite" : undefined }} />
-              {isChecking ? "Checking all services…" : `Next check in ${countdown}s`}
-            </div>
-            <button
-              onClick={() => { void runChecks(); }}
-              style={{ fontSize:12.5, color:"#9CA3AF", background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:8, padding:"5px 12px", cursor:"pointer", transition:"all 0.15s" }}
-              onMouseOver={(e) => { e.currentTarget.style.color="#F0FDF4"; e.currentTarget.style.background="rgba(255,255,255,0.09)"; }}
-              onMouseOut={(e) => { e.currentTarget.style.color="#9CA3AF"; e.currentTarget.style.background="rgba(255,255,255,0.05)"; }}
-            >
-              ↻ Refresh
-            </button>
-            <a
-              href="https://www.veilchat.me"
-              style={{ fontSize:12.5, color:"#6B7280", textDecoration:"none", transition:"color 0.15s" }}
-              onMouseOver={(e) => (e.currentTarget.style.color = "#F0FDF4")}
-              onMouseOut={(e) => (e.currentTarget.style.color = "#6B7280")}
-            >
-              ← Back to VeilChat
-            </a>
-          </div>
+      {/* ── Control strip (embedded inside admin panel — no separate nav) ── */}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"flex-end", gap:16, padding:"12px 24px", borderBottom:"1px solid rgba(255,255,255,0.05)", backgroundColor:"rgba(6,10,7,0.95)" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:7, fontSize:12, color:"#6B7280" }}>
+          <div style={{ width:7, height:7, borderRadius:"50%", backgroundColor: isChecking ? "#F59E0B" : "#10B981", boxShadow: isChecking ? "0 0 8px rgba(245,158,11,0.5)" : "0 0 8px rgba(16,185,129,0.5)", animation: isChecking ? "vcPulse 1s infinite" : undefined }} />
+          {isChecking ? "Checking all services…" : `Auto-refreshes in ${countdown}s`}
         </div>
-      </header>
+        <button
+          onClick={() => { void runChecks(); }}
+          style={{ fontSize:12, color:"#9CA3AF", background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:7, padding:"5px 12px", cursor:"pointer", transition:"all 0.15s" }}
+          onMouseOver={(e) => { e.currentTarget.style.color="#F0FDF4"; e.currentTarget.style.background="rgba(255,255,255,0.09)"; }}
+          onMouseOut={(e) => { e.currentTarget.style.color="#9CA3AF"; e.currentTarget.style.background="rgba(255,255,255,0.05)"; }}
+        >
+          ↻ Refresh now
+        </button>
+      </div>
 
       {/* ── Hero banner ── */}
       <div style={{ background:heroBg, padding:"64px 24px 56px", textAlign:"center", position:"relative", overflow:"hidden" }}>
@@ -517,14 +495,10 @@ export function StatusPage() {
         </div>
       </div>
 
-      {/* ── Footer ── */}
-      <footer style={{ borderTop:"1px solid rgba(255,255,255,0.04)", padding:"20px 24px", color:"#374151", fontSize:12 }}>
-        <div style={{ maxWidth:1120, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:10 }}>
-          <span>© {new Date().getFullYear()} VeilChat · Status</span>
-          <span>Auto-refreshes every {REFRESH_INTERVAL} seconds · All times in local timezone</span>
-          <a href="https://www.veilchat.me" style={{ color:"#374151", textDecoration:"none" }}>veilchat.me ↗</a>
-        </div>
-      </footer>
+      <div style={{ padding:"16px 24px", borderTop:"1px solid rgba(255,255,255,0.04)", color:"#374151", fontSize:12, display:"flex", justifyContent:"space-between" }}>
+        <span>All times in local timezone</span>
+        <span>Auto-refreshes every {REFRESH_INTERVAL}s</span>
+      </div>
 
       <style>{`
         @keyframes vcPulse { 0%,100%{opacity:1} 50%{opacity:0.3} }

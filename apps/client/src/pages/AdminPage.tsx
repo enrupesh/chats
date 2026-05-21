@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { StatusContent } from "./StatusPage";
 
 /* ─── Auth constants (SHA-256 hashes — plain credentials never stored here) ─── */
 const U_HASH = "2c3c77a8496efe23a03a47e3f740bea0db8bbad50bcf66dad24ef1647535115a";
@@ -251,6 +252,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
   const { count, history, error } = useLiveUserCount(5000);
   const users = useRegisteredUsers();
   const [tick, setTick] = useState(0);
+  const [activeTab, setActiveTab] = useState<"overview" | "status">("overview");
 
   // Force re-render key on count change for number animation
   useEffect(() => { setTick((t) => t + 1); }, [count]);
@@ -259,39 +261,66 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
   const barMax = Math.max(peak, 1);
   const lastUpdated = history.at(-1)?.ts;
 
-  return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#FCF5EB", fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif", color: "#111B21" }}>
+  const tabStyle = (tab: "overview" | "status"): React.CSSProperties => ({
+    fontSize: 13,
+    fontWeight: 600,
+    padding: "6px 16px",
+    borderRadius: 8,
+    border: "none",
+    cursor: "pointer",
+    transition: "all 0.15s",
+    background: activeTab === tab ? "#2E6F40" : "transparent",
+    color: activeTab === tab ? "white" : "rgba(37,61,44,0.55)",
+  });
 
-      {/* Grid background */}
-      <div style={{ position: "fixed", inset: 0, backgroundImage: "linear-gradient(#253D2C06 1px, transparent 1px), linear-gradient(90deg, #253D2C06 1px, transparent 1px)", backgroundSize: "32px 32px", pointerEvents: "none", zIndex: 0 }} />
+  return (
+    <div style={{ minHeight: "100vh", backgroundColor: activeTab === "status" ? "#060A07" : "#FCF5EB", fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif", color: "#111B21" }}>
+
+      {/* Grid background — only for overview */}
+      {activeTab === "overview" && (
+        <div style={{ position: "fixed", inset: 0, backgroundImage: "linear-gradient(#253D2C06 1px, transparent 1px), linear-gradient(90deg, #253D2C06 1px, transparent 1px)", backgroundSize: "32px 32px", pointerEvents: "none", zIndex: 0 }} />
+      )}
 
       {/* Header */}
-      <header style={{ position: "sticky", top: 0, zIndex: 50, borderBottom: "1px solid rgba(37,61,44,0.09)", backgroundColor: "rgba(252,245,235,0.92)", backdropFilter: "blur(14px)" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <header style={{ position: "sticky", top: 0, zIndex: 50, borderBottom: activeTab === "status" ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(37,61,44,0.09)", backgroundColor: activeTab === "status" ? "rgba(6,10,7,0.96)" : "rgba(252,245,235,0.92)", backdropFilter: "blur(14px)" }}>
+        <div style={{ maxWidth: activeTab === "status" ? "none" : 1100, margin: "0 auto", padding: "0 24px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+          {/* Logo */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
             <div style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: "#2E6F40", display: "grid", placeItems: "center" }}>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="11" width="18" height="11" rx="2" />
                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>
             </div>
-            <span style={{ fontWeight: 800, fontSize: 15, color: "#111B21", letterSpacing: "-0.02em" }}>VeilChat</span>
+            <span style={{ fontWeight: 800, fontSize: 15, color: activeTab === "status" ? "#F0FDF4" : "#111B21", letterSpacing: "-0.02em" }}>VeilChat</span>
             <span style={{ fontSize: 10.5, fontWeight: 700, color: "#2E6F40", backgroundColor: "rgba(46,111,64,0.1)", padding: "2px 9px", borderRadius: 100, border: "1px solid rgba(46,111,64,0.2)", letterSpacing: "0.1em", textTransform: "uppercase" }}>
               Team
             </span>
           </div>
+
+          {/* Tab switcher */}
+          <div style={{ display: "flex", alignItems: "center", gap: 2, backgroundColor: activeTab === "status" ? "rgba(255,255,255,0.06)" : "rgba(37,61,44,0.07)", borderRadius: 10, padding: 3 }}>
+            <button style={tabStyle("overview")} onClick={() => setActiveTab("overview")}>Overview</button>
+            <button style={tabStyle("status")}   onClick={() => setActiveTab("status")}>System Status</button>
+          </div>
+
+          {/* Sign out */}
           <button
             onClick={onSignOut}
-            style={{ fontSize: 13, color: "#253D2C", background: "white", border: "1px solid rgba(37,61,44,0.14)", borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontWeight: 500, transition: "all 0.15s", boxShadow: "0 1px 3px rgba(17,27,33,0.06)" }}
-            onMouseOver={(e) => { e.currentTarget.style.borderColor = "#2E6F40"; e.currentTarget.style.color = "#2E6F40"; }}
-            onMouseOut={(e)  => { e.currentTarget.style.borderColor = "rgba(37,61,44,0.14)"; e.currentTarget.style.color = "#253D2C"; }}
+            style={{ fontSize: 13, color: activeTab === "status" ? "#9CA3AF" : "#253D2C", background: activeTab === "status" ? "rgba(255,255,255,0.06)" : "white", border: activeTab === "status" ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(37,61,44,0.14)", borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontWeight: 500, transition: "all 0.15s", flexShrink: 0 }}
+            onMouseOver={(e) => { e.currentTarget.style.color = activeTab === "status" ? "#F0FDF4" : "#2E6F40"; }}
+            onMouseOut={(e)  => { e.currentTarget.style.color = activeTab === "status" ? "#9CA3AF" : "#253D2C"; }}
           >
             Sign out
           </button>
         </div>
       </header>
 
-      {/* Body */}
+      {/* ── System Status tab ── */}
+      {activeTab === "status" && <StatusContent />}
+
+      {/* ── Overview tab body ── */}
+      {activeTab === "overview" && (
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 24px 80px", position: "relative", zIndex: 1 }}>
 
         {/* Page title */}
@@ -549,6 +578,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
           </div>
         </div>
       </div>
+      )}
 
       <style>{`
         @keyframes taShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(7px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }

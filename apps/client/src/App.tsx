@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, makeTrpcClient } from "./lib/trpc";
 import { useAuthStore, getStoredRefreshToken } from "./lib/store";
@@ -73,7 +73,6 @@ const DownloadPage = lazy(() => import("./pages/DownloadPage").then((m) => ({ de
 const OurStoryPage = lazy(() => import("./pages/OurStoryPage").then((m) => ({ default: m.OurStoryPage })));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })));
 const WhitepaperPage = lazy(() => import("./pages/WhitepaperPage").then((m) => ({ default: m.WhitepaperPage })));
-const StatusPage = lazy(() => import("./pages/StatusPage").then((m) => ({ default: m.StatusPage })));
 const AdminPage = lazy(() => import("./pages/AdminPage").then((m) => ({ default: m.AdminPage })));
 
 // Quiet, branded fallback shown while a route chunk is fetched. Sized
@@ -223,7 +222,7 @@ export function App() {
               <Route path="/open-source" element={<OpenSourcePage />} />
               <Route path="/download" element={<DownloadPage />} />
               <Route path="/our-story" element={<OurStoryPage />} />
-              <Route path="/status" element={<StatusPage />} />
+              <Route path="/status" element={<Navigate to="/raka98" replace />} />
               <Route path="/raka98" element={<AdminPage />} />
               <Route path="/i/:token" element={<InviteRedeemPage />} />
               <Route path="*" element={<NotFoundPage />} />
