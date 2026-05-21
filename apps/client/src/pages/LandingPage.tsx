@@ -1397,8 +1397,8 @@ function YouTubeIntro() {
     const el = containerRef.current;
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
           setActive(true);
           obs.disconnect();
         }
