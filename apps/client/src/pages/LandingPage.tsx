@@ -58,6 +58,7 @@ export function LandingPage() {
       <main id="main">
         <Hero />
         <TrustBar />
+        <YouTubeIntro />
         <Features />
         <Suspense fallback={<LandingSectionPlaceholder minHeight={520} />}>
           <ExplainerVideo />
@@ -1383,6 +1384,135 @@ function MiniBubble({
         </span>
       </div>
     </div>
+  );
+}
+
+/* ───────────────────────── YouTube intro embed ───────────────────────── */
+
+function YouTubeIntro() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(false);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setActive(true);
+          obs.disconnect();
+        }
+      },
+      { rootMargin: "200px" },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  const videoId = "bmTKkXD_bqY";
+
+  return (
+    <section
+      className="py-20 sm:py-28"
+      style={{ backgroundColor: "#F4EDE3" }}
+      aria-label="Introduction video"
+    >
+      <div className="mx-auto max-w-5xl px-5 sm:px-8">
+        {/* Section label + heading */}
+        <div className="text-center mb-10 sm:mb-14">
+          <div className="inline-flex items-center gap-2 mb-4">
+            <span
+              className="h-px w-6 block rounded-full"
+              style={{ backgroundColor: "#2E6F40" }}
+            />
+            <span
+              className="text-[11px] font-bold tracking-[0.22em] uppercase"
+              style={{ color: "#3C5A47" }}
+            >
+              See it in action
+            </span>
+            <span
+              className="h-px w-6 block rounded-full"
+              style={{ backgroundColor: "#2E6F40" }}
+            />
+          </div>
+          <h2
+            className="text-3xl sm:text-4xl font-bold leading-tight tracking-tight"
+            style={{
+              color: "#253D2C",
+              fontFamily: "'Fraunces', serif",
+            }}
+          >
+            Watch the VeilChat introduction.
+          </h2>
+          <p
+            className="mt-3 text-[15.5px] max-w-xl mx-auto leading-relaxed"
+            style={{ color: "#3C5A47" }}
+          >
+            Everything you need to know — in under two minutes.
+          </p>
+        </div>
+
+        {/* Video frame */}
+        <div
+          ref={containerRef}
+          className="relative w-full rounded-2xl overflow-hidden"
+          style={{
+            aspectRatio: "16 / 9",
+            boxShadow:
+              "0 2px 4px rgba(17,27,33,0.06), 0 24px 64px -16px rgba(37,61,44,0.22)",
+            background: "#111",
+            border: "1px solid rgba(37,61,44,0.12)",
+          }}
+        >
+          {active ? (
+            <iframe
+              src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&color=white`}
+              title="VeilChat — Introduction Video"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              className="absolute inset-0 w-full h-full border-0"
+              loading="lazy"
+            />
+          ) : (
+            /* Thumbnail placeholder shown until iframe loads */
+            <div className="absolute inset-0 flex items-center justify-center bg-[#111]">
+              <img
+                src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                alt="VeilChat intro video thumbnail"
+                className="absolute inset-0 w-full h-full object-cover opacity-60"
+              />
+              <div
+                className="relative grid place-items-center w-16 h-16 rounded-full"
+                style={{
+                  backgroundColor: "#2E6F40",
+                  boxShadow: "0 8px 32px rgba(46,111,64,0.5)",
+                }}
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="white"
+                  aria-hidden="true"
+                  className="ml-1"
+                >
+                  <path d="M5 3l14 9-14 9V3z" />
+                </svg>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom trust note */}
+        <p
+          className="text-center text-[12.5px] mt-5"
+          style={{ color: "#3C5A47" }}
+        >
+          No account needed to watch &nbsp;·&nbsp; Hosted on YouTube
+        </p>
+      </div>
+    </section>
   );
 }
 
