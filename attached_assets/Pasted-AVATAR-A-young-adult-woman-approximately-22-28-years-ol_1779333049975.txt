@@ -1,0 +1,144 @@
+AVATAR:
+A young adult woman, approximately 22–28 years old. She should look confident, 
+intelligent, and approachable — like a knowledgeable tech presenter, not a 
+corporate spokesperson. Natural makeup, professional but modern outfit (dark 
+top preferred). Her expression should be energetic and engaging throughout. 
+She should maintain strong eye contact with the camera at all times.
+
+VOICE & SPEAKING STYLE:
+Clear, articulate American English. Her tone should be urgent and gripping 
+during the hook, then transition to warm, confident, and trustworthy for the 
+explanation. She should speak at a slightly fast pace during feature lists 
+to create excitement, and slow down deliberately on emotional and important 
+points for maximum impact. Every sentence should feel intentional — no filler, 
+no hesitation.
+
+VIDEO STYLE:
+Dark, premium, modern tech aesthetic. Deep charcoal or dark navy background. 
+The overall look should feel sleek and serious — like a product from a company 
+that means business. Clean lighting on the presenter. The vibe should say 
+"this is the most serious privacy tool you've ever seen."
+
+CAPTIONS:
+Always-on bold white captions at the bottom of the screen. Key phrases should 
+appear as animated pop-up text callouts in bright green — specifically: 
+"FREE", "OPEN-SOURCE", "ZERO TRACKING", "NO ADS EVER", "END-TO-END ENCRYPTED", 
+"NO PHONE NUMBER NEEDED", "veilchat.me". These callouts should appear exactly 
+when the presenter says those words, with a quick fade-in animation.
+
+B-ROLL / OVERLAYS:
+When the presenter mentions features, show brief animated screen mockups or 
+UI illustrations of a dark-themed chat app on the right side of the frame. 
+Keep it subtle — the presenter is always the focus.
+
+VIDEO LENGTH: Minimum 1 minute 45 seconds. Do not cut the script short.
+
+---
+
+SCRIPT (follow word for word, no improvisation):
+
+[HOOK — High energy, urgent delivery]
+
+"Right now — as you watch this — someone is reading your messages.
+
+Not a hacker. Not a stranger.
+
+The company behind your messaging app.
+
+WhatsApp hands your data to Meta. Telegram stores your messages on their 
+servers in plain text. Even your phone number — the one you use to sign up — 
+is a permanent link between your identity and every conversation you've 
+ever had.
+
+You gave them that. And they kept it.
+
+But what if you didn't have to?"
+
+[PAUSE — 1 second, slight smile]
+
+[THE REVEAL]
+
+"This is VeilChat.
+
+The world's most private messaging app. And I'm going to show you exactly 
+why nothing else comes close."
+
+[FEATURES — Confident, flowing delivery]
+
+"VeilChat is fully end-to-end encrypted. That means every single message 
+you send — every photo, every voice note, every file — is scrambled on 
+YOUR device before it ever leaves. By the time it reaches the server, 
+it's unreadable.
+
+Not just to strangers. To us too. We literally cannot read your messages. 
+Not because we promise not to — because it's technically impossible.
+
+And before you ask — yes, VeilChat is completely open-source. Every line 
+of code is public. Anyone in the world can audit it, review it, and verify 
+our claims. There is nowhere to hide. We chose transparency on purpose.
+
+We use the same Signal Protocol that powers the most trusted encrypted 
+messengers in the world — but we've built something even more powerful 
+around it."
+
+[DIFFERENTIATORS — Slightly faster, punchy]
+
+"Here's what makes VeilChat different.
+
+No ads. Ever. Not now, not later. We have no business model built on 
+your data because we don't collect your data.
+
+No phone number required. You can create a completely anonymous Random ID — 
+no email, no phone, no name. Just a private key that exists only on your 
+device. Nothing on our servers connects back to who you are.
+
+The Vault — a hidden, biometric-locked second inbox inside the app. 
+Chats inside the Vault don't appear on your screen, don't show up in 
+notifications, and are invisible even to someone holding your unlocked phone.
+
+View-once messages that self-destruct after opening. Disappearing chats. 
+A privacy blur that activates the moment someone looks over your shoulder.
+
+And it works everywhere — on your phone, your tablet, your laptop — 
+as a web app, no download required."
+
+[HOW TO GET STARTED — Warm, welcoming delivery]
+
+"Getting started takes less than sixty seconds.
+
+Go to veilchat.me. You'll see three options.
+
+Sign up with your email — quick, simple, verified with a one-time code.
+
+Sign up with your phone number — just as easy.
+
+Or — and this is my personal favourite — create a Random ID. 
+No email. No phone. Completely anonymous from the very first second. 
+You'll get a unique invite link to share with the people you want to talk to.
+
+Once you're in, you can start chatting instantly. Search for people 
+by username, accept connection requests, or share your private invite link. 
+Every conversation is encrypted before it begins."
+
+[CLOSE — Powerful, direct, empowering]
+
+"WhatsApp built a business on your conversations.
+Telegram built a platform on your trust.
+VeilChat was built on one single idea —
+
+Your privacy is not a feature. It is your right.
+
+This is free. This is open. This is yours.
+
+Go to veilchat.me and start your first private conversation today.
+
+Because the best time to take back your privacy — was yesterday.
+The second best time — is right now."
+
+---
+
+END CARD:
+Hold on the presenter for 2 seconds after the last line, then fade to a 
+dark screen showing the text "veilchat.me" in white, centered, with the 
+tagline "End-to-end encrypted. No ads. No tracking. Free forever." 
+Hold for 4 seconds before fade out.
