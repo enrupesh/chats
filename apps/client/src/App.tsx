@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc, makeTrpcClient } from "./lib/trpc";
@@ -135,7 +135,7 @@ export function App() {
   // Privacy: blur the entire app when the tab loses focus or is hidden,
   // making screenshots / app-switcher previews far less useful to a
   // shoulder-surfer. Honours the user's `screenshotBlurEnabled` toggle.
-  usePrivacyBlur();
+  const { isBlurred, dismiss } = usePrivacyBlur();
 
   // Android native setup — status bar theming, splash hide, back button,
   // and app-lifecycle events. Runs only inside the Capacitor shell; the
@@ -168,69 +168,79 @@ export function App() {
     <AppErrorBoundary>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
-          {/* Animated intro overlay — renders on top of everything, only on
-              Android. Mounts immediately so it covers the RouteFallback and
-              unmounts after its own animation (~1.3 s) completes. */}
-          {showIntro && (
-            <NativeIntro onDone={() => setShowIntro(false)} />
-          )}
-          <SessionBootstrap />
-          <SessionSync />
-          <SessionGuard />
-          <Suspense fallback={<RouteFallback />}>
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/welcome" element={<WelcomePage />} />
-              <Route path="/signup/email" element={<EmailSignupPage />} />
-              <Route path="/signup/phone" element={<PhoneSignupPage />} />
-              <Route path="/signup/random" element={<RandomIdSignupPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/login/phone" element={<PhoneLoginPage />} />
-              <Route path="/login/random" element={<RandomLoginPage />} />
-              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="/chats" element={<ChatsPage />} />
-              <Route path="/chats/:peerId" element={<ChatThreadPage />} />
-              <Route path="/profile/:peerId" element={<ProfilePage />} />
-              <Route path="/groups" element={<GroupsPage />} />
-              <Route path="/groups/:groupId" element={<GroupChatPage />} />
-              <Route path="/groups/:groupId/settings" element={<GroupSettingsPage />} />
-              <Route path="/invite" element={<InvitePage />} />
-              <Route path="/connections" element={<ConnectionsPage />} />
-              <Route path="/discover" element={<DiscoverPage />} />
-              <Route path="/discover/:userId" element={<DiscoverProfilePage />} />
-              <Route path="/settings/*" element={<SettingsPage />} />
-              <Route path="/vault" element={<VaultPage />} />
-              <Route path="/privacy-report" element={<PrivacyReportPage />} />
-              <Route path="/under-the-hood" element={<UnderTheHoodPage />} />
-              <Route path="/what-we-store" element={<WhatWeStorePage />} />
-              <Route path="/focus-mode" element={<FocusModePage />} />
-              <Route path="/sound" element={<SoundPage />} />
-              <Route path="/promises" element={<PromisesPage />} />
-              <Route path="/encryption" element={<EncryptionPage />} />
-              <Route path="/blog" element={<BlogIndexPage />} />
-              <Route path="/blog/whatsapp-privacy-truth" element={<WhatsappPrivacyPage />} />
-              <Route path="/blog/signal-vs-whatsapp" element={<SignalVsWhatsappPage />} />
-              <Route path="/blog/best-encrypted-messengers-2026" element={<BestEncryptedMessengersPage />} />
-              <Route path="/blog/why-open-source-matters-in-messaging" element={<WhyOpenSourcePage />} />
-              <Route path="/blog/how-to-choose-encrypted-messenger-2026" element={<HowToChooseEncryptedMessengerPage />} />
-              <Route path="/blog/messenger-metadata-leaks" element={<MessengerMetadataLeaksPage />} />
-              <Route path="/blog/messenger-without-phone-number" element={<MessengerWithoutPhoneNumberPage />} />
-              <Route path="/whitepaper" element={<WhitepaperPage />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-              <Route path="/terms" element={<TermsPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/open-source" element={<OpenSourcePage />} />
-              <Route path="/download" element={<DownloadPage />} />
-              <Route path="/our-story" element={<OurStoryPage />} />
-              <Route path="/status" element={<Navigate to="/raka98" replace />} />
-              <Route path="/raka98" element={<AdminPage />} />
-              <Route path="/i/:token" element={<InviteRedeemPage />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </Suspense>
-          <PushPermissionPrompt />
-          <DailyVerificationGate />
-          <ToastViewport />
+          {/* All app content lives inside .veil-app-wrapper so the CSS
+              privacy blur filter targets only this div — leaving the
+              sibling PrivacyScreen overlay unaffected and fully visible. */}
+          <div className="veil-app-wrapper">
+            {/* Animated intro overlay — renders on top of everything, only on
+                Android. Mounts immediately so it covers the RouteFallback and
+                unmounts after its own animation (~1.3 s) completes. */}
+            {showIntro && (
+              <NativeIntro onDone={() => setShowIntro(false)} />
+            )}
+            <SessionBootstrap />
+            <SessionSync />
+            <SessionGuard />
+            <Suspense fallback={<RouteFallback />}>
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/welcome" element={<WelcomePage />} />
+                <Route path="/signup/email" element={<EmailSignupPage />} />
+                <Route path="/signup/phone" element={<PhoneSignupPage />} />
+                <Route path="/signup/random" element={<RandomIdSignupPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/login/phone" element={<PhoneLoginPage />} />
+                <Route path="/login/random" element={<RandomLoginPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/chats" element={<ChatsPage />} />
+                <Route path="/chats/:peerId" element={<ChatThreadPage />} />
+                <Route path="/profile/:peerId" element={<ProfilePage />} />
+                <Route path="/groups" element={<GroupsPage />} />
+                <Route path="/groups/:groupId" element={<GroupChatPage />} />
+                <Route path="/groups/:groupId/settings" element={<GroupSettingsPage />} />
+                <Route path="/invite" element={<InvitePage />} />
+                <Route path="/connections" element={<ConnectionsPage />} />
+                <Route path="/discover" element={<DiscoverPage />} />
+                <Route path="/discover/:userId" element={<DiscoverProfilePage />} />
+                <Route path="/settings/*" element={<SettingsPage />} />
+                <Route path="/vault" element={<VaultPage />} />
+                <Route path="/privacy-report" element={<PrivacyReportPage />} />
+                <Route path="/under-the-hood" element={<UnderTheHoodPage />} />
+                <Route path="/what-we-store" element={<WhatWeStorePage />} />
+                <Route path="/focus-mode" element={<FocusModePage />} />
+                <Route path="/sound" element={<SoundPage />} />
+                <Route path="/promises" element={<PromisesPage />} />
+                <Route path="/encryption" element={<EncryptionPage />} />
+                <Route path="/blog" element={<BlogIndexPage />} />
+                <Route path="/blog/whatsapp-privacy-truth" element={<WhatsappPrivacyPage />} />
+                <Route path="/blog/signal-vs-whatsapp" element={<SignalVsWhatsappPage />} />
+                <Route path="/blog/best-encrypted-messengers-2026" element={<BestEncryptedMessengersPage />} />
+                <Route path="/blog/why-open-source-matters-in-messaging" element={<WhyOpenSourcePage />} />
+                <Route path="/blog/how-to-choose-encrypted-messenger-2026" element={<HowToChooseEncryptedMessengerPage />} />
+                <Route path="/blog/messenger-metadata-leaks" element={<MessengerMetadataLeaksPage />} />
+                <Route path="/blog/messenger-without-phone-number" element={<MessengerWithoutPhoneNumberPage />} />
+                <Route path="/whitepaper" element={<WhitepaperPage />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                <Route path="/terms" element={<TermsPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/open-source" element={<OpenSourcePage />} />
+                <Route path="/download" element={<DownloadPage />} />
+                <Route path="/our-story" element={<OurStoryPage />} />
+                <Route path="/status" element={<Navigate to="/raka98" replace />} />
+                <Route path="/raka98" element={<AdminPage />} />
+                <Route path="/i/:token" element={<InviteRedeemPage />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </Suspense>
+            <PushPermissionPrompt />
+            <DailyVerificationGate />
+            <ToastViewport />
+          </div>
+          {/* Privacy screen overlay — sits outside .veil-app-wrapper so it
+              is never affected by the blur/brightness filter. Renders only
+              when the privacy blur is active and lets the user dismiss it
+              with a double-tap. */}
+          {isBlurred && <PrivacyScreen onDismiss={dismiss} />}
         </QueryClientProvider>
       </trpc.Provider>
     </AppErrorBoundary>
@@ -336,14 +346,132 @@ function SessionBootstrap() {
 export { useNavigate };
 
 /**
+ * Overlay shown whenever the privacy blur is active. Renders outside
+ * .veil-app-wrapper so it is never affected by the blur/brightness
+ * filter. A double-tap dismisses it and restores the app.
+ */
+function PrivacyScreen({ onDismiss }: { onDismiss: () => void }) {
+  const lastTapRef = useRef(0);
+
+  function handleInteraction() {
+    const now = Date.now();
+    if (now - lastTapRef.current < 350) {
+      onDismiss();
+    }
+    lastTapRef.current = now;
+  }
+
+  return (
+    <div
+      onClick={handleInteraction}
+      onTouchEnd={handleInteraction}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 2147483647,
+        background: "#000",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        cursor: "pointer",
+        WebkitTapHighlightColor: "transparent",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "16px",
+          maxWidth: "300px",
+          padding: "0 24px",
+          textAlign: "center",
+          userSelect: "none",
+        }}
+      >
+        {/* Shield icon */}
+        <svg
+          width="36"
+          height="36"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="rgba(255,255,255,0.5)"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+
+        <p
+          style={{
+            margin: 0,
+            fontSize: "13px",
+            lineHeight: "1.6",
+            color: "rgba(255,255,255,0.75)",
+            fontFamily:
+              "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+          }}
+        >
+          This screen is shown for your security. It helps protect you from
+          browser-based attacks and unsafe external access.
+        </p>
+
+        <p
+          style={{
+            margin: 0,
+            fontSize: "12px",
+            color: "rgba(255,255,255,0.4)",
+            fontFamily:
+              "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+          }}
+        >
+          Double-tap the screen to return to the app.
+        </p>
+
+        <p
+          style={{
+            margin: 0,
+            fontSize: "11px",
+            color: "rgba(255,255,255,0.25)",
+            fontFamily:
+              "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+          }}
+        >
+          To turn this off, go to Settings &rarr; Privacy &rarr; Blur on App
+          Switch and disable it.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/**
  * Apply a heavy CSS blur (and optional black overlay) to the whole app
  * whenever the tab is hidden / window is blurred. Cleared the moment
  * the user comes back. Disable via Settings → Privacy.
+ *
+ * Returns `isBlurred` so the caller can render the PrivacyScreen overlay,
+ * and `dismiss` so a double-tap on that overlay can clear the blur.
  */
-function usePrivacyBlur() {
+function usePrivacyBlur(): { isBlurred: boolean; dismiss: () => void } {
   const enabled = useStealthPrefs(
     (s) => s.prefs?.screenshotBlurEnabled ?? true,
   );
+  const [isBlurred, setIsBlurred] = useState(false);
+
+  // When the user double-taps the privacy screen we set this flag so
+  // apply() skips the blur until the window naturally regains focus.
+  const dismissedRef = useRef(false);
+
+  const dismiss = useCallback(() => {
+    dismissedRef.current = true;
+    document.documentElement.classList.remove("veil-privacy-blur");
+    setIsBlurred(false);
+    // Try to pull keyboard focus back to the window.
+    window.focus();
+  }, []);
+
   useEffect(() => {
     const cls = "veil-privacy-blur";
     const root = document.documentElement;
@@ -359,15 +487,28 @@ function usePrivacyBlur() {
     function apply() {
       if (!enabled) {
         root.classList.remove(cls);
+        setIsBlurred(false);
         return;
       }
       const focusBlur =
         document.visibilityState === "hidden" || !document.hasFocus();
       const holding = Date.now() < holdUntil;
-      root.classList.toggle(cls, focusBlur || holding || captureActive);
+      const shouldBlur = focusBlur || holding || captureActive;
+
+      // If the window has naturally re-gained focus, clear the dismiss flag
+      // so it takes effect again on the next blur.
+      if (!shouldBlur) dismissedRef.current = false;
+
+      // While dismissed, don't re-apply the blur (user tapped to return).
+      if (dismissedRef.current && shouldBlur) return;
+
+      root.classList.toggle(cls, shouldBlur);
+      setIsBlurred(shouldBlur);
     }
 
     function holdBlur(ms: number) {
+      // A screenshot key was pressed — clear any dismiss so the hold takes effect.
+      dismissedRef.current = false;
       holdUntil = Math.max(holdUntil, Date.now() + ms);
       if (holdTimer) clearTimeout(holdTimer);
       apply();
@@ -428,6 +569,7 @@ function usePrivacyBlur() {
     if (md && originalGDM) {
       md.getDisplayMedia = async (constraints?: DisplayMediaStreamOptions) => {
         const stream = await originalGDM(constraints);
+        dismissedRef.current = false;
         captureActive = true;
         apply();
         const clear = () => {
@@ -458,4 +600,6 @@ function usePrivacyBlur() {
       root.classList.remove(cls);
     };
   }, [enabled]);
+
+  return { isBlurred, dismiss };
 }
