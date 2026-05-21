@@ -133,6 +133,30 @@ app.get("/health", async (): Promise<HealthResponse> => {
   };
 });
 
+// ── Detailed health (used by status page — no auth required, no sensitive data) ─
+app.get("/health/detailed", {
+  config: {},
+}, async (_req, reply) => {
+  let dbStatus: "ok" | "error" = "error";
+  let dbLatency: number | null = null;
+  try {
+    const db = getDb();
+    const t = Date.now();
+    await db.select({ id: schema.users.id }).from(schema.users).limit(1);
+    dbLatency = Date.now() - t;
+    dbStatus = "ok";
+  } catch {
+    dbStatus = "error";
+  }
+  await reply.header("Access-Control-Allow-Origin", "*").send({
+    api: "ok",
+    database: dbStatus,
+    databaseLatencyMs: dbLatency,
+    uptime: Math.round(process.uptime()),
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // ── Presence tracking ─────────────────────────────────────────────────────────
 // Each browser tab POSTs /ping every 30 s with a stable session ID.
 // Active = seen within the last 2 minutes.

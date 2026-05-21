@@ -43,56 +43,109 @@ const SERVICES: Service[] = [
 
 /* ─────────────────────── Live checks ─────────────────────── */
 
-async function checkApi(): Promise<{ ok: boolean; latency: number; detail?: string }> {
-  const start = performance.now();
+// Generous timeout: Render free-tier instances cold-start in 30-60s.
+// We give 20s so a waking server doesn't get falsely flagged as an outage.
+const FETCH_TIMEOUT = 20_000;
+
+interface CheckResult { ok: boolean; latency: number; detail?: string }
+
+// Try CORS mode first (lets us read response status). If CORS fails (network
+// error, pre-flight block, etc.) fall back to no-cors — an opaque response
+// still proves the server is reachable.
+async function fetchWithFallback(url: string, init?: RequestInit): Promise<Response | "opaque" | null> {
   try {
-    // Use no-cors so the browser doesn't block the request due to missing CORS
-    // headers on the /health endpoint. An opaque response means the server responded.
-    await fetch(`${BACKEND_URL}/health`, {
-      mode: "no-cors",
+    const res = await fetch(url, {
+      ...init,
+      mode: "cors",
       cache: "no-store",
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(FETCH_TIMEOUT),
     });
-    const latency = Math.round(performance.now() - start);
-    return { ok: true, latency, detail: "Responding" };
+    return res;
   } catch {
-    return { ok: false, latency: Math.round(performance.now() - start), detail: "Unreachable" };
+    // CORS mode failed — try opaque (no-cors)
+    try {
+      await fetch(url, {
+        mode: "no-cors",
+        cache: "no-store",
+        signal: AbortSignal.timeout(FETCH_TIMEOUT),
+      });
+      return "opaque"; // Server responded but we can't read it
+    } catch {
+      return null; // Genuinely unreachable
+    }
   }
 }
 
-async function checkAuth(): Promise<{ ok: boolean; latency: number; detail?: string }> {
+async function checkApi(): Promise<CheckResult> {
+  const start = performance.now();
+  const res = await fetchWithFallback(`${BACKEND_URL}/health`);
+  const latency = Math.round(performance.now() - start);
+  if (res === null) return { ok: false, latency, detail: "Unreachable" };
+  if (res === "opaque") return { ok: true, latency, detail: "Responding" };
+  return { ok: res.ok || res.status < 500, latency, detail: res.ok ? "Responding" : `HTTP ${res.status}` };
+}
+
+// Detailed health check — returns real DB status from the server.
+// Falls back gracefully if the endpoint isn't deployed yet.
+interface DetailedHealth {
+  api: "ok";
+  database: "ok" | "error";
+  databaseLatencyMs: number | null;
+  uptime: number;
+}
+async function checkDetailed(): Promise<DetailedHealth | null> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/health/detailed`, {
+      mode: "cors",
+      cache: "no-store",
+      signal: AbortSignal.timeout(FETCH_TIMEOUT),
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as DetailedHealth;
+  } catch {
+    return null;
+  }
+}
+
+async function checkAuth(): Promise<CheckResult> {
   const start = performance.now();
   try {
     const res = await fetch(`${BACKEND_URL}/trpc/auth.refresh`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({}),
+      mode: "cors",
       cache: "no-store",
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(FETCH_TIMEOUT),
     });
     const latency = Math.round(performance.now() - start);
+    // Any non-5xx response means auth routing works (4xx = auth logic running fine)
     return {
       ok: res.status < 500,
       latency,
       detail: res.status < 500 ? "Responding" : `Error ${res.status}`,
     };
   } catch {
-    return { ok: false, latency: Math.round(performance.now() - start), detail: "Unreachable" };
+    // CORS failure doesn't mean the service is down — try a no-cors probe
+    const probe = await fetchWithFallback(`${BACKEND_URL}/health`);
+    const latency = Math.round(performance.now() - start);
+    if (probe === null) return { ok: false, latency, detail: "Unreachable" };
+    // Server reachable but CORS blocked the auth read — still operational
+    return { ok: true, latency, detail: "Responding" };
   }
 }
 
-async function checkWebSocket(): Promise<{ ok: boolean; latency: number; detail?: string }> {
+async function checkWebSocket(): Promise<CheckResult> {
   return new Promise((resolve) => {
     const start = performance.now();
-    const wsUrl =
-      BACKEND_URL.replace("https://", "wss://").replace("http://", "ws://") + "/ws";
+    const wsUrl = BACKEND_URL.replace("https://", "wss://").replace("http://", "ws://") + "/ws";
     let settled = false;
     const settle = (ok: boolean, detail?: string) => {
       if (settled) return;
       settled = true;
       resolve({ ok, latency: Math.round(performance.now() - start), detail });
     };
-    const timeout = setTimeout(() => settle(false, "Timeout"), 7000);
+    const timeout = setTimeout(() => settle(false, "Timeout"), 12_000);
     try {
       const ws = new WebSocket(wsUrl);
       ws.onopen = () => {
@@ -102,13 +155,12 @@ async function checkWebSocket(): Promise<{ ok: boolean; latency: number; detail?
       };
       ws.onclose = (e) => {
         clearTimeout(timeout);
-        const serverSideClosed = e.code !== 1006 && e.code !== 0;
-        settle(serverSideClosed, serverSideClosed ? "Reachable" : "Unreachable");
+        // Code 1006 = abnormal close (never sent by server) = real failure.
+        // Any other code means the server actively closed — it's up.
+        const serverReachable = e.code !== 1006 && e.code !== 0;
+        settle(serverReachable, serverReachable ? "Connected" : "Unreachable");
       };
-      ws.onerror = () => {
-        clearTimeout(timeout);
-        settle(false, "Connection error");
-      };
+      ws.onerror = () => { /* onclose fires after onerror, let it settle */ };
     } catch {
       clearTimeout(timeout);
       settle(false, "Failed");
@@ -116,18 +168,13 @@ async function checkWebSocket(): Promise<{ ok: boolean; latency: number; detail?
   });
 }
 
-async function checkWebApp(): Promise<{ ok: boolean; latency: number; detail?: string }> {
+async function checkWebApp(): Promise<CheckResult> {
   const start = performance.now();
-  try {
-    await fetch(FRONTEND_URL, {
-      mode: "no-cors",
-      cache: "no-store",
-      signal: AbortSignal.timeout(8000),
-    });
-    return { ok: true, latency: Math.round(performance.now() - start), detail: "Serving" };
-  } catch {
-    return { ok: false, latency: Math.round(performance.now() - start), detail: "Unreachable" };
-  }
+  const res = await fetchWithFallback(FRONTEND_URL);
+  const latency = Math.round(performance.now() - start);
+  if (res === null) return { ok: false, latency, detail: "Unreachable" };
+  if (res === "opaque") return { ok: true, latency, detail: "Serving" };
+  return { ok: res.ok, latency, detail: res.ok ? "Serving" : `HTTP ${res.status}` };
 }
 
 /* ─────────────────────── History helpers ─────────────────────── */
@@ -195,11 +242,13 @@ function statusLabel(s: ServiceStatus) {
   return "Unknown";
 }
 
-function latencyBucket(ms: number | null): ServiceStatus {
-  if (ms === null) return "unknown";
-  if (ms < 400) return "operational";
-  if (ms < 1200) return "degraded";
-  return "outage";
+// High latency = degraded, never "outage". Outage means the service is
+// completely unreachable, not merely slow. Render free-tier cold starts
+// can easily exceed 1–2 s, so we use generous thresholds.
+function latencyBucket(ms: number | null): "operational" | "degraded" {
+  if (ms === null) return "operational";
+  if (ms < 3000) return "operational";
+  return "degraded";
 }
 
 function overallStatus(results: Record<string, ServiceResult>): ServiceStatus {
@@ -239,23 +288,43 @@ export function StatusPage() {
     setIsChecking(true);
     setCountdown(REFRESH_INTERVAL);
 
-    const [apiRes, authRes, wsRes, webRes] = await Promise.all([
+    // Run all checks in parallel. `checkDetailed` gives us real DB status
+    // directly from the server — no cascade from the API check.
+    const [apiRes, authRes, wsRes, webRes, detailed] = await Promise.all([
       checkApi(),
       checkAuth(),
       checkWebSocket(),
       checkWebApp(),
+      checkDetailed(),
     ]);
 
     const now = new Date();
     const iso = now.toISOString();
 
+    // Database status: use the real server-reported value when available.
+    // Fall back to inferring from API reachability only if /health/detailed
+    // hasn't been deployed yet (returns null).
+    const dbOk = detailed !== null
+      ? detailed.database === "ok"
+      : apiRes.ok; // fallback: if API is up, DB is likely up
+    const dbLatency = detailed?.databaseLatencyMs ?? null;
+    const dbDetail  = detailed !== null
+      ? (detailed.database === "ok" ? "Connected" : "Error")
+      : (apiRes.ok ? "Connected" : "Unreachable");
+
+    // Media Storage: Cloudflare R2 is infrastructure-level and doesn't have a
+    // dedicated health endpoint we can call. We report it as operational when
+    // the API is reachable (the API would fail first if R2 were misconfigured).
+    // If the API itself is unreachable, mark media as unknown rather than outage.
+    const mediaStatus: ServiceStatus = apiRes.ok ? "operational" : "unknown";
+
     const newResults: Record<string, ServiceResult> = {
-      api:       { status: apiRes.ok  ? latencyBucket(apiRes.latency)  : "outage", latency: apiRes.latency,  detail: apiRes.detail  ?? null, checkedAt: iso },
-      auth:      { status: authRes.ok ? latencyBucket(authRes.latency) : "outage", latency: authRes.latency, detail: authRes.detail ?? null, checkedAt: iso },
-      websocket: { status: wsRes.ok   ? "operational"                  : "outage", latency: wsRes.latency,   detail: wsRes.detail   ?? null, checkedAt: iso },
-      webapp:    { status: webRes.ok  ? latencyBucket(webRes.latency)  : "outage", latency: webRes.latency,  detail: webRes.detail  ?? null, checkedAt: iso },
-      database:  { status: apiRes.ok  ? "operational"                  : "outage", latency: null,            detail: apiRes.ok ? "Connected" : "Unreachable", checkedAt: iso },
-      media:     { status: apiRes.ok  ? "operational"                  : "outage", latency: null,            detail: apiRes.ok ? "Serving"   : "Unreachable", checkedAt: iso },
+      api:       { status: apiRes.ok  ? latencyBucket(apiRes.latency)  : "outage",      latency: apiRes.latency,  detail: apiRes.detail  ?? null, checkedAt: iso },
+      auth:      { status: authRes.ok ? latencyBucket(authRes.latency) : "outage",      latency: authRes.latency, detail: authRes.detail ?? null, checkedAt: iso },
+      websocket: { status: wsRes.ok   ? "operational"                  : "outage",      latency: wsRes.latency,   detail: wsRes.detail   ?? null, checkedAt: iso },
+      webapp:    { status: webRes.ok  ? latencyBucket(webRes.latency)  : "outage",      latency: webRes.latency,  detail: webRes.detail  ?? null, checkedAt: iso },
+      database:  { status: dbOk       ? "operational"                  : "outage",      latency: dbLatency,       detail: dbDetail,               checkedAt: iso },
+      media:     { status: mediaStatus,                                                  latency: null,            detail: apiRes.ok ? "Serving" : "Status unknown", checkedAt: iso },
     };
 
     setResults(newResults);
