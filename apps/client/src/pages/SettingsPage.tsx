@@ -290,6 +290,7 @@ export function SettingsPage() {
         icon: "📋",
         render: () => (
           <SettingsSectionPanel>
+            <TransparencyVideoRow />
             <SettingsRow
               label="Our promises"
               sub="No ads, no data sharing, local-first, independently audited — in plain words"
@@ -561,6 +562,62 @@ function CategoryLink({
  */
 function SettingsSectionPanel({ children }: { children: React.ReactNode }) {
   return <div className="bg-panel md:bg-bg">{children}</div>;
+}
+
+function TransparencyVideoRow() {
+  const [open, setOpen] = useState(false);
+  const VIDEO_ID = "bmTKkXD_bqY";
+  return (
+    <div className="border-b border-line/60">
+      {!open ? (
+        <button
+          onClick={() => setOpen(true)}
+          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-line/20 active:bg-line/30 transition-colors text-left"
+        >
+          <div className="relative shrink-0 w-14 h-9 rounded-md overflow-hidden bg-black">
+            <img
+              src={`https://img.youtube.com/vi/${VIDEO_ID}/mqdefault.jpg`}
+              alt=""
+              className="w-full h-full object-cover opacity-90"
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-5 h-5 rounded-full bg-[#1a3d2b]/80 flex items-center justify-center">
+                <svg className="w-2.5 h-2.5 text-white fill-white ml-0.5" viewBox="0 0 10 10">
+                  <path d="M2 1.5l7 3.5-7 3.5V1.5z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-medium text-text leading-tight">Watch the intro</div>
+            <div className="text-xs text-text-muted mt-0.5">See how VeilChat protects your privacy · ~2 min</div>
+          </div>
+          <ChevronRightIcon className="w-4 h-4 text-text-muted shrink-0" />
+        </button>
+      ) : (
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-text-muted uppercase tracking-wide">Intro video</span>
+            <button
+              onClick={() => setOpen(false)}
+              className="text-xs text-text-muted hover:text-text px-2 py-0.5 rounded hover:bg-line/20 transition-colors"
+            >
+              Close ✕
+            </button>
+          </div>
+          <div className="relative w-full rounded-lg overflow-hidden bg-black" style={{ paddingBottom: "56.25%" }}>
+            <iframe
+              className="absolute inset-0 w-full h-full"
+              src={`https://www.youtube.com/embed/${VIDEO_ID}?autoplay=1&rel=0&modestbranding=1`}
+              title="VeilChat intro"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
