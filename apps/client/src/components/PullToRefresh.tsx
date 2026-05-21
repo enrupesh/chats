@@ -121,8 +121,9 @@ export function PullToRefresh({
   const indicatorProgress = Math.min(1, pullY / THRESHOLD);
 
   return (
-    <div className={`relative ${className ?? ""}`}>
-      {/* ── Pull indicator ── */}
+    <div className={`relative overflow-hidden ${className ?? ""}`}>
+      {/* ── Pull indicator — only rendered when actively pulling or refreshing ── */}
+      {state !== "idle" && (
       <div
         aria-hidden="true"
         style={{
@@ -208,6 +209,7 @@ export function PullToRefresh({
           )}
         </div>
       </div>
+      )}
 
       {/* ── Scrollable content — shifts down with the pull ── */}
       <div
