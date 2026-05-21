@@ -68,6 +68,7 @@ export function LandingPage() {
         <VerifiedByOpenSource />
         <PressStrip />
         <Testimonials />
+        <BrandAmbassador />
         <HowItWorks />
         <Security />
         <Comparison />
@@ -2308,6 +2309,209 @@ function Testimonials() {
               </figcaption>
             </figure>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ───────────────────────── Brand Ambassador ───────────────────────── */
+
+function BrandAmbassador() {
+  return (
+    <section
+      className="relative overflow-hidden"
+      style={{ backgroundColor: "#253D2C" }}
+      aria-label="Meet our brand ambassador"
+    >
+      {/* Subtle decorative background texture */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(ellipse 80% 60% at 70% 50%, rgba(46,111,64,0.18) 0%, transparent 70%)",
+        }}
+      />
+
+      <div className="relative mx-auto max-w-7xl px-5 sm:px-8 py-20 sm:py-28">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+
+          {/* ── Image column ── */}
+          <div className="relative order-2 lg:order-1">
+            {/* Glow halo behind the image */}
+            <div
+              aria-hidden="true"
+              className="absolute -inset-4 rounded-3xl blur-2xl opacity-30"
+              style={{ backgroundColor: "#2E6F40" }}
+            />
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10">
+              <img
+                src="/vanessa-laurent.png"
+                alt="Vanessa Laurent — Brand Ambassador & Core Team Member at VeilChat"
+                className="w-full h-auto object-cover block"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+
+            {/* Floating credential badge */}
+            <div
+              className="absolute -bottom-5 -right-3 sm:-right-6 flex items-center gap-3 rounded-2xl px-4 py-3 shadow-xl ring-1 ring-white/10"
+              style={{ backgroundColor: "#2E6F40" }}
+            >
+              <div
+                className="grid place-items-center w-9 h-9 rounded-full shrink-0 text-base font-bold"
+                style={{ backgroundColor: "#CFFFDC", color: "#253D2C" }}
+              >
+                VL
+              </div>
+              <div>
+                <div className="text-white text-[13.5px] font-semibold leading-tight">
+                  Vanessa Laurent
+                </div>
+                <div className="text-[#CFFFDC]/80 text-[11.5px] mt-0.5 leading-tight">
+                  Core Team · VeilChat
+                </div>
+              </div>
+              {/* Verified tick */}
+              <svg
+                className="w-5 h-5 shrink-0 ml-1"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="12" fill="#CFFFDC" />
+                <path
+                  d="M7 12.5l3.5 3.5 6.5-7"
+                  stroke="#253D2C"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+          </div>
+
+          {/* ── Text column ── */}
+          <div className="order-1 lg:order-2 flex flex-col gap-6">
+            {/* Label chip */}
+            <div className="inline-flex items-center gap-2 w-fit">
+              <span
+                className="h-px w-6 block rounded-full"
+                style={{ backgroundColor: "#2E6F40" }}
+              />
+              <span
+                className="text-[11px] font-bold tracking-[0.22em] uppercase"
+                style={{ color: "#CFFFDC" }}
+              >
+                Meet the team
+              </span>
+            </div>
+
+            {/* Name & title */}
+            <div>
+              <h2
+                className="text-4xl sm:text-5xl font-bold leading-[1.1] tracking-tight"
+                style={{
+                  color: "#FFFFFF",
+                  fontFamily: "'Inter', sans-serif",
+                }}
+              >
+                Vanessa Laurent
+              </h2>
+              <p
+                className="mt-2 text-base font-medium tracking-wide"
+                style={{ color: "#2E6F40" }}
+              >
+                Brand Ambassador &amp; Core Team Member
+              </p>
+            </div>
+
+            {/* Divider */}
+            <div
+              className="w-12 h-[2px] rounded-full"
+              style={{ backgroundColor: "#2E6F40" }}
+            />
+
+            {/* Quote */}
+            <blockquote className="relative">
+              <span
+                aria-hidden="true"
+                className="absolute -top-4 -left-2 text-7xl leading-none font-bold select-none"
+                style={{
+                  color: "#2E6F40",
+                  fontFamily: "'Fraunces', serif",
+                  opacity: 0.5,
+                }}
+              >
+                &ldquo;
+              </span>
+              <p
+                className="relative text-[17px] sm:text-[19px] leading-[1.65] font-light"
+                style={{ color: "#D4E8DA" }}
+              >
+                Privacy isn't a luxury — it's a fundamental right. I joined
+                VeilChat because for the first time, I found a team that
+                builds software where the user's trust is never traded away.
+                No ads, no surveillance, no compromise. This is the messenger
+                I wish had existed ten years ago.
+              </p>
+            </blockquote>
+
+            {/* Trust pills */}
+            <div className="flex flex-wrap gap-2 pt-2">
+              {[
+                "Open-source",
+                "Zero tracking",
+                "No ads ever",
+                "E2E encrypted",
+              ].map((tag) => (
+                <span
+                  key={tag}
+                  className="text-[12px] font-semibold px-3 py-1 rounded-full border"
+                  style={{
+                    color: "#CFFFDC",
+                    borderColor: "rgba(207,255,220,0.25)",
+                    backgroundColor: "rgba(46,111,64,0.2)",
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            {/* CTA */}
+            <div className="pt-2">
+              <a
+                href="https://veilchat.me"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-no-tap-scroll
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-[15px] transition-all duration-200 hover:scale-[1.03] active:scale-[0.98]"
+                style={{
+                  backgroundColor: "#2E6F40",
+                  color: "#FFFFFF",
+                  boxShadow: "0 8px 24px -6px rgba(46,111,64,0.55)",
+                }}
+              >
+                Join VeilChat — it's free
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </section>
