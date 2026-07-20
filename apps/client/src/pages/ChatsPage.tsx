@@ -61,36 +61,29 @@ function UpgradeAnnouncementBanner() {
   return (
     <div className="w-full mx-auto lg:max-w-3xl px-3 pt-3">
       <div
-        className="relative rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 flex gap-3 items-start"
+        className="relative rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2.5 flex gap-2.5 items-center"
         role="alert"
       >
         {/* Icon */}
-        <div className="shrink-0 mt-0.5 text-amber-400 text-xl leading-none select-none">
-          ⚠️
-        </div>
+        <span className="shrink-0 text-base leading-none select-none">⚠️</span>
 
-        {/* Content */}
+        {/* Text */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-amber-300 leading-snug">
-            Exciting upgrades coming soon!
+          <p className="text-xs font-semibold text-amber-300 leading-snug truncate">
+            Major upgrades coming · You may be logged out
           </p>
-          <p className="text-xs text-amber-200/80 mt-1 leading-relaxed">
-            Naye features aur major upgrades ane wale hain — yeh kaam{" "}
-            <span className="font-semibold text-amber-200">45 dinon</span> ke
-            andar hoga. Is process mein aap{" "}
-            <span className="font-semibold text-amber-200">
-              log out ho sakte hain
-            </span>
-            . Abhi apni{" "}
+          <div className="flex items-center gap-2 mt-0.5">
+            <p className="text-[11px] text-amber-200/75 leading-snug">
+              Download your Recovery Key now
+            </p>
             <button
               type="button"
               onClick={() => navigate("/settings")}
-              className="underline underline-offset-2 font-semibold text-amber-300 hover:text-amber-100 transition-colors"
+              className="shrink-0 text-[11px] font-semibold text-amber-300 bg-amber-500/20 hover:bg-amber-500/35 border border-amber-500/40 rounded-full px-2 py-0.5 transition-colors"
             >
-              Recovery Key zarur download kar lein
-            </button>{" "}
-            — bina iske naye device par login nahi hoga.
-          </p>
+              Save →
+            </button>
+          </div>
         </div>
 
         {/* Dismiss */}
@@ -98,7 +91,7 @@ function UpgradeAnnouncementBanner() {
           type="button"
           onClick={dismiss}
           aria-label="Dismiss notice"
-          className="shrink-0 text-amber-400/70 hover:text-amber-200 transition-colors mt-0.5 text-lg leading-none"
+          className="shrink-0 text-amber-400/60 hover:text-amber-200 transition-colors text-sm leading-none px-1"
         >
           ✕
         </button>
