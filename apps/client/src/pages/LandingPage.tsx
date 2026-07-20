@@ -53,6 +53,7 @@ export function LandingPage() {
     >
       <NavBar />
       <AndroidDownloadBanner />
+      <UpgradeBanner />
       {/* Wrap the page content in a `<main>` landmark so screen readers
           and Lighthouse can identify the primary content region. */}
       <main id="main">
@@ -223,6 +224,60 @@ function useTapToScroll() {
 
 const INSTALL_CHIP_DISMISS_KEY = "veil:landing_install_chip_dismissed";
 const ANDROID_BANNER_DISMISS_KEY = "veil:android_banner_dismissed";
+const UPGRADE_BANNER_KEY = "veil_upgrade_banner_dismissed_v1";
+
+function UpgradeBanner() {
+  const [visible, setVisible] = useState(() => {
+    try { return localStorage.getItem(UPGRADE_BANNER_KEY) !== "1"; } catch { return true; }
+  });
+  if (!visible) return null;
+  const dismiss = () => {
+    try { localStorage.setItem(UPGRADE_BANNER_KEY, "1"); } catch { /* ignore */ }
+    setVisible(false);
+  };
+  return (
+    <div className="w-full px-3 py-2" style={{ backgroundColor: "transparent" }}>
+      <div
+        role="alert"
+        style={{
+          display: "flex", alignItems: "center", gap: "10px",
+          background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.35)",
+          borderRadius: "12px", padding: "8px 12px", maxWidth: "900px", margin: "0 auto",
+        }}
+      >
+        <span style={{ fontSize: "15px", flexShrink: 0 }}>⚠️</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ margin: 0, fontSize: "12px", fontWeight: 600, color: "#fcd34d", lineHeight: 1.3 }}>
+            Major upgrades coming · You may be logged out
+          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "3px" }}>
+            <p style={{ margin: 0, fontSize: "11px", color: "rgba(253,230,138,0.75)" }}>
+              Download your Recovery Key now
+            </p>
+            <a
+              href="/settings"
+              style={{
+                fontSize: "11px", fontWeight: 600, color: "#fcd34d",
+                background: "rgba(245,158,11,0.22)", border: "1px solid rgba(245,158,11,0.4)",
+                borderRadius: "999px", padding: "1px 8px", textDecoration: "none", flexShrink: 0,
+              }}
+            >
+              Save →
+            </a>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={dismiss}
+          aria-label="Dismiss"
+          style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(253,230,138,0.6)", fontSize: "13px", padding: "2px 4px", flexShrink: 0 }}
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+  );
+}
 
 /* ───────── Android APK download banner (shown only on Android) ───────────
  *
