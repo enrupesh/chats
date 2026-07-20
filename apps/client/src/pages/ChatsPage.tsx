@@ -59,43 +59,40 @@ function UpgradeAnnouncementBanner() {
   };
 
   return (
-    <div className="w-full mx-auto lg:max-w-3xl px-3 pt-3">
-      <div
-        className="relative rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2.5 flex gap-2.5 items-center"
-        role="alert"
-      >
-        {/* Icon */}
-        <span className="shrink-0 text-base leading-none select-none">⚠️</span>
+    <div
+      className="w-full flex items-center gap-3 px-4 py-2.5"
+      style={{ background: "#92400e" }}
+      role="alert"
+    >
+      {/* Icon */}
+      <span className="shrink-0 text-base leading-none select-none">⚠️</span>
 
-        {/* Text */}
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-amber-300 leading-snug truncate">
-            Major upgrades coming · You may be logged out
-          </p>
-          <div className="flex items-center gap-2 mt-0.5">
-            <p className="text-[11px] text-amber-200/75 leading-snug">
-              Download your Recovery Key now
-            </p>
-            <button
-              type="button"
-              onClick={() => navigate("/settings")}
-              className="shrink-0 text-[11px] font-semibold text-amber-300 bg-amber-500/20 hover:bg-amber-500/35 border border-amber-500/40 rounded-full px-2 py-0.5 transition-colors"
-            >
-              Save →
-            </button>
-          </div>
-        </div>
-
-        {/* Dismiss */}
+      {/* Text */}
+      <div className="flex-1 min-w-0 flex flex-wrap items-center gap-x-3 gap-y-0.5">
+        <span className="text-[13px] font-bold text-white leading-snug">
+          Major upgrades coming · You may be logged out
+        </span>
+        <span className="text-[12px] text-amber-200 leading-snug">
+          Download your Recovery Key now
+        </span>
         <button
           type="button"
-          onClick={dismiss}
-          aria-label="Dismiss notice"
-          className="shrink-0 text-amber-400/60 hover:text-amber-200 transition-colors text-sm leading-none px-1"
+          onClick={() => navigate("/settings")}
+          className="text-[11px] font-bold text-amber-900 bg-amber-300 hover:bg-amber-200 rounded-full px-3 py-0.5 transition-colors shrink-0"
         >
-          ✕
+          Save →
         </button>
       </div>
+
+      {/* Dismiss */}
+      <button
+        type="button"
+        onClick={dismiss}
+        aria-label="Dismiss"
+        className="shrink-0 text-white/60 hover:text-white transition-colors text-base leading-none font-bold"
+      >
+        ✕
+      </button>
     </div>
   );
 }

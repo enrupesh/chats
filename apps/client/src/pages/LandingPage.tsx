@@ -236,45 +236,40 @@ function UpgradeBanner() {
     setVisible(false);
   };
   return (
-    <div className="w-full px-3 py-2" style={{ backgroundColor: "transparent" }}>
-      <div
-        role="alert"
-        style={{
-          display: "flex", alignItems: "center", gap: "10px",
-          background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.35)",
-          borderRadius: "12px", padding: "8px 12px", maxWidth: "900px", margin: "0 auto",
-        }}
-      >
-        <span style={{ fontSize: "15px", flexShrink: 0 }}>⚠️</span>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ margin: 0, fontSize: "12px", fontWeight: 600, color: "#fcd34d", lineHeight: 1.3 }}>
-            Major upgrades coming · You may be logged out
-          </p>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "3px" }}>
-            <p style={{ margin: 0, fontSize: "11px", color: "rgba(253,230,138,0.75)" }}>
-              Download your Recovery Key now
-            </p>
-            <a
-              href="/settings"
-              style={{
-                fontSize: "11px", fontWeight: 600, color: "#fcd34d",
-                background: "rgba(245,158,11,0.22)", border: "1px solid rgba(245,158,11,0.4)",
-                borderRadius: "999px", padding: "1px 8px", textDecoration: "none", flexShrink: 0,
-              }}
-            >
-              Save →
-            </a>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={dismiss}
-          aria-label="Dismiss"
-          style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(253,230,138,0.6)", fontSize: "13px", padding: "2px 4px", flexShrink: 0 }}
+    <div
+      role="alert"
+      style={{
+        display: "flex", alignItems: "center", gap: "12px",
+        background: "#92400e", padding: "10px 16px", width: "100%",
+      }}
+    >
+      <span style={{ fontSize: "16px", flexShrink: 0 }}>⚠️</span>
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px 12px" }}>
+        <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", lineHeight: 1.3 }}>
+          Major upgrades coming · You may be logged out
+        </span>
+        <span style={{ fontSize: "12px", color: "#fde68a", lineHeight: 1.3 }}>
+          Download your Recovery Key now
+        </span>
+        <a
+          href="/settings"
+          style={{
+            fontSize: "11px", fontWeight: 700, color: "#78350f",
+            background: "#fcd34d", borderRadius: "999px",
+            padding: "2px 10px", textDecoration: "none", flexShrink: 0,
+          }}
         >
-          ✕
-        </button>
+          Save →
+        </a>
       </div>
+      <button
+        type="button"
+        onClick={dismiss}
+        aria-label="Dismiss"
+        style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.6)", fontSize: "15px", fontWeight: 700, padding: "0 4px", flexShrink: 0 }}
+      >
+        ✕
+      </button>
     </div>
   );
 }
