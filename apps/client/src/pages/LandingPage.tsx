@@ -53,10 +53,10 @@ export function LandingPage() {
     >
       <NavBar />
       <AndroidDownloadBanner />
-      <UpgradeBanner />
       {/* Wrap the page content in a `<main>` landmark so screen readers
           and Lighthouse can identify the primary content region. */}
       <main id="main">
+        <UpgradeBanner />
         <Hero />
         <TrustBar />
         <YouTubeIntro />
@@ -239,6 +239,7 @@ function UpgradeBanner() {
     <div
       role="alert"
       style={{
+        position: "fixed", top: "64px", left: 0, right: 0, zIndex: 35,
         display: "flex", alignItems: "center", gap: "12px",
         background: "#92400e", padding: "10px 16px", width: "100%",
       }}
