@@ -35,6 +35,78 @@ import { useFocusState, focusReasonLabel } from "../lib/focusMode";
 import { useNoindex } from "../lib/useDocumentMeta";
 import { PullToRefresh } from "../components/PullToRefresh";
 
+const BANNER_KEY = "veil_upgrade_banner_dismissed_v1";
+
+function UpgradeAnnouncementBanner() {
+  const navigate = useNavigate();
+  const [visible, setVisible] = useState(() => {
+    try {
+      return localStorage.getItem(BANNER_KEY) !== "1";
+    } catch {
+      return true;
+    }
+  });
+
+  if (!visible) return null;
+
+  const dismiss = () => {
+    try {
+      localStorage.setItem(BANNER_KEY, "1");
+    } catch {
+      // ignore
+    }
+    setVisible(false);
+  };
+
+  return (
+    <div className="w-full mx-auto lg:max-w-3xl px-3 pt-3">
+      <div
+        className="relative rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 flex gap-3 items-start"
+        role="alert"
+      >
+        {/* Icon */}
+        <div className="shrink-0 mt-0.5 text-amber-400 text-xl leading-none select-none">
+          ⚠️
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-amber-300 leading-snug">
+            Exciting upgrades coming soon!
+          </p>
+          <p className="text-xs text-amber-200/80 mt-1 leading-relaxed">
+            Naye features aur major upgrades ane wale hain — yeh kaam{" "}
+            <span className="font-semibold text-amber-200">45 dinon</span> ke
+            andar hoga. Is process mein aap{" "}
+            <span className="font-semibold text-amber-200">
+              log out ho sakte hain
+            </span>
+            . Abhi apni{" "}
+            <button
+              type="button"
+              onClick={() => navigate("/settings")}
+              className="underline underline-offset-2 font-semibold text-amber-300 hover:text-amber-100 transition-colors"
+            >
+              Recovery Key zarur download kar lein
+            </button>{" "}
+            — bina iske naye device par login nahi hoga.
+          </p>
+        </div>
+
+        {/* Dismiss */}
+        <button
+          type="button"
+          onClick={dismiss}
+          aria-label="Dismiss notice"
+          className="shrink-0 text-amber-400/70 hover:text-amber-200 transition-colors mt-0.5 text-lg leading-none"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function ChatsPage() {
   useNoindex("Chats · VeilChat");
   const navigate = useNavigate();
@@ -275,6 +347,8 @@ export function ChatsPage() {
           </div>
         </div>
       )}
+
+      <UpgradeAnnouncementBanner />
 
       {!identity && (
         <div className="p-4 w-full mx-auto lg:max-w-2xl">
