@@ -416,12 +416,12 @@ function InstallGuide() {
             <p className="mt-1.5 text-[14px] text-[#3C5A47] leading-relaxed">
               VeilChat is fully open source. You can inspect every line of code at{" "}
               <a
-                href="https://github.com/rupeshsahu408"
+                href="https://github.com/loren-dasu"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-semibold text-[#2E6F40] underline underline-offset-2"
               >
-                github.com/rupeshsahu408
+                github.com/loren-dasu
               </a>
               . The APK you download is built directly from that code — no hidden extras, no tracking, no ads.
             </p>

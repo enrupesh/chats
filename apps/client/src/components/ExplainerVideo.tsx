@@ -2067,7 +2067,7 @@ function drawOpenSourceScene(ctx: CanvasRenderingContext2D, t: number) {
   if (lt > 1.95) {
     const p = easeOut(clamp01((lt - 1.95) / 0.55));
     setFont(ctx, 22, 700, "sans", 0.4);
-    const url = "github.com/rupeshsahu408/VeilChat";
+    const url = "github.com/loren-dasu/veilchat";
     const w = ctx.measureText(url).width + 80;
     const h = 56;
     const x = cx - w / 2;

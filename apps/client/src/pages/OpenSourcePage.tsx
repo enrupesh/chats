@@ -2,8 +2,8 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDocumentMeta } from "../lib/useDocumentMeta";
 
-const REPO_URL = "https://github.com/rupeshsahu408/VeilChat";
-const REPO_API = "https://api.github.com/repos/rupeshsahu408/VeilChat";
+const REPO_URL = "https://github.com/loren-dasu/veilchat";
+const REPO_API = "https://api.github.com/repos/loren-dasu/veilchat";
 const SECURITY_URL = `${REPO_URL}/blob/main/SECURITY.md`;
 const TRANSPARENCY_URL = `${REPO_URL}/blob/main/TRANSPARENCY.md`;
 const TRADEMARK_URL = `${REPO_URL}/blob/main/TRADEMARK.md`;
@@ -352,7 +352,7 @@ function RepoShowcase() {
           />
         </div>
 
-        <BrowserFrame url="github.com/rupeshsahu408/VeilChat">
+        <BrowserFrame url="github.com/loren-dasu/veilchat">
           <img
             src="/landing/veilchat-github-repo.png"
             alt="VeilChat GitHub repository file listing — README, LICENSE, SECURITY.md, TRANSPARENCY.md, TRADEMARK.md, packages/crypto, server-contract, and more."

@@ -944,8 +944,8 @@ function Article() {
 
       <Callout title="Repository" tone="blue">
         The full source code is available at{" "}
-        <a href="https://github.com/rupeshsahu408/VeilChat" target="_blank" rel="noopener noreferrer" style={{ color: "#2E5FAF" }} className="underline">
-          github.com/rupeshsahu408/VeilChat
+        <a href="https://github.com/loren-dasu/veilchat" target="_blank" rel="noopener noreferrer" style={{ color: "#2E5FAF" }} className="underline">
+          github.com/loren-dasu/veilchat
         </a>. The cryptographic core lives in <code>apps/client/src/lib/signal/</code>. The server schema
         lives in <code>apps/server/src/db/schema.ts</code>. The API surface is fully typed via tRPC in
         <code> apps/server/src/trpc/routers/</code>.

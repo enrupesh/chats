@@ -153,4 +153,4 @@
 
 ---
 
-*This script was written for VeilChat — a privacy-first, open-source messenger. AGPL-3.0. github.com/rupeshsahu408/VeilChat*
+*This script was written for VeilChat — a privacy-first, open-source messenger. AGPL-3.0. github.com/loren-dasu/veilchat*

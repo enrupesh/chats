@@ -3738,7 +3738,7 @@ function drawOpenSourceScene(ctx: CanvasRenderingContext2D, t: number) {
     ctx.save();
     ctx.globalAlpha = pillA;
     ctx.font = "600 19px Inter, sans-serif";
-    const repoLabel = "github.com/rupeshsahu408/VeilChat";
+    const repoLabel = "github.com/loren-dasu/veilchat";
     const repoW = ctx.measureText(repoLabel).width + 64;
     const repoH = 46;
     const repoX = cx + 50;
