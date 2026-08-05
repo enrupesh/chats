@@ -3243,6 +3243,7 @@ function Footer() {
               { label: "GitHub repository", href: "https://github.com/loren-dasu/veilchat" },
               { label: "Privacy Policy", to: "/privacy-policy" },
               { label: "Terms & Conditions", to: "/terms" },
+              { label: "Careers", to: "/careers" },
               { label: "Contact support", href: "mailto:hello@sendora.me" },
             ]}
           />
@@ -3316,6 +3317,29 @@ function FooterCol({
               >
                 {l.label}
               </button>
+            </li>
+          ) : internal && l.to && l.label === "Careers" ? (
+            <li key={l.label}>
+              <Link
+                to={l.to}
+                className="group mt-4 inline-flex items-center gap-2 rounded-full border border-[#68BA7F]/45 bg-[#68BA7F]/10 px-4 py-2.5 text-[13px] font-semibold text-[#CFFFDC] shadow-[0_8px_24px_-14px_rgba(104,186,127,0.8)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#68BA7F]/80 hover:bg-[#68BA7F]/20 hover:shadow-[0_12px_28px_-12px_rgba(104,186,127,0.9)] focus-visible:ring-2 focus-visible:ring-[#68BA7F] focus-visible:ring-offset-2 focus-visible:ring-offset-[#111B21]"
+              >
+                <span>{l.label}</span>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                  className="transition-transform duration-300 group-hover:translate-x-1"
+                >
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </Link>
             </li>
           ) : internal && l.to ? (
             <li key={l.label}>

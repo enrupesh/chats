@@ -71,6 +71,7 @@ const AboutPage = lazy(() => import("./pages/AboutPage").then((m) => ({ default:
 const OpenSourcePage = lazy(() => import("./pages/OpenSourcePage").then((m) => ({ default: m.OpenSourcePage })));
 const DownloadPage = lazy(() => import("./pages/DownloadPage").then((m) => ({ default: m.DownloadPage })));
 const OurStoryPage = lazy(() => import("./pages/OurStoryPage").then((m) => ({ default: m.OurStoryPage })));
+const CareersPage = lazy(() => import("./pages/CareersPage").then((m) => ({ default: m.CareersPage })));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })));
 const WhitepaperPage = lazy(() => import("./pages/WhitepaperPage").then((m) => ({ default: m.WhitepaperPage })));
 const AdminPage = lazy(() => import("./pages/AdminPage").then((m) => ({ default: m.AdminPage })));
@@ -226,6 +227,7 @@ export function App() {
                 <Route path="/open-source" element={<OpenSourcePage />} />
                 <Route path="/download" element={<DownloadPage />} />
                 <Route path="/our-story" element={<OurStoryPage />} />
+                <Route path="/careers" element={<CareersPage />} />
                 <Route path="/status" element={<Navigate to="/raka98" replace />} />
                 <Route path="/raka98" element={<AdminPage />} />
                 <Route path="/i/:token" element={<InviteRedeemPage />} />

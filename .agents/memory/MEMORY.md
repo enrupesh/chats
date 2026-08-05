@@ -1,0 +1,1 @@
+- [Monorepo shared package build](shared-package-build.md) — build the shared workspace package before client checks when imported dependencies have no generated dist output.
