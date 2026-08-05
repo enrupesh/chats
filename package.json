@@ -19,6 +19,11 @@
     "onlyBuiltDependencies": [
       "esbuild",
       "sharp"
-    ]
+    ],
+    "overrides": {
+      "websocket-driver": "0.7.5",
+      "tar": "7.5.22",
+      "shell-quote": "1.8.4"
+    }
   }
 }
