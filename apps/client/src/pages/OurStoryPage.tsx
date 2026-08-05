@@ -5,7 +5,7 @@ import { useDocumentMeta } from "../lib/useDocumentMeta";
 
 /**
  * Our Story — the personal, human page behind VeilChat.
- * Founder: Rupesh Gupta | Student | India | Solo builder
+ * Founder: Aarav Bansal | Student | India | Solo builder
  * Origin: Night of April 5, 2025
  * Philosophy: "Try alone, fail alone, win alone, and one day — boom."
  * Tone: Mix of personal + professional
@@ -20,25 +20,110 @@ export function OurStoryPage() {
   });
 
   return (
-    <div
-      className="min-h-screen antialiased"
-      style={{
-        backgroundColor: "#FCF5EB",
-        color: "#111B21",
-        fontFamily:
-          "'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      }}
-    >
-      <StoryNav />
-      <StoryHero />
-      <TheMoment />
-      <ThePhilosophy />
-      <TheFounder />
-      <TheMission />
-      <Timeline />
-      <WhatPeopleSay />
-      <ClosingCTA />
-      <StoryFooter />
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Page content — blurred and non-interactive while coming soon */}
+      <div
+        className="min-h-screen antialiased select-none pointer-events-none"
+        style={{
+          backgroundColor: "#FCF5EB",
+          color: "#111B21",
+          fontFamily:
+            "'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+          filter: "blur(7px)",
+        }}
+      >
+        <StoryNav />
+        <StoryHero />
+        <TheMoment />
+        <ThePhilosophy />
+        <TheFounder />
+        <TheMission />
+        <Timeline />
+        <WhatPeopleSay />
+        <ClosingCTA />
+        <StoryFooter />
+      </div>
+
+      {/* Coming Soon overlay */}
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center px-4"
+        style={{ backgroundColor: "rgba(17, 27, 33, 0.48)" }}
+      >
+        <div
+          className="w-full max-w-md rounded-2xl px-8 py-10 text-center shadow-2xl"
+          style={{ backgroundColor: "#ffffff" }}
+        >
+          {/* Icon */}
+          <div
+            className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl"
+            style={{ backgroundColor: "#F0F9F2" }}
+          >
+            <svg
+              width="26"
+              height="26"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#2E6F40"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+          </div>
+
+          {/* Eyebrow */}
+          <p
+            className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em]"
+            style={{ color: "#2E6F40" }}
+          >
+            Coming Soon
+          </p>
+
+          {/* Headline */}
+          <h1
+            className="text-[26px] font-semibold tracking-tight leading-snug"
+            style={{ fontFamily: "'Fraunces', serif", color: "#111B21" }}
+          >
+            We're still writing this story.
+          </h1>
+
+          {/* Body */}
+          <p
+            className="mt-3 text-[15px] leading-[1.65]"
+            style={{ color: "#3C5A47" }}
+          >
+            Our team is actively working on this page. It will be ready soon — and it will be worth the wait.
+          </p>
+
+          {/* Divider */}
+          <div className="my-6 h-px" style={{ backgroundColor: "#E8F5EC" }} />
+
+          {/* Back link */}
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-[13.5px] font-medium transition-opacity hover:opacity-70"
+            style={{ color: "#2E6F40" }}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M19 12H5M12 5l-7 7 7 7" />
+            </svg>
+            Back to Home
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
@@ -188,7 +273,7 @@ function TheMoment() {
           {/* Story text */}
           <div className="space-y-5 text-[16px] sm:text-[17px] text-[#3C5A47] leading-[1.75]">
             <p>
-              It was late. The kind of quiet that only comes after midnight. Rupesh
+              It was late. The kind of quiet that only comes after midnight. Aarav Bansal
               sat alone, the way he often did — thinking, questioning, turning
               ideas over in his mind.
             </p>
@@ -206,7 +291,7 @@ function TheMoment() {
               numbers.
             </p>
             <p className="font-medium text-[#253D2C]">
-              So that night, Rupesh made a decision: build the messenger he
+              So that night, Aarav Bansal made a decision: build the messenger he
               wished already existed. One that was private by design, open to
               everyone, and built with genuine care.
             </p>
@@ -252,7 +337,7 @@ function ThePhilosophy() {
           "
         </blockquote>
         <p className="mt-5 text-[14px] text-[#3C5A47]/70 font-medium tracking-wide">
-          — Rupesh Gupta, Founder
+          — Aarav Bansal, Founder
         </p>
 
         <div className="mt-12 grid sm:grid-cols-3 gap-5">
@@ -362,7 +447,7 @@ function TheFounder() {
             >
               <img
                 src="/founder-rupesh.png"
-                alt="Rupesh Gupta — Founder of VeilChat"
+                alt="Aarav Bansal — Founder of VeilChat"
                 className="w-full h-full object-cover"
                 style={{ objectPosition: "35% 20%" }}
               />
@@ -392,7 +477,7 @@ function TheFounder() {
               animate={inView ? vis : { opacity: 0, y: 22 }}
               transition={{ duration: 0.5, ease: EASE_OUT, delay: 0.18 }}
             >
-              Rupesh Gupta
+              Aarav Bansal
             </motion.h2>
 
             {/* Chips — each pops in with a small stagger */}
@@ -413,7 +498,7 @@ function TheFounder() {
             {/* Bio paragraphs */}
             <div className="mt-5 space-y-4 text-[15.5px] text-[#3C5A47] leading-[1.75]">
               {[
-                { text: "Rupesh isn't a tech giant. He doesn't run a team of hundreds or operate from a glass office. He's a student and entrepreneur from India who decided that good ideas don't wait for permission — and that privacy is too important to be left to people who don't genuinely care about it.", bold: false },
+                { text: "Aarav Bansal isn't a tech giant. He doesn't run a team of hundreds or operate from a glass office. He's a student and entrepreneur from India who decided that good ideas don't wait for permission — and that privacy is too important to be left to people who don't genuinely care about it.", bold: false },
                 { text: "He designed VeilChat, wrote its Signal Protocol implementation, built its server infrastructure, designed every screen, and shipped it to the world — alone. Not because he had to, but because he chose to own it completely.", bold: false },
                 { text: "The same student and entrepreneur who sat alone on the night of April 5, 2025, is the same person still building this — every single day.", bold: true },
               ].map(({ text, bold }, i) => (
@@ -432,7 +517,7 @@ function TheFounder() {
             {/* Social links */}
             <div className="mt-6">
               <p className="text-[11.5px] font-semibold tracking-[0.16em] uppercase text-[#3C5A47]/60 mb-3">
-                Find Rupesh online
+                Find Aarav Bansal online
               </p>
               <div className="flex items-center gap-2 flex-wrap">
                 <FounderSocialIcon label="GitHub" href="https://github.com/loren-dasu">
@@ -547,7 +632,7 @@ const TIMELINE_EVENTS = [
   {
     date: "April 5, 2025",
     title: "The idea is born",
-    body: "On a quiet night, Rupesh decides to build the messenger he always wished existed. A private space that belongs entirely to its users.",
+    body: "On a quiet night, Aarav Bansal decides to build the messenger he always wished existed. A private space that belongs entirely to its users.",
   },
   {
     date: "April 2025",
@@ -657,7 +742,7 @@ const TESTIMONIALS = [
   },
   {
     quote:
-      "I switched from Signal because VeilChat is simply more beautiful. Privacy doesn't have to feel clinical. Rupesh gets that.",
+      "I switched from Signal because VeilChat is simply more beautiful. Privacy doesn't have to feel clinical. Aarav Bansal gets that.",
     name: "James K.",
     role: "Designer · United Kingdom",
     initials: "JK",
@@ -681,7 +766,7 @@ const TESTIMONIALS = [
   },
   {
     quote:
-      "It started as a college project and became the most private messenger I've ever used. Can't believe it's free. Rupesh — keep going.",
+      "It started as a college project and became the most private messenger I've ever used. Can't believe it's free. Aarav Bansal — keep going.",
     name: "Yuna C.",
     role: "Early adopter · South Korea",
     initials: "YC",
