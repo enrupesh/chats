@@ -175,6 +175,14 @@ export const users = pgTable(
      * Toggled from Settings → "Show me in Discover people".
      */
     isDiscoverable: boolean("is_discoverable").notNull().default(false),
+    /** Lightweight, optional post-auth product survey. */
+    onboardingCountry: text("onboarding_country"),
+    onboardingDevice: text("onboarding_device"),
+    onboardingSource: text("onboarding_source"),
+    onboardingGoal: text("onboarding_goal"),
+    onboardingSurveyCompletedAt: timestamp("onboarding_survey_completed_at", {
+      withTimezone: true,
+    }),
   },
   (t) => ({
     emailHashIdx: uniqueIndex("users_email_hash_idx")

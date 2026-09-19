@@ -1352,12 +1352,23 @@ export const authRouter = router({
       const newExpires = new Date(
         Date.now() + TOKEN_TTL.refreshSeconds * 1000,
       );
+      // Refreshes are also a low-frequency opportunity to keep the admin's
+      // coarse access location current when a user changes networks. The
+      // lookup is cached by IP prefix and never stores the raw IP.
+      const geo = await lookupCity(ctx.ip);
+      const userAgent =
+        (ctx.req.headers["user-agent"] as string | undefined)?.slice(0, 200) ??
+        row.session.deviceLabel;
       await db
         .update(schema.sessions)
         .set({
           refreshTokenHash: sha256Hex(newRefresh),
           lastUsedAt: new Date(),
           expiresAt: newExpires,
+          ipPrefix: ipPrefix(ctx.ip) ?? row.session.ipPrefix,
+          lastCity: geo.city ?? row.session.lastCity,
+          lastCountry: geo.country ?? row.session.lastCountry,
+          deviceLabel: userAgent,
         })
         .where(eq(schema.sessions.id, row.session.id));
 

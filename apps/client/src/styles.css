@@ -351,6 +351,314 @@ html.veil-privacy-blur .veil-app-wrapper {
   }
 }
 
+/* ───────────────────── Post-auth welcome survey ───────────────────── */
+
+.veil-survey-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(6 20 18 / 0.58);
+  backdrop-filter: blur(10px);
+}
+
+.veil-survey-modal {
+  width: min(100%, 500px);
+  max-height: min(760px, calc(100dvh - 40px));
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 28px;
+  color: rgb(var(--wa-text));
+  background: rgb(var(--wa-surface));
+  border: 1px solid rgb(var(--wa-line) / 0.8);
+  border-radius: 24px;
+  box-shadow: 0 24px 80px rgb(0 0 0 / 0.24);
+}
+
+.veil-survey-topline,
+.veil-survey-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.veil-survey-brand {
+  color: rgb(var(--wa-green-dark));
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.veil-survey-brand span {
+  margin-right: 5px;
+}
+
+.veil-survey-step,
+.veil-survey-footnote {
+  color: rgb(var(--wa-text-muted));
+  font-size: 12px;
+}
+
+.veil-survey-progress {
+  display: flex;
+  gap: 5px;
+  margin: 18px 0 30px;
+}
+
+.veil-survey-progress span {
+  height: 4px;
+  flex: 1;
+  border-radius: 999px;
+  background: rgb(var(--wa-line));
+  transition: background-color 160ms ease;
+}
+
+.veil-survey-progress span.is-active {
+  background: rgb(var(--wa-green));
+}
+
+.veil-survey-heading {
+  margin-bottom: 22px;
+}
+
+.veil-survey-eyebrow {
+  margin: 0 0 8px;
+  color: rgb(var(--wa-green-dark));
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.veil-survey-heading h2 {
+  margin: 0;
+  font-size: clamp(24px, 5vw, 32px);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.veil-survey-heading > p:last-child {
+  max-width: 390px;
+  margin: 10px 0 0;
+  color: rgb(var(--wa-text-muted));
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.veil-survey-country label {
+  display: block;
+  margin-bottom: 8px;
+  color: rgb(var(--wa-text-muted));
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.veil-survey-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  color: rgb(var(--wa-text));
+  background: rgb(var(--wa-bg));
+  border: 1px solid rgb(var(--wa-line));
+  border-radius: 12px;
+  font: inherit;
+}
+
+.veil-survey-country-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  max-height: 280px;
+  overflow-y: auto;
+  margin-top: 10px;
+  padding-right: 4px;
+}
+
+.veil-survey-country-option,
+.veil-survey-option,
+.veil-survey-source {
+  color: rgb(var(--wa-text));
+  background: transparent;
+  border: 1px solid rgb(var(--wa-line));
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: border-color 140ms ease, background-color 140ms ease, transform 140ms ease;
+}
+
+.veil-survey-country-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px 11px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.veil-survey-country-option span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.veil-survey-country-option small {
+  color: rgb(var(--wa-text-faint));
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.veil-survey-option {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  padding: 13px;
+  border-radius: 14px;
+}
+
+.veil-survey-options {
+  display: grid;
+  gap: 8px;
+  overflow-y: auto;
+  max-height: 340px;
+}
+
+.veil-survey-option-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  color: rgb(var(--wa-green-dark));
+  background: rgb(var(--wa-green) / 0.12);
+  border-radius: 10px;
+  font-size: 19px;
+}
+
+.veil-survey-option > span:nth-child(2) {
+  display: grid;
+  gap: 3px;
+}
+
+.veil-survey-option strong,
+.veil-survey-source strong {
+  font-size: 13px;
+}
+
+.veil-survey-option small {
+  color: rgb(var(--wa-text-muted));
+  font-size: 12px;
+}
+
+.veil-survey-check {
+  margin-left: auto;
+  color: transparent;
+  font-size: 16px;
+}
+
+.veil-survey-source-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.veil-survey-source {
+  display: grid;
+  gap: 9px;
+  min-height: 84px;
+  padding: 14px;
+  border-radius: 14px;
+}
+
+.veil-survey-source > span {
+  color: rgb(var(--wa-green-dark));
+  font-size: 22px;
+}
+
+.veil-survey-country-option:hover,
+.veil-survey-option:hover,
+.veil-survey-source:hover {
+  border-color: rgb(var(--wa-green) / 0.6);
+  transform: translateY(-1px);
+}
+
+.veil-survey-country-option.is-selected,
+.veil-survey-option.is-selected,
+.veil-survey-source.is-selected {
+  background: rgb(var(--wa-green) / 0.1);
+  border-color: rgb(var(--wa-green));
+}
+
+.veil-survey-option.is-selected .veil-survey-check {
+  color: rgb(var(--wa-green-dark));
+}
+
+.veil-survey-error {
+  margin: 12px 0 0;
+  color: #b42318;
+  font-size: 12px;
+}
+
+.veil-survey-actions {
+  margin-top: 24px;
+}
+
+.veil-survey-skip,
+.veil-survey-continue {
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 11px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.veil-survey-skip {
+  color: rgb(var(--wa-text-muted));
+  background: transparent;
+  border: 0;
+}
+
+.veil-survey-continue {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: rgb(var(--wa-text-oncolor));
+  background: rgb(var(--wa-green));
+  border: 0;
+  box-shadow: 0 5px 14px rgb(var(--wa-green) / 0.22);
+}
+
+.veil-survey-continue:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.veil-survey-footnote {
+  margin: 16px 0 0;
+  text-align: center;
+}
+
+@media (max-width: 520px) {
+  .veil-survey-modal {
+    padding: 22px 18px;
+    border-radius: 20px;
+  }
+
+  .veil-survey-country-list {
+    max-height: 230px;
+  }
+}
+
 /* ───────────────────── Premium voice experience ───────────────────── */
 .veil-voice-idle-glow {
   animation: veil-voice-glow 2.4s ease-in-out infinite;

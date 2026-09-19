@@ -11,7 +11,7 @@ import { registerWebSocketRoutes } from "./lib/wsServer.js";
 import { initPush } from "./lib/push.js";
 import { verifyAccessToken } from "./lib/jwt.js";
 import { getDb, awaitDbBootstrap, schema } from "./db/index.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { startMediaSweeper } from "./lib/mediaSweeper.js";
 import { startMessageSweeper } from "./lib/messageSweeper.js";
 import { startScheduledSweeper } from "./lib/scheduledSweeper.js";
@@ -204,10 +204,96 @@ app.get("/admin/users", async (req, reply) => {
       randomId:    schema.users.randomId,
       accountType: schema.users.accountType,
       createdAt:   schema.users.createdAt,
+      surveyCountry: schema.users.onboardingCountry,
+      surveyDevice: schema.users.onboardingDevice,
+      surveySource: schema.users.onboardingSource,
+      surveyGoal: schema.users.onboardingGoal,
+      surveyCompletedAt: schema.users.onboardingSurveyCompletedAt,
     })
     .from(schema.users)
     .orderBy(schema.users.createdAt);
-  return { total: rows.length, users: rows };
+  const sessionRows = await db
+    .select({
+      userId: schema.sessions.userId,
+      country: schema.sessions.lastCountry,
+      city: schema.sessions.lastCity,
+      device: schema.sessions.deviceLabel,
+      createdAt: schema.sessions.createdAt,
+      lastUsedAt: schema.sessions.lastUsedAt,
+    })
+    .from(schema.sessions)
+    .orderBy(desc(schema.sessions.lastUsedAt));
+
+  const sessionsByUser = new Map<string, typeof sessionRows>();
+  for (const session of sessionRows) {
+    const bucket = sessionsByUser.get(session.userId) ?? [];
+    bucket.push(session);
+    sessionsByUser.set(session.userId, bucket);
+  }
+
+  const users = rows.map((row) => {
+    const sessions = sessionsByUser.get(row.id) ?? [];
+    const latest = sessions[0] ?? null;
+    const countries = [...new Set(sessions.map((s) => s.country).filter(Boolean))];
+    const devices = [...new Set(sessions.map((s) => s.device).filter(Boolean))];
+    return {
+      id: row.id,
+      username: row.username,
+      displayName: row.displayName,
+      randomId: row.randomId,
+      accountType: row.accountType,
+      createdAt: row.createdAt,
+      survey: {
+        country: row.surveyCountry,
+        device: row.surveyDevice,
+        source: row.surveySource,
+        goal: row.surveyGoal,
+        completedAt: row.surveyCompletedAt,
+      },
+      access: {
+        detectedCountry: latest?.country ?? null,
+        detectedCity: latest?.city ?? null,
+        latestDevice: latest?.device ?? null,
+        lastSeenAt: latest?.lastUsedAt ?? null,
+        sessionCount: sessions.length,
+        countries,
+        devices,
+        history: sessions.slice(0, 12).map((session) => ({
+          country: session.country,
+          city: session.city,
+          device: session.device,
+          signedInAt: session.createdAt,
+          lastSeenAt: session.lastUsedAt,
+        })),
+      },
+    };
+  });
+
+  const countValues = (values: Array<string | null | undefined>) => {
+    const counts = new Map<string, number>();
+    for (const value of values) {
+      if (!value) continue;
+      counts.set(value, (counts.get(value) ?? 0) + 1);
+    }
+    return [...counts.entries()]
+      .map(([label, count]) => ({ label, count }))
+      .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  };
+
+  return {
+    total: users.length,
+    analytics: {
+      surveyCompleted: users.filter((user) => user.survey.completedAt !== null).length,
+      surveyCountries: countValues(users.map((user) => user.survey.country)),
+      surveyDevices: countValues(users.map((user) => user.survey.device)),
+      discoverySources: countValues(users.map((user) => user.survey.source)),
+      surveyGoals: countValues(users.map((user) => user.survey.goal)),
+      detectedCountries: countValues(users.map((user) => user.access.detectedCountry)),
+      detectedDevices: countValues(users.map((user) => user.access.latestDevice)),
+      activeSessions: sessionRows.length,
+    },
+    users,
+  };
 });
 
 /**

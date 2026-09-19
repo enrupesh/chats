@@ -25,6 +25,7 @@ import { useAppRefreshLoop } from "./lib/appRefresh";
 import { NativeIntro } from "./components/NativeIntro";
 import { isAndroid } from "./lib/capacitor";
 import { usePresence } from "./lib/usePresence";
+import { OnboardingSurveyModal } from "./components/OnboardingSurveyModal";
 
 // All non-landing routes are code-split. Each chunk only downloads when
 // the user navigates there, so the initial JS bundle stays tiny and the
@@ -237,6 +238,7 @@ export function App() {
             <PushPermissionPrompt />
             <DailyVerificationGate />
             <ToastViewport />
+            <OnboardingSurveyModal />
           </div>
           {/* Privacy screen overlay — sits outside .veil-app-wrapper so it
               is never affected by the blur/brightness filter. Renders only

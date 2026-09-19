@@ -11,6 +11,8 @@ import {
   UserIdSchema,
   UpdateProfileInput,
   UsernameSchema,
+  OnboardingSurveyInput,
+  OnboardingSurveyStatusSchema,
   type PublicUser,
 } from "@veil/shared";
 import { protectedProcedure, router } from "../init.js";
@@ -19,6 +21,41 @@ import { isOnline } from "../../lib/wsHub.js";
 import { rateLimit } from "../../lib/rateLimit.js";
 
 export const meRouter = router({
+  onboardingSurvey: protectedProcedure
+    .output(OnboardingSurveyStatusSchema)
+    .query(async ({ ctx }) => {
+      const db = getDb();
+      const found = await db
+        .select({
+          completedAt: schema.users.onboardingSurveyCompletedAt,
+        })
+        .from(schema.users)
+        .where(eq(schema.users.id, ctx.userId))
+        .limit(1);
+
+      if (!found[0]) throw new TRPCError({ code: "NOT_FOUND" });
+      return { completed: found[0].completedAt !== null };
+    }),
+
+  submitOnboardingSurvey: protectedProcedure
+    .input(OnboardingSurveyInput)
+    .output(OkSchema)
+    .mutation(async ({ ctx, input }) => {
+      const db = getDb();
+      await db
+        .update(schema.users)
+        .set({
+          onboardingCountry: input.skipped ? null : input.countryCode ?? null,
+          onboardingDevice: input.skipped ? null : input.device ?? null,
+          onboardingSource: input.skipped ? null : input.source ?? null,
+          onboardingGoal: input.skipped ? null : input.goal ?? null,
+          onboardingSurveyCompletedAt: new Date(),
+        })
+        .where(eq(schema.users.id, ctx.userId));
+
+      return { ok: true };
+    }),
+
   get: protectedProcedure
     .output(PublicUserSchema)
     .query(async ({ ctx }): Promise<PublicUser> => {

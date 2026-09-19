@@ -166,11 +166,44 @@ interface RegisteredUser {
   randomId: string | null;
   accountType: "email" | "phone" | "random";
   createdAt: string;
+  survey: {
+    country: string | null;
+    device: string | null;
+    source: string | null;
+    goal: string | null;
+    completedAt: string | null;
+  };
+  access: {
+    detectedCountry: string | null;
+    detectedCity: string | null;
+    latestDevice: string | null;
+    lastSeenAt: string | null;
+    sessionCount: number;
+    countries: string[];
+    devices: string[];
+    history: Array<{
+      country: string | null;
+      city: string | null;
+      device: string | null;
+      signedInAt: string;
+      lastSeenAt: string;
+    }>;
+  };
 }
 
 interface UsersData {
   total: number;
   users: RegisteredUser[];
+  analytics: {
+    surveyCompleted: number;
+    surveyCountries: Array<{ label: string; count: number }>;
+    surveyDevices: Array<{ label: string; count: number }>;
+    discoverySources: Array<{ label: string; count: number }>;
+    surveyGoals: Array<{ label: string; count: number }>;
+    detectedCountries: Array<{ label: string; count: number }>;
+    detectedDevices: Array<{ label: string; count: number }>;
+    activeSessions: number;
+  };
 }
 
 function useRegisteredUsers() {
@@ -220,6 +253,130 @@ function useRegisteredUsers() {
   return { data, loading, error, search, setSearch, filtered, refetch, displayName };
 }
 
+function formatLabel(value: string | null | undefined): string {
+  if (!value) return "Not available";
+  if (/^[A-Z]{2}$/.test(value)) {
+    return new Intl.DisplayNames(["en"], { type: "region" }).of(value) ?? value;
+  }
+  return value
+    .replace(/_/g, " ")
+    .replace(/:\w+/g, "")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function formatDate(value: string | null | undefined): string {
+  if (!value) return "Not available";
+  return new Date(value).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function DistributionList({
+  title,
+  items,
+}: {
+  title: string;
+  items: Array<{ label: string; count: number }>;
+}) {
+  const max = Math.max(...items.map((item) => item.count), 1);
+  return (
+    <div style={{ backgroundColor: "white", border: "1px solid rgba(37,61,44,0.1)", borderRadius: 16, padding: 20 }}>
+      <h3 style={{ fontSize: 14, margin: "0 0 15px", color: "#111B21" }}>{title}</h3>
+      {items.length === 0 ? (
+        <p style={{ margin: 0, color: "rgba(37,61,44,0.45)", fontSize: 12 }}>No responses yet</p>
+      ) : (
+        <div style={{ display: "grid", gap: 11 }}>
+          {items.slice(0, 6).map((item) => (
+            <div key={item.label}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 5, fontSize: 12 }}>
+                <span style={{ color: "#253D2C" }}>{formatLabel(item.label)}</span>
+                <strong style={{ color: "#2E6F40" }}>{item.count}</strong>
+              </div>
+              <div style={{ height: 6, backgroundColor: "rgba(46,111,64,0.1)", borderRadius: 999, overflow: "hidden" }}>
+                <div style={{ width: `${(item.count / max) * 100}%`, height: "100%", backgroundColor: "#68BA7F", borderRadius: 999 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function UserAnalytics({ user, onClose }: { user: RegisteredUser; onClose: () => void }) {
+  const name = user.username || user.displayName || user.randomId || user.id.slice(0, 8);
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 80, backgroundColor: "rgba(17,27,33,0.35)", backdropFilter: "blur(5px)", display: "flex", justifyContent: "flex-end" }} onClick={onClose}>
+      <aside style={{ width: "min(520px, 100%)", height: "100%", overflowY: "auto", backgroundColor: "#FCF5EB", padding: "28px 24px 48px", boxShadow: "-12px 0 40px rgba(17,27,33,0.16)" }} onClick={(event) => event.stopPropagation()}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 20, marginBottom: 26 }}>
+          <div>
+            <p style={{ margin: "0 0 5px", color: "#2E6F40", fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>User analytics</p>
+            <h2 style={{ margin: 0, fontSize: 25, color: "#111B21", letterSpacing: "-0.03em" }}>{name}</h2>
+            <p style={{ margin: "7px 0 0", color: "rgba(37,61,44,0.55)", fontSize: 12 }}>{user.accountType} account · Joined {formatDate(user.createdAt)}</p>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close analytics" style={{ border: "1px solid rgba(37,61,44,0.14)", borderRadius: 9, background: "white", color: "#253D2C", cursor: "pointer", fontSize: 18, width: 34, height: 34 }}>×</button>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10, marginBottom: 20 }}>
+          {[
+            ["Detected country", user.access.detectedCountry || "Unknown"],
+            ["Detected city", user.access.detectedCity || "Unknown"],
+            ["Latest device", formatLabel(user.access.latestDevice)],
+            ["Sessions", String(user.access.sessionCount)],
+          ].map(([label, value]) => (
+            <div key={label} style={{ background: "white", border: "1px solid rgba(37,61,44,0.1)", borderRadius: 13, padding: 14 }}>
+              <div style={{ color: "rgba(37,61,44,0.48)", fontSize: 11, marginBottom: 6 }}>{label}</div>
+              <strong style={{ color: "#111B21", fontSize: 14, overflowWrap: "anywhere" }}>{value}</strong>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ background: "white", border: "1px solid rgba(37,61,44,0.1)", borderRadius: 16, padding: 20, marginBottom: 14 }}>
+          <h3 style={{ fontSize: 14, margin: "0 0 16px", color: "#111B21" }}>Survey responses</h3>
+          <div style={{ display: "grid", gap: 12 }}>
+            {[
+              ["Country they selected", user.survey.country],
+              ["Device they selected", user.survey.device],
+              ["How they found VeilChat", user.survey.source],
+              ["What brings them here", user.survey.goal],
+              ["Completed", user.survey.completedAt ? formatDate(user.survey.completedAt) : "Skipped or not completed"],
+            ].map(([label, value]) => (
+              <div key={label} style={{ display: "flex", justifyContent: "space-between", gap: 18, borderBottom: "1px solid rgba(37,61,44,0.07)", paddingBottom: 10, fontSize: 12 }}>
+                <span style={{ color: "rgba(37,61,44,0.5)" }}>{label}</span>
+                <strong style={{ color: "#253D2C", textAlign: "right" }}>{formatLabel(value)}</strong>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ background: "white", border: "1px solid rgba(37,61,44,0.1)", borderRadius: 16, padding: 20 }}>
+          <h3 style={{ fontSize: 14, margin: "0 0 5px", color: "#111B21" }}>Access history</h3>
+          <p style={{ margin: "0 0 15px", color: "rgba(37,61,44,0.48)", fontSize: 11 }}>Coarse location and device only. Raw IP addresses are never displayed.</p>
+          {user.access.history.length === 0 ? (
+            <p style={{ color: "rgba(37,61,44,0.45)", fontSize: 12 }}>No sign-in history available.</p>
+          ) : (
+            <div style={{ display: "grid", gap: 10 }}>
+              {user.access.history.map((session, index) => (
+                <div key={`${session.lastSeenAt}-${index}`} style={{ paddingBottom: 10, borderBottom: "1px solid rgba(37,61,44,0.07)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 12, fontSize: 12 }}>
+                    <strong style={{ color: "#253D2C" }}>{session.country || "Unknown country"}{session.city ? ` · ${session.city}` : ""}</strong>
+                    <span style={{ color: "rgba(37,61,44,0.45)", whiteSpace: "nowrap" }}>{formatDate(session.lastSeenAt)}</span>
+                  </div>
+                  <div style={{ color: "rgba(37,61,44,0.5)", fontSize: 11, marginTop: 4 }}>{formatLabel(session.device)} · signed in {formatDate(session.signedInAt)}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </aside>
+    </div>
+  );
+}
+
 function useLiveUserCount(refreshMs = 5000) {
   const [count, setCount] = useState<number | null>(null);
   const [history, setHistory] = useState<PresenceSnapshot[]>([]);
@@ -253,6 +410,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
   const users = useRegisteredUsers();
   const [tick, setTick] = useState(0);
   const [activeTab, setActiveTab] = useState<"overview" | "status">("overview");
+  const [selectedUser, setSelectedUser] = useState<RegisteredUser | null>(null);
 
   // Force re-render key on count change for number animation
   useEffect(() => { setTick((t) => t + 1); }, [count]);
@@ -332,6 +490,34 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
             {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
           </p>
         </div>
+
+        {/* ── User insights ── */}
+        {users.data && (
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 12, marginBottom: 14 }}>
+              {[
+                ["Survey responses", `${users.data.analytics.surveyCompleted} / ${users.data.total}`, "completed"],
+                ["Detected countries", String(users.data.analytics.detectedCountries.length), "from sign-ins"],
+                ["Detected devices", String(users.data.analytics.detectedDevices.length), "from sessions"],
+                ["Tracked sessions", String(users.data.analytics.activeSessions), "coarse location"],
+              ].map(([label, value, detail]) => (
+                <div key={label} style={{ background: "white", border: "1px solid rgba(37,61,44,0.1)", borderRadius: 15, padding: "16px 17px" }}>
+                  <div style={{ color: "rgba(37,61,44,0.48)", fontSize: 11, marginBottom: 7 }}>{label}</div>
+                  <strong style={{ display: "block", color: "#111B21", fontSize: 22, letterSpacing: "-0.03em" }}>{value}</strong>
+                  <span style={{ color: "rgba(37,61,44,0.42)", fontSize: 11 }}>{detail}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 12, marginBottom: 32 }}>
+              <DistributionList title="Where users say they are from" items={users.data.analytics.surveyCountries} />
+              <DistributionList title="How users discovered VeilChat" items={users.data.analytics.discoverySources} />
+              <DistributionList title="Current access countries" items={users.data.analytics.detectedCountries} />
+              <DistributionList title="Survey device choices" items={users.data.analytics.surveyDevices} />
+              <DistributionList title="Detected devices" items={users.data.analytics.detectedDevices} />
+              <DistributionList title="What users want" items={users.data.analytics.surveyGoals} />
+            </div>
+          </>
+        )}
 
         {/* ── Live users card ── */}
         <div style={{ backgroundColor: "white", borderRadius: 18, border: "1px solid rgba(37,61,44,0.1)", padding: "32px 32px 28px", boxShadow: "0 4px 24px rgba(17,27,33,0.07), inset 0 1px 0 rgba(255,255,255,1)", marginBottom: 20 }}>
@@ -520,7 +706,17 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
                     return (
                       <div
                         key={u.id}
-                        style={{ display: "grid", gridTemplateColumns: "52px 1fr 110px 140px", padding: "12px 20px", alignItems: "center", borderBottom: "1px solid rgba(37,61,44,0.05)", backgroundColor: isEven ? "white" : "rgba(37,61,44,0.015)", transition: "background-color 0.15s" }}
+                        role="button"
+                        tabIndex={0}
+                        title="Open user analytics"
+                        onClick={() => setSelectedUser(u)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            setSelectedUser(u);
+                          }
+                        }}
+                        style={{ display: "grid", gridTemplateColumns: "52px 1fr 110px 140px", padding: "12px 20px", alignItems: "center", borderBottom: "1px solid rgba(37,61,44,0.05)", backgroundColor: isEven ? "white" : "rgba(37,61,44,0.015)", transition: "background-color 0.15s", cursor: "pointer" }}
                         onMouseOver={(e) => { e.currentTarget.style.backgroundColor = "rgba(46,111,64,0.04)"; }}
                         onMouseOut={(e)  => { e.currentTarget.style.backgroundColor = isEven ? "white" : "rgba(37,61,44,0.015)"; }}
                       >
@@ -537,6 +733,9 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
                             {u.username && u.displayName && u.displayName !== u.username && (
                               <div style={{ fontSize: 11, color: "rgba(37,61,44,0.4)" }}>{u.displayName}</div>
                             )}
+                            <div style={{ fontSize: 10.5, color: "rgba(37,61,44,0.45)", marginTop: 3 }}>
+                              {u.access.detectedCountry || "Location unknown"} · {u.survey.completedAt ? "Survey complete" : "Survey pending"}
+                            </div>
                           </div>
                         </div>
 
@@ -578,6 +777,10 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
           </div>
         </div>
       </div>
+      )}
+
+      {selectedUser && (
+        <UserAnalytics user={selectedUser} onClose={() => setSelectedUser(null)} />
       )}
 
       <style>{`
