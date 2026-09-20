@@ -26,6 +26,7 @@ import { NativeIntro } from "./components/NativeIntro";
 import { isAndroid } from "./lib/capacitor";
 import { usePresence } from "./lib/usePresence";
 import { OnboardingSurveyModal } from "./components/OnboardingSurveyModal";
+import { Analytics } from "@vercel/analytics/react";
 
 // All non-landing routes are code-split. Each chunk only downloads when
 // the user navigates there, so the initial JS bundle stays tiny and the
@@ -241,6 +242,7 @@ export function App() {
             <DailyVerificationGate />
             <ToastViewport />
             <OnboardingSurveyModal />
+            <Analytics />
           </div>
           {/* Privacy screen overlay — sits outside .veil-app-wrapper so it
               is never affected by the blur/brightness filter. Renders only

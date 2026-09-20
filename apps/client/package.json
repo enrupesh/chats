@@ -38,6 +38,7 @@
     "@trpc/react-query": "^11.16.0",
     "@trpc/server": "^11.16.0",
     "@veil/shared": "workspace:*",
+    "@vercel/analytics": "^2.0.1",
     "bip39": "^3.1.0",
     "dexie": "^4.4.2",
     "dexie-react-hooks": "^4.4.0",
