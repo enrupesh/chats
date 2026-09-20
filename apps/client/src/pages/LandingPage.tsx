@@ -1,30 +1,10 @@
 import { Link } from "react-router-dom";
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import peopleUsingPhones from "../assets/landing/people-using-phones.jpg";
 import smilingWithPhone from "../assets/landing/smiling-with-phone.jpg";
 import { useDocumentMeta } from "../lib/useDocumentMeta";
 import { toPublicAbsoluteUrl } from "../lib/publicAppUrl";
-
-// Below-the-fold heavy media components are lazy-loaded so the
-// initial paint of the landing page only ships the bytes needed to
-// render the hero — a big win for FCP / LCP on slow networks.
-const IntroAdSection = lazy(() =>
-  import("../components/IntroAdSection").then((m) => ({
-    default: m.IntroAdSection,
-  })),
-);
-const ExplainerVideo = lazy(() =>
-  import("../components/ExplainerVideo").then((m) => ({
-    default: m.ExplainerVideo,
-  })),
-);
-
-// Lightweight placeholder so the page layout stays stable while a
-// below-the-fold chunk is fetched (no CLS).
-function LandingSectionPlaceholder({ minHeight = 360 }: { minHeight?: number }) {
-  return <div style={{ minHeight }} aria-hidden="true" />;
-}
 
 /**
  * Public marketing landing page.
@@ -33,7 +13,6 @@ function LandingSectionPlaceholder({ minHeight = 360 }: { minHeight?: number }) 
  * purpose: no app shell, no auth dependencies, no tRPC.
  */
 export function LandingPage() {
-  useTapToScroll();
   useDocumentMeta({
     title: "VeilChat — Private, end-to-end encrypted messenger",
     description:
@@ -59,27 +38,14 @@ export function LandingPage() {
         <Hero />
         <TrustBar />
         <Features />
-        <Suspense fallback={<LandingSectionPlaceholder minHeight={520} />}>
-          <ExplainerVideo />
-        </Suspense>
-        <DeviceShowcase />
         <Lifestyle />
-        <SecurityBond />
-        <PressStrip />
-        <Testimonials />
         <HowItWorks />
         <Security />
-        <Comparison />
         <GetTheApp />
-        <Suspense fallback={<LandingSectionPlaceholder minHeight={520} />}>
-          <IntroAdSection />
-        </Suspense>
         <FAQ />
         <FinalCTA />
       </main>
       <Footer />
-      <FloatingScrollToggle />
-      <FloatingInstallChip />
     </div>
   );
 }
@@ -391,7 +357,6 @@ function NavBar() {
           <a href="#features" className="hover:text-[#2E6F40]">Features</a>
           <a href="#how" className="hover:text-[#2E6F40]">How it works</a>
           <a href="#security" className="hover:text-[#2E6F40]">Privacy</a>
-          <a href="#faq" className="hover:text-[#2E6F40]">FAQ</a>
         </nav>
 
         <div className="hidden md:flex items-center gap-2">
@@ -405,7 +370,7 @@ function NavBar() {
             to="/welcome"
             className="text-[15px] font-semibold text-white bg-[#2E6F40] hover:bg-[#253D2C] px-5 py-2.5 rounded-full transition-colors"
           >
-            Get VeilChat
+            Start chatting
           </Link>
         </div>
 
@@ -437,7 +402,6 @@ function NavBar() {
             <a onClick={() => setOpen(false)} href="#features" className="py-2.5 text-[#3C5A47]">Features</a>
             <a onClick={() => setOpen(false)} href="#how" className="py-2.5 text-[#3C5A47]">How it works</a>
             <a onClick={() => setOpen(false)} href="#security" className="py-2.5 text-[#3C5A47]">Privacy</a>
-            <a onClick={() => setOpen(false)} href="#faq" className="py-2.5 text-[#3C5A47]">FAQ</a>
             <div className="h-px bg-[#253D2C]/10 my-2" />
             <Link onClick={() => setOpen(false)} to="/login" className="py-2.5 text-[#253D2C] font-medium">Sign in</Link>
             <Link
@@ -445,7 +409,7 @@ function NavBar() {
               to="/welcome"
               className="mt-1 text-center text-white font-semibold bg-[#2E6F40] px-4 py-3 rounded-full"
             >
-              Get VeilChat
+              Start chatting
             </Link>
           </div>
         </div>
@@ -507,7 +471,6 @@ function Hero() {
                 </span>
                 End-to-end encrypted · Privacy-first
               </div>
-              <OpenSourcePill />
             </div>
 
             <h1
@@ -535,7 +498,7 @@ function Hero() {
                 to="/welcome"
                 className="group relative inline-flex items-center justify-center gap-2.5 bg-gradient-to-b from-[#3A8550] to-[#2E6F40] hover:from-[#2E6F40] hover:to-[#253D2C] text-white font-semibold text-[16px] px-7 py-4 rounded-full shadow-[0_18px_36px_-14px_rgba(46,111,64,0.55),inset_0_1px_0_rgba(255,255,255,0.22)] hover:shadow-[0_22px_44px_-14px_rgba(46,111,64,0.65),inset_0_1px_0_rgba(255,255,255,0.25)] transition-all"
               >
-                Get VeilChat — it's free
+                Start chatting
                 <span className="grid place-items-center w-6 h-6 rounded-full bg-white/15 group-hover:bg-white/25 transition-colors">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-200 group-hover:translate-x-0.5">
                     <path d="M5 12h14" />
@@ -568,7 +531,6 @@ function Hero() {
               </span>
             </div>
 
-            <ReadArticleButton />
           </div>
 
           <div className="lg:col-span-5">
@@ -2209,7 +2171,7 @@ function GetTheApp() {
 
             {/* Right: install buttons */}
             <div className="lg:col-span-7 p-10 sm:p-12">
-              <SectionLabel>Get the app</SectionLabel>
+              <SectionLabel>Use VeilChat everywhere</SectionLabel>
               <h2
                 className="mt-3 text-[28px] sm:text-[36px] md:text-[42px] font-semibold tracking-[-0.02em] leading-[1.1] text-[#253D2C]"
                 style={{ fontFamily: "'Fraunces', serif" }}
@@ -2437,17 +2399,11 @@ function FinalCTA() {
                 to="/welcome"
                 className="inline-flex items-center justify-center gap-2 bg-white hover:bg-[#FCF5EB] text-[#2E6F40] font-semibold text-[16px] px-8 py-4 rounded-full shadow-[0_18px_36px_-14px_rgba(0,0,0,0.35)] transition-colors"
               >
-                Get VeilChat — free forever
+                Start chatting
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14" />
                   <path d="M13 5l7 7-7 7" />
                 </svg>
-              </Link>
-              <Link
-                to="/login"
-                className="inline-flex items-center justify-center gap-2 border border-white/30 hover:bg-white/10 text-white font-medium text-[16px] px-8 py-4 rounded-full transition-colors"
-              >
-                I already have an account
               </Link>
             </div>
           </div>
@@ -2463,8 +2419,8 @@ function Footer() {
   return (
     <footer style={{ backgroundColor: "#111B21", color: "#FCF5EB" }}>
       <div className="mx-auto max-w-7xl px-5 sm:px-8 py-16">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-10">
-          <div className="lg:col-span-2">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+          <div>
             <a href="#top" className="flex items-center gap-2.5">
               <BrandMark />
               <span className="text-[18px] font-bold tracking-tight text-white">
@@ -2490,24 +2446,6 @@ function Footer() {
                 hello@sendora.me
               </span>
             </a>
-            <div className="mt-5 flex items-center gap-2">
-              <SocialIcon label="GitHub" href="https://github.com/rupeshsahu408">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2.16c-3.2.7-3.87-1.36-3.87-1.36-.52-1.31-1.27-1.66-1.27-1.66-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.69 1.24 3.34.95.1-.74.4-1.24.72-1.53-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.45.11-3.02 0 0 .96-.31 3.15 1.18a10.93 10.93 0 0 1 5.74 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.57.23 2.73.11 3.02.74.81 1.18 1.84 1.18 3.1 0 4.42-2.7 5.4-5.27 5.68.41.36.78 1.06.78 2.13v3.16c0 .31.21.67.8.55C20.21 21.39 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5z" /></svg>
-              </SocialIcon>
-              <SocialIcon label="X (Twitter)" href="https://x.com">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
-              </SocialIcon>
-              <SocialIcon label="Instagram" href="https://www.instagram.com/rupesh_gupta___/">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="5" />
-                  <circle cx="12" cy="12" r="4" />
-                  <circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none" />
-                </svg>
-              </SocialIcon>
-              <SocialIcon label="Sendora" href="https://sendora.me">
-                <span className="text-[13px] font-bold tracking-tight leading-none" style={{ fontFamily: "'Fraunces', serif" }}>S</span>
-              </SocialIcon>
-            </div>
           </div>
 
           <FooterCol
@@ -2520,7 +2458,7 @@ function Footer() {
             ]}
           />
           <FooterCol
-            title="Get the app"
+            title="Start chatting"
             internal
             links={[
               { label: "Sign up", to: "/welcome" },
@@ -2535,7 +2473,6 @@ function Footer() {
               { label: "Blog", to: "/blog" },
               { label: "About us", to: "/about" },
               { label: "Open source", to: "/open-source" },
-              { label: "GitHub repository", href: "https://github.com/rupeshsahu408/VeilChat" },
               { label: "Privacy Policy", to: "/privacy-policy" },
               { label: "Terms & Conditions", to: "/terms" },
               { label: "Contact support", href: "mailto:hello@sendora.me" },
