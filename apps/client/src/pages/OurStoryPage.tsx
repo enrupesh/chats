@@ -5,7 +5,7 @@ import { useDocumentMeta } from "../lib/useDocumentMeta";
 
 /**
  * Our Story — the personal, human page behind VeilChat.
- * Founder: Aarav Bansal | Student | India | Solo builder
+ * Founder: Rupesh Gupta | Founder | Solo builder
  * Origin: Night of April 5, 2025
  * Philosophy: "Try alone, fail alone, win alone, and one day — boom."
  * Tone: Mix of personal + professional
@@ -273,12 +273,12 @@ function TheMoment() {
           {/* Story text */}
           <div className="space-y-5 text-[16px] sm:text-[17px] text-[#3C5A47] leading-[1.75]">
             <p>
-              It was late. The kind of quiet that only comes after midnight. Aarav Bansal
+              It was late. The kind of quiet that only comes after midnight. Rupesh Gupta
               sat alone, the way he often did — thinking, questioning, turning
               ideas over in his mind.
             </p>
             <p>
-              That night, the question wasn't abstract. He was thinking about
+               That night, the question wasn't abstract. He was thinking about
               people — about conversations between friends, between families,
               between people who simply needed to talk. And about how so many of
               those conversations were quietly being watched, catalogued, and
@@ -291,7 +291,7 @@ function TheMoment() {
               numbers.
             </p>
             <p className="font-medium text-[#253D2C]">
-              So that night, Aarav Bansal made a decision: build the messenger he
+               So that night, Rupesh Gupta made a decision: build the messenger he
               wished already existed. One that was private by design, open to
               everyone, and built with genuine care.
             </p>
@@ -337,7 +337,7 @@ function ThePhilosophy() {
           "
         </blockquote>
         <p className="mt-5 text-[14px] text-[#3C5A47]/70 font-medium tracking-wide">
-          — Aarav Bansal, Founder
+           — Rupesh Gupta, Founder
         </p>
 
         <div className="mt-12 grid sm:grid-cols-3 gap-5">
@@ -447,7 +447,7 @@ function TheFounder() {
             >
               <img
                 src="/founder-rupesh.png"
-                alt="Aarav Bansal — Founder of VeilChat"
+                alt="Rupesh Gupta — Founder of VeilChat"
                 className="w-full h-full object-cover"
                 style={{ objectPosition: "35% 20%" }}
               />
@@ -477,12 +477,12 @@ function TheFounder() {
               animate={inView ? vis : { opacity: 0, y: 22 }}
               transition={{ duration: 0.5, ease: EASE_OUT, delay: 0.18 }}
             >
-              Aarav Bansal
+               Rupesh Gupta
             </motion.h2>
 
             {/* Chips — each pops in with a small stagger */}
             <div className="mt-2 flex flex-wrap gap-1.5">
-              {["Student", "Entrepreneur", "India", "Solo Founder"].map((tag, i) => (
+              {["Founder", "Entrepreneur", "India", "Solo Founder"].map((tag, i) => (
                 <motion.span
                   key={tag}
                   initial={{ opacity: 0, scale: 0.8, y: 6 }}
@@ -498,9 +498,9 @@ function TheFounder() {
             {/* Bio paragraphs */}
             <div className="mt-5 space-y-4 text-[15.5px] text-[#3C5A47] leading-[1.75]">
               {[
-                { text: "Aarav Bansal isn't a tech giant. He doesn't run a team of hundreds or operate from a glass office. He's a student and entrepreneur from India who decided that good ideas don't wait for permission — and that privacy is too important to be left to people who don't genuinely care about it.", bold: false },
+                { text: "Rupesh Gupta isn't a tech giant. He doesn't run a team of hundreds or operate from a glass office. He's a founder and entrepreneur who decided that good ideas don't wait for permission — and that privacy is too important to be left to people who don't genuinely care about it.", bold: false },
                 { text: "He designed VeilChat, wrote its Signal Protocol implementation, built its server infrastructure, designed every screen, and shipped it to the world — alone. Not because he had to, but because he chose to own it completely.", bold: false },
-                { text: "The same student and entrepreneur who sat alone on the night of April 5, 2025, is the same person still building this — every single day.", bold: true },
+                { text: "The same founder and entrepreneur who sat alone on the night of April 5, 2025, is the same person still building this — every single day.", bold: true },
               ].map(({ text, bold }, i) => (
                 <motion.p
                   key={i}
@@ -517,7 +517,7 @@ function TheFounder() {
             {/* Social links */}
             <div className="mt-6">
               <p className="text-[11.5px] font-semibold tracking-[0.16em] uppercase text-[#3C5A47]/60 mb-3">
-                Find Aarav Bansal online
+                 Find Rupesh Gupta online
               </p>
               <div className="flex items-center gap-2 flex-wrap">
                 <FounderSocialIcon label="GitHub" href="https://github.com/loren-dasu">
@@ -532,7 +532,7 @@ function TheFounder() {
                   </svg>
                   X (Twitter)
                 </FounderSocialIcon>
-                <FounderSocialIcon label="Instagram" href="https://www.instagram.com/rupesh_gupta___/">
+                <FounderSocialIcon label="Instagram" href="https://www.instagram.com/entrepreneur.rupesh/">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <rect x="3" y="3" width="18" height="18" rx="5" />
                     <circle cx="12" cy="12" r="4" />
@@ -632,7 +632,7 @@ const TIMELINE_EVENTS = [
   {
     date: "April 5, 2025",
     title: "The idea is born",
-    body: "On a quiet night, Aarav Bansal decides to build the messenger he always wished existed. A private space that belongs entirely to its users.",
+    body: "On a quiet night, Rupesh Gupta decides to build the messenger he always wished existed. A private space that belongs entirely to its users.",
   },
   {
     date: "April 2025",
@@ -742,7 +742,7 @@ const TESTIMONIALS = [
   },
   {
     quote:
-      "I switched from Signal because VeilChat is simply more beautiful. Privacy doesn't have to feel clinical. Aarav Bansal gets that.",
+      "I switched from Signal because VeilChat is simply more beautiful. Privacy doesn't have to feel clinical. Rupesh Gupta gets that.",
     name: "James K.",
     role: "Designer · United Kingdom",
     initials: "JK",
@@ -766,7 +766,7 @@ const TESTIMONIALS = [
   },
   {
     quote:
-      "It started as a college project and became the most private messenger I've ever used. Can't believe it's free. Aarav Bansal — keep going.",
+      "It started as a college project and became the most private messenger I've ever used. Can't believe it's free. Rupesh Gupta — keep going.",
     name: "Yuna C.",
     role: "Early adopter · South Korea",
     initials: "YC",
@@ -938,7 +938,7 @@ function StoryFooter() {
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
             </svg>
           </FooterSocialIcon>
-          <FooterSocialIcon label="Instagram" href="https://www.instagram.com/rupesh_gupta___/">
+          <FooterSocialIcon label="Instagram" href="https://www.instagram.com/entrepreneur.rupesh/">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <rect x="3" y="3" width="18" height="18" rx="5" />
               <circle cx="12" cy="12" r="4" />

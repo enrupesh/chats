@@ -311,7 +311,7 @@ function AboutBuilders() {
         >
           Built by{" "}
           <span className="italic" style={{ color: "#2E6F40" }}>
-            Aarav Bansal
+            Rupesh Gupta
           </span>{" "}
           and the{" "}
           <span className="italic" style={{ color: "#2E6F40" }}>
@@ -326,11 +326,11 @@ function AboutBuilders() {
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2 max-w-2xl mx-auto">
           <BuilderCard
-            name="Aarav Bansal"
-            role="Founder & Engineer"
-            instagramUrl="https://www.instagram.com/rupesh_gupta___/"
-            instagramHandle="@rupesh_gupta___"
-            initials="AB"
+             name="Rupesh Gupta"
+             role="Founder"
+             instagramUrl="https://www.instagram.com/entrepreneur.rupesh/"
+             instagramHandle="@entrepreneur.rupesh"
+             initials="RG"
           />
           <BuilderCard
             name="Zyntra Team"
