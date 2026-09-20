@@ -103,7 +103,8 @@ function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
                   value={password}
                   onChange={(e) => { setPassword(e.target.value); setError(""); }}
                   placeholder="Enter your password"
-                  style={{ width: "100%", boxSizing: "border-box", backgroundColor: "#F8FAF8", border: `1.5px solid ${error ? "#E53E3E" : "rgba(37,61,44,0.14)"}`, borderRadius: 10, padding: "11px 44px 11px 14px", fontSize: 14, color: "#111B21", outline: "none", transition: "border-color 0.2s, box-shadow 0.2s" }}
+                 autoComplete="current-password"
+                 style={{ width: "100%", boxSizing: "border-box", backgroundColor: "#F8FAF8", border: `1.5px solid ${error ? "#E53E3E" : "rgba(37,61,44,0.14)"}`, borderRadius: 10, padding: "11px 44px 11px 14px", fontSize: 14, color: "#111B21", outline: "none", transition: "border-color 0.2s, box-shadow 0.2s" }}
                   onFocus={(e) => { e.target.style.borderColor = "#2E6F40"; e.target.style.boxShadow = "0 0 0 3px rgba(46,111,64,0.1)"; }}
                   onBlur={(e)  => { e.target.style.borderColor = error ? "#E53E3E" : "rgba(37,61,44,0.14)"; e.target.style.boxShadow = "none"; }}
                 />
@@ -191,6 +192,11 @@ interface RegisteredUser {
   };
 }
 
+interface AnalyticsDimension {
+  label: string;
+  count: number;
+}
+
 interface UsersData {
   total: number;
   users: RegisteredUser[];
@@ -203,6 +209,32 @@ interface UsersData {
     detectedCountries: Array<{ label: string; count: number }>;
     detectedDevices: Array<{ label: string; count: number }>;
     activeSessions: number;
+    visitors: {
+      total: number;
+      last24Hours: number;
+      last7Days: number;
+      countries: AnalyticsDimension[];
+      deviceCategories: AnalyticsDimension[];
+      browsers: AnalyticsDimension[];
+      operatingSystems: AnalyticsDimension[];
+      languages: AnalyticsDimension[];
+      referrers: AnalyticsDimension[];
+      screenClasses: AnalyticsDimension[];
+      daily: Array<{ day: string; count: number }>;
+      recent: Array<{
+        lastSeenAt: string;
+        firstSeenAt: string;
+        country: string | null;
+        city: string | null;
+        deviceCategory: string | null;
+        browser: string | null;
+        operatingSystem: string | null;
+        language: string | null;
+        referrerDomain: string | null;
+        screenClass: string | null;
+        lastPath: string | null;
+      }>;
+    };
   };
 }
 
@@ -275,6 +307,11 @@ function formatDate(value: string | null | undefined): string {
   });
 }
 
+function formatDay(value: string): string {
+  const parsed = new Date(`${value}T12:00:00Z`);
+  return parsed.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
 function DistributionList({
   title,
   items,
@@ -299,6 +336,75 @@ function DistributionList({
               <div style={{ height: 6, backgroundColor: "rgba(46,111,64,0.1)", borderRadius: 999, overflow: "hidden" }}>
                 <div style={{ width: `${(item.count / max) * 100}%`, height: "100%", backgroundColor: "#68BA7F", borderRadius: 999 }} />
               </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function VisitorTrend({
+  daily,
+}: {
+  daily: Array<{ day: string; count: number }>;
+}) {
+  const visible = daily.slice(-14);
+  const max = Math.max(...visible.map((item) => item.count), 1);
+  return (
+    <div style={{ backgroundColor: "white", border: "1px solid rgba(37,61,44,0.1)", borderRadius: 16, padding: 20 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "baseline", marginBottom: 17 }}>
+        <div>
+          <h3 style={{ fontSize: 14, margin: "0 0 4px", color: "#111B21" }}>Unique visitors</h3>
+          <p style={{ margin: 0, color: "rgba(37,61,44,0.45)", fontSize: 11 }}>One anonymous visitor counted once per UTC day</p>
+        </div>
+        <span style={{ color: "rgba(37,61,44,0.4)", fontSize: 11 }}>Last 14 days</span>
+      </div>
+      {visible.length === 0 ? (
+        <div style={{ minHeight: 118, display: "grid", placeItems: "center", color: "rgba(37,61,44,0.4)", fontSize: 12 }}>
+          Waiting for the first visitor beacon
+        </div>
+      ) : (
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 118 }}>
+          {visible.map((item) => (
+            <div key={item.day} title={`${formatDay(item.day)} · ${item.count} visitors`} style={{ flex: 1, height: "100%", display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 6, minWidth: 0 }}>
+              <div style={{ height: `${Math.max(8, (item.count / max) * 88)}px`, borderRadius: "5px 5px 2px 2px", background: "linear-gradient(180deg, #2E6F40, #68BA7F)", transition: "height 0.3s ease" }} />
+              <span style={{ color: "rgba(37,61,44,0.4)", fontSize: 9, textAlign: "center", whiteSpace: "nowrap", overflow: "hidden" }}>{formatDay(item.day)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RecentVisitorActivity({
+  visitors,
+}: {
+  visitors: UsersData["analytics"]["visitors"]["recent"];
+}) {
+  return (
+    <div style={{ backgroundColor: "white", border: "1px solid rgba(37,61,44,0.1)", borderRadius: 16, padding: 20 }}>
+      <div style={{ marginBottom: 15 }}>
+        <h3 style={{ fontSize: 14, margin: "0 0 4px", color: "#111B21" }}>Recent visitor activity</h3>
+        <p style={{ margin: 0, color: "rgba(37,61,44,0.45)", fontSize: 11 }}>Coarse context only; no IP addresses or full URLs are retained</p>
+      </div>
+      {visitors.length === 0 ? (
+        <p style={{ margin: 0, color: "rgba(37,61,44,0.45)", fontSize: 12 }}>No visitor activity yet.</p>
+      ) : (
+        <div style={{ display: "grid", gap: 10 }}>
+          {visitors.slice(0, 6).map((visitor, index) => (
+            <div key={`${visitor.lastSeenAt}-${index}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, paddingBottom: 9, borderBottom: "1px solid rgba(37,61,44,0.07)" }}>
+              <div style={{ minWidth: 0 }}>
+                <strong style={{ display: "block", color: "#253D2C", fontSize: 12 }}>
+                  {visitor.country || "Location unavailable"}{visitor.city ? ` · ${visitor.city}` : ""}
+                </strong>
+                <span style={{ display: "block", color: "rgba(37,61,44,0.48)", fontSize: 11, marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {[visitor.browser, visitor.operatingSystem, visitor.deviceCategory].filter(Boolean).join(" · ") || "Device unavailable"}
+                  {visitor.lastPath ? ` · ${visitor.lastPath}` : ""}
+                </span>
+              </div>
+              <time dateTime={visitor.lastSeenAt} style={{ color: "rgba(37,61,44,0.42)", fontSize: 10.5, whiteSpace: "nowrap" }}>{formatDate(visitor.lastSeenAt)}</time>
             </div>
           ))}
         </div>
@@ -494,12 +600,12 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
         {/* ── User insights ── */}
         {users.data && (
           <>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 12, marginBottom: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 12, marginBottom: 14 }}>
               {[
-                ["Survey responses", `${users.data.analytics.surveyCompleted} / ${users.data.total}`, "completed"],
-                ["Detected countries", String(users.data.analytics.detectedCountries.length), "from sign-ins"],
-                ["Detected devices", String(users.data.analytics.detectedDevices.length), "from sessions"],
-                ["Tracked sessions", String(users.data.analytics.activeSessions), "coarse location"],
+                ["Unique visitors", String(users.data.analytics.visitors.total), "all-time browser visitors"],
+                ["Visitors today", String(users.data.analytics.visitors.last24Hours), "seen in the last 24 hours"],
+                ["Visitors this week", String(users.data.analytics.visitors.last7Days), "seen in the last 7 days"],
+                ["Signed-in sessions", String(users.data.analytics.activeSessions), "currently unexpired"],
               ].map(([label, value, detail]) => (
                 <div key={label} style={{ background: "white", border: "1px solid rgba(37,61,44,0.1)", borderRadius: 15, padding: "16px 17px" }}>
                   <div style={{ color: "rgba(37,61,44,0.48)", fontSize: 11, marginBottom: 7 }}>{label}</div>
@@ -508,13 +614,22 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
                 </div>
               ))}
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 12, marginBottom: 32 }}>
-              <DistributionList title="Where users say they are from" items={users.data.analytics.surveyCountries} />
-              <DistributionList title="How users discovered VeilChat" items={users.data.analytics.discoverySources} />
-              <DistributionList title="Current access countries" items={users.data.analytics.detectedCountries} />
-              <DistributionList title="Survey device choices" items={users.data.analytics.surveyDevices} />
-              <DistributionList title="Detected devices" items={users.data.analytics.detectedDevices} />
-              <DistributionList title="What users want" items={users.data.analytics.surveyGoals} />
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 12, marginBottom: 12 }}>
+              <VisitorTrend daily={users.data.analytics.visitors.daily} />
+              <RecentVisitorActivity visitors={users.data.analytics.visitors.recent} />
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 14 }}>
+              <DistributionList title="Visitor countries" items={users.data.analytics.visitors.countries} />
+              <DistributionList title="Device categories" items={users.data.analytics.visitors.deviceCategories} />
+              <DistributionList title="Browsers" items={users.data.analytics.visitors.browsers} />
+              <DistributionList title="Operating systems" items={users.data.analytics.visitors.operatingSystems} />
+              <DistributionList title="Referrer domains" items={users.data.analytics.visitors.referrers} />
+              <DistributionList title="Languages" items={users.data.analytics.visitors.languages} />
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 32 }}>
+              <DistributionList title="Signed-in countries" items={users.data.analytics.detectedCountries} />
+              <DistributionList title="Signed-in devices" items={users.data.analytics.detectedDevices} />
+              <DistributionList title="Screen classes" items={users.data.analytics.visitors.screenClasses} />
             </div>
           </>
         )}

@@ -10,6 +10,7 @@ import {
   uniqueIndex,
   index,
   jsonb,
+  primaryKey,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -297,6 +298,71 @@ export const sessions = pgTable(
   },
   (t) => ({
     userIdx: index("sessions_user_idx").on(t.userId),
+  }),
+);
+
+/* ─────────── site analytics ─────────── */
+/*
+ * Privacy-preserving first-party analytics for the public web app. The
+ * browser-provided visitor id is hashed before it reaches this table. We
+ * intentionally keep only coarse, low-cardinality dimensions and never
+ * store a raw IP address or a complete referrer URL.
+ */
+export const siteVisitors = pgTable(
+  "site_visitors",
+  {
+    visitorHash: text("visitor_hash").primaryKey(),
+    firstSeenAt: timestamp("first_seen_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    country: text("country"),
+    city: text("city"),
+    deviceCategory: text("device_category"),
+    browser: text("browser"),
+    operatingSystem: text("operating_system"),
+    language: text("language"),
+    referrerDomain: text("referrer_domain"),
+    screenClass: text("screen_class"),
+    lastPath: text("last_path"),
+  },
+  (t) => ({
+    lastSeenIdx: index("site_visitors_last_seen_idx").on(t.lastSeenAt),
+    countryIdx: index("site_visitors_country_idx").on(t.country),
+  }),
+);
+
+/**
+ * One row per anonymous visitor per UTC calendar day. This supports genuine
+ * unique-visitor trends without retaining a request-level event stream.
+ */
+export const siteVisitorDays = pgTable(
+  "site_visitor_days",
+  {
+    visitorHash: text("visitor_hash").notNull(),
+    day: text("day").notNull(),
+    firstSeenAt: timestamp("first_seen_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    country: text("country"),
+    deviceCategory: text("device_category"),
+    browser: text("browser"),
+    operatingSystem: text("operating_system"),
+    language: text("language"),
+    referrerDomain: text("referrer_domain"),
+    screenClass: text("screen_class"),
+  },
+  (t) => ({
+    visitorDayPk: primaryKey({
+      name: "site_visitor_days_pk",
+      columns: [t.visitorHash, t.day],
+    }),
+    dayIdx: index("site_visitor_days_day_idx").on(t.day),
   }),
 );
 

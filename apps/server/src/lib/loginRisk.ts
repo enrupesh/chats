@@ -163,6 +163,50 @@ export function deviceLabel(ua: string | null | undefined): string {
   return `${browserName} on ${osName}`;
 }
 
+export interface DeviceInfo {
+  category: "mobile" | "tablet" | "desktop" | "unknown";
+  browser: string;
+  operatingSystem: string;
+}
+
+/**
+ * Low-cardinality user-agent dimensions used by the admin analytics view.
+ * These are intentionally families, not versions or a fingerprint.
+ */
+export function deviceInfo(ua: string | null | undefined): DeviceInfo {
+  const lower = (ua ?? "").toLowerCase();
+  const operatingSystem = /windows/.test(lower)
+    ? "Windows"
+    : /iphone|ipad|ios/.test(lower)
+      ? "iOS"
+      : /android/.test(lower)
+        ? "Android"
+        : /mac os|macintosh/.test(lower)
+          ? "macOS"
+          : /linux/.test(lower)
+            ? "Linux"
+            : "Other";
+  const browser = /edg\//.test(lower)
+    ? "Edge"
+    : /firefox/.test(lower)
+      ? "Firefox"
+      : /opera|opr\//.test(lower)
+        ? "Opera"
+        : /chrome|crios/.test(lower)
+          ? "Chrome"
+          : /safari/.test(lower)
+            ? "Safari"
+            : "Other";
+  const category = /ipad|tablet|android(?!.*mobile)/.test(lower)
+    ? "tablet"
+    : /mobile|iphone|ipod|android/.test(lower)
+      ? "mobile"
+      : ua
+        ? "desktop"
+        : "unknown";
+  return { category, browser, operatingSystem };
+}
+
 /* ─────────── failure tracking ─────────── */
 
 function failureKey(username: string, ip: string): string {

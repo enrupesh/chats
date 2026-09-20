@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { randomBytes } from "node:crypto";
+import { ipPrefix, lookupCity } from "../../lib/loginRisk.js";
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
@@ -636,6 +637,8 @@ export const passkeyRouter = router({
       const refreshExpires = new Date(
         Date.now() + TOKEN_TTL.refreshSeconds * 1000,
       );
+      const ip = ctx.ip;
+      const geo = await lookupCity(ip);
       await db.insert(schema.sessions).values({
         userId: user.id,
         refreshTokenHash: sha256Hex(refreshToken),
@@ -644,6 +647,9 @@ export const passkeyRouter = router({
             0,
             200,
           ) ?? null,
+        ipPrefix: ipPrefix(ip),
+        lastCity: geo.city,
+        lastCountry: geo.country,
         expiresAt: refreshExpires,
       });
       await db

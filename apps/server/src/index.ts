@@ -11,10 +11,15 @@ import { registerWebSocketRoutes } from "./lib/wsServer.js";
 import { initPush } from "./lib/push.js";
 import { verifyAccessToken } from "./lib/jwt.js";
 import { getDb, awaitDbBootstrap, schema } from "./db/index.js";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, gte } from "drizzle-orm";
+import { createHmac } from "node:crypto";
 import { startMediaSweeper } from "./lib/mediaSweeper.js";
 import { startMessageSweeper } from "./lib/messageSweeper.js";
 import { startScheduledSweeper } from "./lib/scheduledSweeper.js";
+import {
+  deviceInfo,
+  lookupCity,
+} from "./lib/loginRisk.js";
 import { ensureCorsPolicy } from "./lib/r2.js";
 import { registerMediaUploadRoute, registerMediaDownloadRoute } from "./lib/mediaUploadRoute.js";
 
@@ -162,6 +167,58 @@ app.get("/health/detailed", {
 // Active = seen within the last 2 minutes.
 const presenceSessions = new Map<string, number>(); // sid → last-seen ms
 const PRESENCE_TTL = 120_000;
+const ANALYTICS_VISITOR_SECRET =
+  env.IDENTIFIER_HMAC_PEPPER ?? env.JWT_SECRET ?? "veil-site-analytics";
+
+function visitorHash(sid: string): string {
+  return createHmac("sha256", ANALYTICS_VISITOR_SECRET)
+    .update(sid)
+    .digest("hex");
+}
+
+function firstHeader(
+  value: string | string[] | undefined,
+): string | null {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return typeof raw === "string" && raw.length > 0 ? raw : null;
+}
+
+function analyticsLanguage(
+  value: string | string[] | undefined,
+): string | null {
+  const raw = firstHeader(value);
+  const language = raw?.split(",")[0]?.split(";")[0]?.trim().toLowerCase();
+  return language && /^[a-z]{2,3}(?:-[a-z]{2})?$/.test(language)
+    ? language
+    : null;
+}
+
+function analyticsPath(value: unknown): string | null {
+  if (typeof value !== "string" || !value.startsWith("/")) return null;
+  // Keep the route useful while avoiding query strings and arbitrary payloads.
+  const path = value.split("?")[0]!.slice(0, 120);
+  return path || "/";
+}
+
+function analyticsScreenClass(value: unknown): string | null {
+  return value === "mobile" || value === "tablet" || value === "desktop"
+    ? value
+    : null;
+}
+
+function analyticsReferrer(value: unknown): string {
+  if (typeof value !== "string" || value.length === 0) return "Direct";
+  try {
+    const hostname = new URL(value).hostname.toLowerCase().replace(/^www\./, "");
+    return hostname.slice(0, 120) || "Direct";
+  } catch {
+    return "Direct";
+  }
+}
+
+function analyticsDay(date = new Date()): string {
+  return date.toISOString().slice(0, 10);
+}
 
 setInterval(() => {
   const cutoff = Date.now() - PRESENCE_TTL;
@@ -170,10 +227,91 @@ setInterval(() => {
   }
 }, 30_000).unref();
 
-app.post<{ Body: { sid?: string } }>("/ping", async (req, reply) => {
+app.post<{
+  Body: { sid?: string; path?: string; referrer?: string; screenClass?: string };
+}>("/ping", async (req, reply) => {
   const sid = (req.body as Record<string, unknown>)?.sid;
   if (sid && typeof sid === "string" && sid.length <= 128) {
     presenceSessions.set(sid, Date.now());
+
+    // Presence remains in memory, while this separate best-effort path stores
+    // one privacy-preserving visitor row and one visitor/day row. Analytics
+    // must never make the beacon fail or affect the rest of the application.
+    try {
+      const db = getDb();
+      const now = new Date();
+      const hash = visitorHash(sid);
+      const ua = firstHeader(req.headers["user-agent"]);
+      const device = deviceInfo(ua);
+      const geo = await lookupCity(req.ip);
+      const country = geo.country;
+      const city = geo.city;
+      const language = analyticsLanguage(req.headers["accept-language"]);
+      const referrerDomain = analyticsReferrer(
+        (req.body as Record<string, unknown>)?.referrer,
+      );
+      const screenClass = analyticsScreenClass(
+        (req.body as Record<string, unknown>)?.screenClass,
+      );
+      const path = analyticsPath((req.body as Record<string, unknown>)?.path);
+
+      await db
+        .insert(schema.siteVisitors)
+        .values({
+          visitorHash: hash,
+          firstSeenAt: now,
+          lastSeenAt: now,
+          country,
+          city,
+          deviceCategory: device.category,
+          browser: device.browser,
+          operatingSystem: device.operatingSystem,
+          language,
+          referrerDomain,
+          screenClass,
+          lastPath: path,
+        })
+        .onConflictDoUpdate({
+          target: schema.siteVisitors.visitorHash,
+          set: {
+            lastSeenAt: now,
+            country,
+            city,
+            deviceCategory: device.category,
+            browser: device.browser,
+            operatingSystem: device.operatingSystem,
+            language,
+            referrerDomain,
+            screenClass,
+            lastPath: path,
+          },
+        });
+
+      await db
+        .insert(schema.siteVisitorDays)
+        .values({
+          visitorHash: hash,
+          day: analyticsDay(now),
+          firstSeenAt: now,
+          lastSeenAt: now,
+          country,
+          deviceCategory: device.category,
+          browser: device.browser,
+          operatingSystem: device.operatingSystem,
+          language,
+          referrerDomain,
+          screenClass,
+        })
+        .onConflictDoUpdate({
+          target: [
+            schema.siteVisitorDays.visitorHash,
+            schema.siteVisitorDays.day,
+          ],
+          set: { lastSeenAt: now },
+        });
+    } catch (error) {
+      app.log.debug({ err: error }, "visitor analytics beacon skipped");
+    }
   }
   return reply.status(204).send();
 });
@@ -220,9 +358,35 @@ app.get("/admin/users", async (req, reply) => {
       device: schema.sessions.deviceLabel,
       createdAt: schema.sessions.createdAt,
       lastUsedAt: schema.sessions.lastUsedAt,
+      expiresAt: schema.sessions.expiresAt,
     })
     .from(schema.sessions)
     .orderBy(desc(schema.sessions.lastUsedAt));
+  const visitorRows = await db
+    .select({
+      lastSeenAt: schema.siteVisitors.lastSeenAt,
+      firstSeenAt: schema.siteVisitors.firstSeenAt,
+      country: schema.siteVisitors.country,
+      city: schema.siteVisitors.city,
+      deviceCategory: schema.siteVisitors.deviceCategory,
+      browser: schema.siteVisitors.browser,
+      operatingSystem: schema.siteVisitors.operatingSystem,
+      language: schema.siteVisitors.language,
+      referrerDomain: schema.siteVisitors.referrerDomain,
+      screenClass: schema.siteVisitors.screenClass,
+      lastPath: schema.siteVisitors.lastPath,
+    })
+    .from(schema.siteVisitors)
+    .orderBy(desc(schema.siteVisitors.lastSeenAt));
+  const sinceDay = analyticsDay(
+    new Date(Date.now() - 29 * 24 * 60 * 60 * 1000),
+  );
+  const visitorDayRows = await db
+    .select({
+      day: schema.siteVisitorDays.day,
+    })
+    .from(schema.siteVisitorDays)
+    .where(gte(schema.siteVisitorDays.day, sinceDay));
 
   const sessionsByUser = new Map<string, typeof sessionRows>();
   for (const session of sessionRows) {
@@ -290,7 +454,52 @@ app.get("/admin/users", async (req, reply) => {
       surveyGoals: countValues(users.map((user) => user.survey.goal)),
       detectedCountries: countValues(users.map((user) => user.access.detectedCountry)),
       detectedDevices: countValues(users.map((user) => user.access.latestDevice)),
-      activeSessions: sessionRows.length,
+      activeSessions: sessionRows.filter((session) => session.expiresAt > new Date()).length,
+      visitors: {
+        total: visitorRows.length,
+        last24Hours: visitorRows.filter(
+          (visitor) =>
+            visitor.lastSeenAt.getTime() >= Date.now() - 24 * 60 * 60 * 1000,
+        ).length,
+        last7Days: visitorRows.filter(
+          (visitor) =>
+            visitor.lastSeenAt.getTime() >= Date.now() - 7 * 24 * 60 * 60 * 1000,
+        ).length,
+        countries: countValues(visitorRows.map((visitor) => visitor.country)),
+        deviceCategories: countValues(
+          visitorRows.map((visitor) => visitor.deviceCategory),
+        ),
+        browsers: countValues(visitorRows.map((visitor) => visitor.browser)),
+        operatingSystems: countValues(
+          visitorRows.map((visitor) => visitor.operatingSystem),
+        ),
+        languages: countValues(visitorRows.map((visitor) => visitor.language)),
+        referrers: countValues(
+          visitorRows.map((visitor) => visitor.referrerDomain),
+        ),
+        screenClasses: countValues(
+          visitorRows.map((visitor) => visitor.screenClass),
+        ),
+        daily: [...new Set(visitorDayRows.map((row) => row.day))]
+          .sort()
+          .map((day) => ({
+            day,
+            count: visitorDayRows.filter((row) => row.day === day).length,
+          })),
+        recent: visitorRows.slice(0, 12).map((visitor) => ({
+          lastSeenAt: visitor.lastSeenAt,
+          firstSeenAt: visitor.firstSeenAt,
+          country: visitor.country,
+          city: visitor.city,
+          deviceCategory: visitor.deviceCategory,
+          browser: visitor.browser,
+          operatingSystem: visitor.operatingSystem,
+          language: visitor.language,
+          referrerDomain: visitor.referrerDomain,
+          screenClass: visitor.screenClass,
+          lastPath: visitor.lastPath,
+        })),
+      },
     },
     users,
   };

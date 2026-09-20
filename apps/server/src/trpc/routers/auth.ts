@@ -281,6 +281,7 @@ async function issueSession(
   ctx: {
     req: { headers: Record<string, string | string[] | undefined> };
     res: unknown;
+    ip: string;
   },
   userId: string,
   accountType: "email" | "phone" | "random",
@@ -292,12 +293,17 @@ async function issueSession(
   const refreshExpires = new Date(
     Date.now() + TOKEN_TTL.refreshSeconds * 1000,
   );
+  const userAgent =
+    (ctx.req.headers["user-agent"] as string | undefined)?.slice(0, 200) ??
+    null;
+  const geo = await lookupCity(ctx.ip);
   await db.insert(schema.sessions).values({
     userId,
     refreshTokenHash: sha256Hex(refreshToken),
-    deviceLabel:
-      (ctx.req.headers["user-agent"] as string | undefined)?.slice(0, 200) ??
-      null,
+    deviceLabel: userAgent,
+    ipPrefix: ipPrefix(ctx.ip),
+    lastCity: geo.city,
+    lastCountry: geo.country,
     expiresAt: refreshExpires,
   });
   await db

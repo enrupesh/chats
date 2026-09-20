@@ -14,11 +14,22 @@ function getSessionId(): string {
 }
 
 async function sendPing(): Promise<void> {
+  // Do not let internal admin/status visits pollute public visitor analytics.
+  if (window.location.pathname === "/raka98" || window.location.pathname === "/status") {
+    return;
+  }
   try {
+    const width = window.innerWidth;
+    const screenClass = width < 640 ? "mobile" : width < 1024 ? "tablet" : "desktop";
     await fetch(`${BACKEND_URL}/ping`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ sid: getSessionId() }),
+      body: JSON.stringify({
+        sid: getSessionId(),
+        path: window.location.pathname,
+        referrer: document.referrer,
+        screenClass,
+      }),
       keepalive: true,
     });
   } catch {

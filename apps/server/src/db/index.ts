@@ -48,6 +48,51 @@ async function ensureSchema(sql: ReturnType<typeof postgres>) {
   await sql.unsafe(
     `CREATE INDEX IF NOT EXISTS "fcm_tokens_user_idx" ON "fcm_tokens" ("user_id")`,
   );
+
+  // Privacy-preserving first-party analytics. The visitor hash is generated
+  // by the server from the browser's opaque id plus the server secret; no raw
+  // IP or complete referrer URL is stored.
+  await sql.unsafe(`
+    CREATE TABLE IF NOT EXISTS "site_visitors" (
+      "visitor_hash" text PRIMARY KEY,
+      "first_seen_at" timestamptz NOT NULL DEFAULT NOW(),
+      "last_seen_at" timestamptz NOT NULL DEFAULT NOW(),
+      "country" text,
+      "city" text,
+      "device_category" text,
+      "browser" text,
+      "operating_system" text,
+      "language" text,
+      "referrer_domain" text,
+      "screen_class" text,
+      "last_path" text
+    )
+  `);
+  await sql.unsafe(
+    `CREATE INDEX IF NOT EXISTS "site_visitors_last_seen_idx" ON "site_visitors" ("last_seen_at")`,
+  );
+  await sql.unsafe(
+    `CREATE INDEX IF NOT EXISTS "site_visitors_country_idx" ON "site_visitors" ("country")`,
+  );
+  await sql.unsafe(`
+    CREATE TABLE IF NOT EXISTS "site_visitor_days" (
+      "visitor_hash" text NOT NULL,
+      "day" text NOT NULL,
+      "first_seen_at" timestamptz NOT NULL DEFAULT NOW(),
+      "last_seen_at" timestamptz NOT NULL DEFAULT NOW(),
+      "country" text,
+      "device_category" text,
+      "browser" text,
+      "operating_system" text,
+      "language" text,
+      "referrer_domain" text,
+      "screen_class" text,
+      PRIMARY KEY ("visitor_hash", "day")
+    )
+  `);
+  await sql.unsafe(
+    `CREATE INDEX IF NOT EXISTS "site_visitor_days_day_idx" ON "site_visitor_days" ("day")`,
+  );
 }
 
 /**
