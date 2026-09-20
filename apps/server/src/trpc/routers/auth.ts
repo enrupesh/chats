@@ -23,6 +23,9 @@ import {
   LoginRandomV2Input,
   VerifyDailyPasswordInput,
   VerifyDailyPasswordResult,
+  BeginVerificationPasswordResetResult,
+  CompleteVerificationPasswordResetInput,
+  CompleteVerificationPasswordResetResult,
   SetVerificationPasswordInput,
   SetVerificationPasswordResult,
   ChangePasswordInput,
@@ -82,6 +85,8 @@ import {
 import {
   issueResetChallenge,
   consumeResetChallenge,
+  issueVerificationResetChallenge,
+  consumeVerificationResetChallenge,
 } from "../../lib/passwordReset.js";
 
 /**
@@ -1055,10 +1060,9 @@ export const authRouter = router({
       const derivedRandomId = `username:${input.username}`;
 
       const passwordHash = await bcrypt.hash(input.password, 12);
-      const verificationPasswordHash = await bcrypt.hash(
-        input.verificationPassword,
-        12,
-      );
+      const verificationPasswordHash = input.verificationPassword
+        ? await bcrypt.hash(input.verificationPassword, 12)
+        : null;
 
       const inserted = await db
         .insert(schema.users)
@@ -1190,6 +1194,100 @@ export const authRouter = router({
       }
 
       return { ok: true, verifiedAt: new Date().toISOString() };
+    }),
+
+  beginVerificationPasswordReset: protectedProcedure
+    .output(BeginVerificationPasswordResetResult)
+    .mutation(async ({ ctx }) => {
+      const limit = rateLimit({
+        key: `reset-verify:begin:user:${ctx.userId}`,
+        limit: 5,
+        windowSeconds: 10 * 60,
+      });
+      if (!limit.allowed) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "Too many reset attempts. Please wait a few minutes.",
+        });
+      }
+      const challenge = issueVerificationResetChallenge(ctx.userId);
+      return {
+        challengeNonce: challenge.nonce,
+        expiresInSeconds: challenge.expiresInSeconds,
+      };
+    }),
+
+  completeVerificationPasswordReset: protectedProcedure
+    .input(CompleteVerificationPasswordResetInput)
+    .output(CompleteVerificationPasswordResetResult)
+    .mutation(async ({ ctx, input }) => {
+      const limit = rateLimit({
+        key: `reset-verify:complete:user:${ctx.userId}`,
+        limit: 10,
+        windowSeconds: 10 * 60,
+      });
+      if (!limit.allowed) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "Too many reset attempts. Please wait a few minutes.",
+        });
+      }
+
+      const genericFailure = new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Invalid recovery key. Please try again.",
+      });
+      const userId = consumeVerificationResetChallenge(input.challengeNonce);
+      if (userId !== ctx.userId) throw genericFailure;
+
+      const db = getDb();
+      const found = await db
+        .select({ identityPubkey: schema.users.identityPubkey })
+        .from(schema.users)
+        .where(eq(schema.users.id, ctx.userId))
+        .limit(1);
+      const storedPub = found[0]?.identityPubkey;
+      if (!storedPub) throw genericFailure;
+
+      let claimedPub: Buffer;
+      try {
+        claimedPub = Buffer.from(input.identityPubkey, "base64");
+      } catch {
+        throw genericFailure;
+      }
+      const stored = Buffer.from(storedPub);
+      if (
+        claimedPub.length !== stored.length ||
+        !claimedPub.equals(stored)
+      ) {
+        throw genericFailure;
+      }
+
+      let valid = false;
+      try {
+        valid = ed25519.verify(
+          Uint8Array.from(Buffer.from(input.signature, "base64")),
+          new TextEncoder().encode(input.challengeNonce),
+          Uint8Array.from(stored),
+        );
+      } catch {
+        valid = false;
+      }
+      if (!valid) throw genericFailure;
+
+      const newHash = await bcrypt.hash(input.newPassword, 12);
+      await db
+        .update(schema.users)
+        .set({
+          verificationPasswordHash: newHash,
+          encryptedRecoveryPhrase:
+            input.encryptedRecoveryPhrase?.ciphertext ?? null,
+          recoveryPhraseIv: input.encryptedRecoveryPhrase?.iv ?? null,
+          recoveryPhraseSalt: input.encryptedRecoveryPhrase?.salt ?? null,
+        })
+        .where(eq(schema.users.id, ctx.userId));
+
+      return { ok: true as const, updatedAt: new Date().toISOString() };
     }),
 
   setVerificationPassword: protectedProcedure

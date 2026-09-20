@@ -802,10 +802,10 @@ export const SignupRandomV2Input = z.object({
   username: UsernameSchema,
   password: PasswordSchema,
   /**
-   * Daily verification password. Required again every 24 hours
-   * before the user can access the main app.
+   * Optional daily verification password. When provided, the app asks for
+   * it again every 24 hours before the user can access the main app.
    */
-  verificationPassword: PasswordSchema,
+  verificationPassword: PasswordSchema.optional(),
   identityPublicKey: IdentityPublicKeySchema,
   /** Token issued by verifyBotChallenge. */
   botToken: z.string(),
@@ -890,6 +890,42 @@ export const SetVerificationPasswordResult = z.object({
 });
 export type SetVerificationPasswordResult = z.infer<
   typeof SetVerificationPasswordResult
+>;
+
+export const DailyVerificationStatusResult = z.object({
+  enabled: z.boolean(),
+});
+export type DailyVerificationStatusResult = z.infer<
+  typeof DailyVerificationStatusResult
+>;
+
+export const BeginVerificationPasswordResetResult = z.object({
+  challengeNonce: z.string().min(1),
+  expiresInSeconds: z.number().int().positive(),
+});
+export type BeginVerificationPasswordResetResult = z.infer<
+  typeof BeginVerificationPasswordResetResult
+>;
+
+export const CompleteVerificationPasswordResetInput = z.object({
+  challengeNonce: z.string().min(1),
+  /** Base64 of the Ed25519 public key derived from the recovery phrase. */
+  identityPubkey: z.string().min(1),
+  /** Base64 of the Ed25519 signature over the challenge nonce. */
+  signature: z.string().min(1),
+  newPassword: PasswordSchema,
+  encryptedRecoveryPhrase: EncryptedRecoveryPhraseSchema.optional(),
+});
+export type CompleteVerificationPasswordResetInput = z.infer<
+  typeof CompleteVerificationPasswordResetInput
+>;
+
+export const CompleteVerificationPasswordResetResult = z.object({
+  ok: z.literal(true),
+  updatedAt: z.string(),
+});
+export type CompleteVerificationPasswordResetResult = z.infer<
+  typeof CompleteVerificationPasswordResetResult
 >;
 
 export const VerifyDailyPasswordResult = z.object({

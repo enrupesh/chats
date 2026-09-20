@@ -37,6 +37,18 @@ export const meRouter = router({
       return { completed: found[0].completedAt !== null };
     }),
 
+  dailyVerificationStatus: protectedProcedure
+    .output(z.object({ enabled: z.boolean() }))
+    .query(async ({ ctx }) => {
+      const db = getDb();
+      const found = await db
+        .select({ hash: schema.users.verificationPasswordHash })
+        .from(schema.users)
+        .where(eq(schema.users.id, ctx.userId))
+        .limit(1);
+      return { enabled: Boolean(found[0]?.hash) };
+    }),
+
   submitOnboardingSurvey: protectedProcedure
     .input(OnboardingSurveyInput)
     .output(OkSchema)

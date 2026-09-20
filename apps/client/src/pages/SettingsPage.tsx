@@ -1318,6 +1318,10 @@ function ChangeLoginPasswordEditor() {
 
 function DailyPasswordEditor() {
   const set = trpc.auth.setVerificationPassword.useMutation();
+  const status = trpc.me.dailyVerificationStatus.useQuery(undefined, {
+    staleTime: 60_000,
+    retry: false,
+  });
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
@@ -1369,6 +1373,7 @@ function DailyPasswordEditor() {
         newPassword: next,
         encryptedRecoveryPhrase,
       });
+      void status.refetch();
       setOkMsg("Daily verification password updated.");
       setOpen(false);
       reset();
@@ -1382,10 +1387,16 @@ function DailyPasswordEditor() {
   return (
     <>
       <SettingsRow
-        label="Daily verification password"
+        label={
+          status.data?.enabled
+            ? "Change daily verification password"
+            : "Enable daily verification password"
+        }
         sub={
           okMsg ??
-          "Used every 24 hours to unlock the app. Tap to change."
+          (status.data?.enabled
+            ? "Used every 24 hours to unlock the app. Tap to change."
+            : "Optional extra security. You can enable it whenever you want.")
         }
         onClick={() => {
           reset();
@@ -1396,7 +1407,11 @@ function DailyPasswordEditor() {
 
       {open && (
         <Modal
-          title="Change daily verification password"
+          title={
+            status.data?.enabled
+              ? "Change daily verification password"
+              : "Enable daily verification password"
+          }
           onClose={() => {
             setOpen(false);
             reset();

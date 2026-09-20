@@ -157,19 +157,16 @@ export function RandomIdSignupPage() {
       const x25519Pub = x25519PublicKeyFromPrivate(x25519Priv);
       const x25519Kp = { privateKey: x25519Priv, publicKey: x25519Pub };
 
-      // Encrypt the recovery phrase with the daily verification password
-      // so the server can hand it back when the user later signs in on a
-      // new device with only their daily password (no rotation needed —
-      // the original identity is restored from the decrypted phrase).
-      const encryptedRecoveryPhrase = await encryptRecoveryPhraseForServer(
-        phrase,
-        verificationPassword,
-      );
+      // Keep the recovery phrase backup encrypted with the daily password
+      // only when the user opts into daily verification.
+      const encryptedRecoveryPhrase = verificationPassword
+        ? await encryptRecoveryPhraseForServer(phrase, verificationPassword)
+        : undefined;
 
       const r = await signup.mutateAsync({
         username,
         password,
-        verificationPassword,
+        verificationPassword: verificationPassword || undefined,
         identityPublicKey: bytesToBase64(ed.publicKey),
         botToken,
         encryptedRecoveryPhrase,
@@ -180,12 +177,14 @@ export function RandomIdSignupPage() {
         refreshExpiresIn: r.refreshExpiresIn,
         user: r.user,
       });
-      // Just verified during signup — start the 24h clock from now
-      // so the gate doesn't trigger immediately on first login.
-      try {
-        markDailyVerified(r.user.id);
-      } catch {
-        /* localStorage may be disabled */
+      // If enabled during signup, start the 24h clock from now so the gate
+      // doesn't trigger immediately on first login.
+      if (verificationPassword) {
+        try {
+          markDailyVerified(r.user.id);
+        } catch {
+          /* localStorage may be disabled */
+        }
       }
 
       await saveIdentity({
@@ -403,25 +402,26 @@ export function RandomIdSignupPage() {
       confirmVerificationPassword.length > 0 &&
       confirmVerificationPassword !== verificationPassword;
     const canContinue =
-      verificationPassword.length >= 8 &&
-      confirmVerificationPassword === verificationPassword &&
-      !mismatch;
+      (verificationPassword.length === 0 &&
+        confirmVerificationPassword.length === 0) ||
+      (verificationPassword.length >= 8 &&
+        confirmVerificationPassword === verificationPassword &&
+        !mismatch);
     return (
       <ScreenShell back="#" phase="Step 3 of 10 · Daily verification">
         <div className="flex flex-col items-center gap-3 mb-2">
           <Logo />
           <h2 className="text-2xl font-semibold text-text">
-            Set a daily verification password
+            Add daily verification
           </h2>
           <p className="text-sm text-text-muted text-center">
-            For extra security, you'll be asked to enter this password
-            every 24 hours before opening the app. Make it different from
-            your login password.
+            Optional extra security. If you enable it, you'll be asked for
+            this password every 24 hours before opening the app.
           </p>
         </div>
 
         <div>
-          <FieldLabel>Verification password</FieldLabel>
+          <FieldLabel>Daily verification password (optional)</FieldLabel>
           <TextInput
             autoFocus
             type={showVerificationPassword ? "text" : "password"}
@@ -474,8 +474,21 @@ export function RandomIdSignupPage() {
           onClick={() => setStep("puzzle")}
           disabled={!canContinue}
         >
-          Continue
+          {verificationPassword ? "Continue" : "Skip for now"}
         </PrimaryButton>
+        {verificationPassword && (
+          <button
+            type="button"
+            onClick={() => {
+              setVerificationPassword("");
+              setConfirmVerificationPassword("");
+              setStep("puzzle");
+            }}
+            className="text-sm text-text-muted hover:text-text underline underline-offset-4 wa-tap py-2"
+          >
+            Skip for now
+          </button>
+        )}
         <SecondaryButton onClick={() => setStep("password")}>
           Back
         </SecondaryButton>

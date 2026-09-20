@@ -24,12 +24,21 @@ interface PendingReset {
   expiresAt: number;
 }
 
+interface PendingVerificationReset {
+  userId: string;
+  expiresAt: number;
+}
+
 const pending = new Map<string, PendingReset>();
+const pendingVerification = new Map<string, PendingVerificationReset>();
 
 function gc(): void {
   const now = Date.now();
   for (const [id, row] of pending) {
     if (row.expiresAt <= now) pending.delete(id);
+  }
+  for (const [id, row] of pendingVerification) {
+    if (row.expiresAt <= now) pendingVerification.delete(id);
   }
 }
 
@@ -110,4 +119,66 @@ export function consumeResetChallenge(nonce: string): string | null {
   if (expectedTag !== usernameTag) return null;
 
   return row.username;
+}
+
+/** Issue a one-shot recovery-key challenge for changing the daily password. */
+export function issueVerificationResetChallenge(userId: string): {
+  nonce: string;
+  expiresInSeconds: number;
+} {
+  gc();
+  const id = randomBytes(16).toString("base64url");
+  const expiresAt = Date.now() + TTL_MS;
+  pendingVerification.set(id, { userId, expiresAt });
+
+  const userTag = createHmac("sha256", key())
+    .update(`v:${userId}`)
+    .digest("base64url");
+  const payload = `${id}.${expiresAt}.${userTag}`;
+  const sig = createHmac("sha256", key()).update(payload).digest("base64url");
+  return {
+    nonce: `${payload}.${sig}`,
+    expiresInSeconds: Math.floor(TTL_MS / 1000),
+  };
+}
+
+/** Consume a daily-password recovery challenge and return its bound user. */
+export function consumeVerificationResetChallenge(
+  nonce: string,
+): string | null {
+  if (typeof nonce !== "string") return null;
+  const lastDot = nonce.lastIndexOf(".");
+  if (lastDot < 0) return null;
+  const payload = nonce.slice(0, lastDot);
+  const sig = nonce.slice(lastDot + 1);
+
+  const expected = createHmac("sha256", key())
+    .update(payload)
+    .digest("base64url");
+  let sigOk = false;
+  try {
+    const a = Buffer.from(sig, "base64url");
+    const b = Buffer.from(expected, "base64url");
+    sigOk = a.length === b.length && timingSafeEqual(a, b);
+  } catch {
+    sigOk = false;
+  }
+  if (!sigOk) return null;
+
+  const [id, expStr, userTag] = payload.split(".");
+  if (!id || !expStr || !userTag) return null;
+
+  const row = pendingVerification.get(id);
+  if (!row) return null;
+  pendingVerification.delete(id);
+
+  const exp = Number(expStr);
+  if (!Number.isFinite(exp) || Date.now() > exp) return null;
+
+  const expectedTag = createHmac("sha256", key())
+    .update(`v:${row.userId}`)
+    .digest("base64url");
+  if (expectedTag !== userTag) return null;
+
+  return row.userId;
 }
