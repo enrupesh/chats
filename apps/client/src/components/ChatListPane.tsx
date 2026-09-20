@@ -165,7 +165,7 @@ export function InboxListPane({
                     {conn.peer.isOfficial && (
                       <span
                         aria-label="Officially verified"
-                        title="Official WellChat account"
+                        title="Official VeilChat account"
                         className="ml-1 inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-amber-400 text-[9px] font-black text-amber-950 align-[1px]"
                       >
                         ✓

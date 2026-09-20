@@ -175,7 +175,7 @@ export const messagesRouter = router({
 
   /**
    * Official support channel. Unlike normal messages this body is readable
-   * by the WellChat admin console. It is only accepted when the recipient is
+   * by the VeilChat admin console. It is only accepted when the recipient is
    * the managed official account, so it cannot weaken ordinary E2EE chats.
    */
   sendPlaintext: protectedProcedure
@@ -191,7 +191,7 @@ export const messagesRouter = router({
       if (!(await isOfficialAccount(db, input.recipientUserId))) {
         throw new TRPCError({
           code: "FORBIDDEN",
-          message: "Plaintext messaging is only available for WellChat Team.",
+          message: "Plaintext messaging is only available for VeilChat Team.",
         });
       }
       const inserted = await db

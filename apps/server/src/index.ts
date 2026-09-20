@@ -10,7 +10,7 @@ import { createContext } from "./trpc/context.js";
 import { registerWebSocketRoutes } from "./lib/wsServer.js";
 import { initPush } from "./lib/push.js";
 import { verifyAccessToken } from "./lib/jwt.js";
-import { getDb, awaitDbBootstrap, ensureWellChatTeam, schema } from "./db/index.js";
+import { getDb, awaitDbBootstrap, ensureVeilChatTeam, schema } from "./db/index.js";
 import { eq, and, desc, gte, or } from "drizzle-orm";
 import { createHmac } from "node:crypto";
 import { startMediaSweeper } from "./lib/mediaSweeper.js";
@@ -506,7 +506,7 @@ app.get("/admin/users", async (req, reply) => {
   };
 });
 
-// ── Admin: WellChat Team plaintext inbox ─────────────────────────────────────
+// ── Admin: VeilChat Team plaintext inbox ─────────────────────────────────────
 // This is deliberately separate from the E2EE tRPC message path. The admin
 // console can read these rows because the Team channel is explicitly
 // server-readable and marked as such in the user-facing chat header.
@@ -543,7 +543,7 @@ app.get("/admin/team/messages", async (req, reply) => {
     .orderBy(desc(schema.messages.createdAt))
     .limit(2000);
   return reply.send({
-    team: { id: team[0].id, username: "wellchatteam", displayName: "WellChat Team" },
+    team: { id: team[0].id, username: "veilchatteam", displayName: "VeilChat Team" },
     messages: rows
       .filter((row) => row.plaintext !== null)
       .map((row) => ({
@@ -577,7 +577,7 @@ app.post<{
     .from(schema.users)
     .where(eq(schema.users.isOfficial, true))
     .limit(1);
-  if (!team[0]) return reply.status(503).send({ error: "WellChat Team is not initialized" });
+  if (!team[0]) return reply.status(503).send({ error: "VeilChat Team is not initialized" });
   const recipient = await db
     .select({ id: schema.users.id })
     .from(schema.users)
@@ -738,7 +738,7 @@ if (!env.RESEND_API_KEY && isDev) {
 // Render's infrastructure cannot route IPv6; Supabase's direct-connection
 // hostname resolves to an IPv6 address which causes ENETUNREACH on every tick.
 await awaitDbBootstrap();
-await ensureWellChatTeam();
+await ensureVeilChatTeam();
 
 initPush(app.log);
 startMediaSweeper(app.log);

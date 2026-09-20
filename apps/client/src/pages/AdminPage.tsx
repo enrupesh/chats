@@ -994,7 +994,7 @@ function TeamInbox({ team }: { team: ReturnType<typeof useTeamInbox> }) {
     <section style={{ marginTop: 32, background: "white", border: "1px solid rgba(37,61,44,0.1)", borderRadius: 16, overflow: "hidden" }}>
       <div style={{ padding: "18px 20px", borderBottom: "1px solid rgba(37,61,44,0.08)", display: "flex", justifyContent: "space-between", gap: 12 }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: 18, color: "#111B21" }}>WellChat Team inbox</h2>
+          <h2 style={{ margin: 0, fontSize: 18, color: "#111B21" }}>VeilChat Team inbox</h2>
           <p style={{ margin: "4px 0 0", fontSize: 12, color: "rgba(37,61,44,0.5)" }}>
             Official support messages are readable here and are not E2EE.
           </p>
@@ -1038,7 +1038,7 @@ function TeamInbox({ team }: { team: ReturnType<typeof useTeamInbox> }) {
                   ))}
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
-                  <input value={team.draft} onChange={(event) => team.setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void team.sendReply(); }} placeholder="Reply as WellChat Team…" style={{ flex: 1, minWidth: 0, border: "1px solid rgba(37,61,44,0.16)", borderRadius: 9, padding: "9px 10px", fontSize: 12 }} />
+                  <input value={team.draft} onChange={(event) => team.setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void team.sendReply(); }} placeholder="Reply as VeilChat Team…" style={{ flex: 1, minWidth: 0, border: "1px solid rgba(37,61,44,0.16)", borderRadius: 9, padding: "9px 10px", fontSize: 12 }} />
                   <button type="button" onClick={() => void team.sendReply()} disabled={team.sending || !team.draft.trim()} style={{ border: 0, borderRadius: 9, padding: "0 14px", background: "#2E6F40", color: "white", fontWeight: 700, cursor: "pointer", opacity: team.sending || !team.draft.trim() ? 0.5 : 1 }}>Send</button>
                 </div>
               </>

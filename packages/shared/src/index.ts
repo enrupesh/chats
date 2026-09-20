@@ -84,7 +84,7 @@ export const PublicUserSchema = z.object({
   bio: z.string().nullable().optional(),
   /** Optional inline base64 data URL for the profile photo. */
   avatarDataUrl: z.string().nullable().optional(),
-  /** Official WellChat-managed account. */
+  /** Official VeilChat-managed account. */
   isOfficial: z.boolean().optional(),
 });
 export type PublicUser = z.infer<typeof PublicUserSchema>;
@@ -263,7 +263,7 @@ export const PeerSchema = z.object({
   displayName: z.string().nullable().optional(),
   bio: z.string().nullable().optional(),
   avatarDataUrl: z.string().nullable().optional(),
-  /** Official WellChat-managed account. */
+  /** Official VeilChat-managed account. */
   isOfficial: z.boolean().optional(),
   /**
    * Private nickname the requesting user has saved for this peer
@@ -380,7 +380,7 @@ export const InboxMessageSchema = z.object({
   expiresAt: z.string().nullable().optional(),
   /** Phase 7: present when this fan-out leg belongs to a group message. */
   groupId: z.string().uuid().nullable().optional(),
-  /** Present only for the official WellChat Team plaintext channel. */
+  /** Present only for the official VeilChat Team plaintext channel. */
   plaintext: z.string().nullable().optional(),
   isPlaintext: z.boolean().optional(),
 });
@@ -410,7 +410,7 @@ export const HistoryMessageSchema = z.object({
   deliveredAt: z.string().nullable().optional(),
   /** When the recipient opened the message. */
   readAt: z.string().nullable().optional(),
-  /** Present only for the official WellChat Team plaintext channel. */
+  /** Present only for the official VeilChat Team plaintext channel. */
   plaintext: z.string().nullable().optional(),
   isPlaintext: z.boolean().optional(),
 });

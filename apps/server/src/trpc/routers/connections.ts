@@ -162,7 +162,7 @@ export const connectionsRouter = router({
         peer: peer(r.a, r.contactName),
         createdAt: r.conn.createdAt.toISOString(),
       }));
-      // WellChat Team is a first-class inbox entry for every account, but
+      // VeilChat Team is a first-class inbox entry for every account, but
       // does not require a user-created connection request.
       const team = await db
         .select()
@@ -305,7 +305,7 @@ export const connectionsRouter = router({
       if (official.length > 0) {
         throw new TRPCError({
           code: "CONFLICT",
-          message: "WellChat Team is already available in your chats.",
+          message: "VeilChat Team is already available in your chats.",
         });
       }
 

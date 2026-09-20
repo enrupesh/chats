@@ -176,7 +176,7 @@ export const users = pgTable(
      * Toggled from Settings → "Show me in Discover people".
      */
     isDiscoverable: boolean("is_discoverable").notNull().default(false),
-    /** True only for WellChat-managed official accounts. */
+    /** True only for VeilChat-managed official accounts. */
     isOfficial: boolean("is_official").notNull().default(false),
     /** Lightweight, optional post-auth product survey. */
     onboardingCountry: text("onboarding_country"),
@@ -536,7 +536,7 @@ export const messages = pgTable(
     header: bytea("header").notNull(),
     /** AES-GCM ciphertext. */
     ciphertext: bytea("ciphertext").notNull(),
-    /** Server-readable body for the official WellChat Team channel only. */
+    /** Server-readable body for the official VeilChat Team channel only. */
     plaintext: text("plaintext"),
     /** When the recipient acknowledged delivery on at least one device. */
     deliveredAt: timestamp("delivered_at", { withTimezone: true }),

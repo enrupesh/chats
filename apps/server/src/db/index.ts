@@ -175,11 +175,11 @@ export async function awaitDbBootstrap(): Promise<void> {
 }
 
 /**
- * Creates the managed WellChat Team profile once. It is intentionally not a
+ * Creates the managed VeilChat Team profile once. It is intentionally not a
  * normal login account: Team replies use the separate admin console and the
  * Team channel is explicitly server-readable rather than E2EE.
  */
-export async function ensureWellChatTeam(): Promise<void> {
+export async function ensureVeilChatTeam(): Promise<void> {
   if (!env.DATABASE_URL) return;
   const db = getDb();
   const existing = await db
@@ -193,9 +193,9 @@ export async function ensureWellChatTeam(): Promise<void> {
     await db
       .update(schema.users)
       .set({
-        username: "wellchatteam",
-        displayName: "WellChat Team",
-        bio: "Official WellChat support. Ask us anything about your account, privacy, or using VeilChat.",
+        username: "veilchatteam",
+        displayName: "VeilChat Team",
+        bio: "Official VeilChat support. Ask us anything about your account, privacy, or using VeilChat.",
         avatarDataUrl,
         isDiscoverable: true,
         isOfficial: true,
@@ -205,10 +205,10 @@ export async function ensureWellChatTeam(): Promise<void> {
   }
   await db.insert(schema.users).values({
     accountType: "random",
-    randomId: "system:wellchat-team",
-    username: "wellchatteam",
-    displayName: "WellChat Team",
-    bio: "Official WellChat support. Ask us anything about your account, privacy, or using VeilChat.",
+    randomId: "system:veilchat-team",
+    username: "veilchatteam",
+    displayName: "VeilChat Team",
+    bio: "Official VeilChat support. Ask us anything about your account, privacy, or using VeilChat.",
     avatarDataUrl,
     isDiscoverable: true,
     isOfficial: true,
