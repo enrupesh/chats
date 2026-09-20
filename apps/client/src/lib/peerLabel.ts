@@ -2,7 +2,8 @@ import type { Peer } from "@veil/shared";
 
 /**
  * Best human label for a peer in chat lists / headers.
- * Preference: displayName → @username → fingerprint → truncated id.
+ * Preference: contactName → displayName → @username → fingerprint → truncated id.
+ * Usernames are stable handles, not the primary name shown in the UI.
  */
 export function peerLabel(peer: Pick<Peer, "id" | "fingerprint"> & {
   username?: string | null;
@@ -11,9 +12,9 @@ export function peerLabel(peer: Pick<Peer, "id" | "fingerprint"> & {
 }): string {
   const cn = peer.contactName?.trim();
   if (cn) return cn;
-  if (peer.username) return `@${peer.username}`;
   const dn = peer.displayName?.trim();
   if (dn) return dn;
+  if (peer.username) return `@${peer.username}`;
   if (peer.fingerprint) return peer.fingerprint;
   return `${peer.id.slice(0, 8)}…`;
 }

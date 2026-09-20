@@ -5,6 +5,7 @@ import peopleUsingPhones from "../assets/landing/people-using-phones.jpg";
 import smilingWithPhone from "../assets/landing/smiling-with-phone.jpg";
 import { useDocumentMeta } from "../lib/useDocumentMeta";
 import { toPublicAbsoluteUrl } from "../lib/publicAppUrl";
+import { ProductUpdateBanner } from "../components/ProductUpdateBanner";
 
 /**
  * Public marketing landing page.
@@ -31,6 +32,10 @@ export function LandingPage() {
       }}
     >
       <NavBar />
+      <ProductUpdateBanner
+        variant="landing"
+        className="mt-20 pt-2 sm:mt-20 sm:pt-3"
+      />
       <AndroidDownloadBanner />
       {/* Wrap the page content in a `<main>` landmark so screen readers
           and Lighthouse can identify the primary content region. */}

@@ -34,68 +34,7 @@ import { moodCountdownLabel, getActiveMyMood } from "../lib/moodSync";
 import { useFocusState, focusReasonLabel } from "../lib/focusMode";
 import { useNoindex } from "../lib/useDocumentMeta";
 import { PullToRefresh } from "../components/PullToRefresh";
-
-const BANNER_KEY = "veil_upgrade_banner_dismissed_v1";
-
-function UpgradeAnnouncementBanner() {
-  const navigate = useNavigate();
-  const [visible, setVisible] = useState(() => {
-    try {
-      return localStorage.getItem(BANNER_KEY) !== "1";
-    } catch {
-      return true;
-    }
-  });
-
-  if (!visible) return null;
-
-  const dismiss = () => {
-    try {
-      localStorage.setItem(BANNER_KEY, "1");
-    } catch {
-      // ignore
-    }
-    setVisible(false);
-  };
-
-  return (
-    <div
-      className="w-full flex items-center gap-3 px-4 py-2.5"
-      style={{ background: "#92400e" }}
-      role="alert"
-    >
-      {/* Icon */}
-      <span className="shrink-0 text-base leading-none select-none">⚠️</span>
-
-      {/* Text */}
-      <div className="flex-1 min-w-0 flex flex-wrap items-center gap-x-3 gap-y-0.5">
-        <span className="text-[13px] font-bold text-white leading-snug">
-          Major upgrades coming · You may be logged out
-        </span>
-        <span className="text-[12px] text-amber-200 leading-snug">
-          Download your Recovery Key now
-        </span>
-        <button
-          type="button"
-          onClick={() => navigate("/settings")}
-          className="text-[11px] font-bold text-amber-900 bg-amber-300 hover:bg-amber-200 rounded-full px-3 py-0.5 transition-colors shrink-0"
-        >
-          Save →
-        </button>
-      </div>
-
-      {/* Dismiss */}
-      <button
-        type="button"
-        onClick={dismiss}
-        aria-label="Dismiss"
-        className="shrink-0 text-white/60 hover:text-white transition-colors text-base leading-none font-bold"
-      >
-        ✕
-      </button>
-    </div>
-  );
-}
+import { ProductUpdateBanner } from "../components/ProductUpdateBanner";
 
 export function ChatsPage() {
   useNoindex("Chats · VeilChat");
@@ -338,7 +277,7 @@ export function ChatsPage() {
         </div>
       )}
 
-      <UpgradeAnnouncementBanner />
+      <ProductUpdateBanner variant="app" className="mx-3 my-3 sm:mx-4 lg:mx-auto" />
 
       {!identity && (
         <div className="p-4 w-full mx-auto lg:max-w-2xl">

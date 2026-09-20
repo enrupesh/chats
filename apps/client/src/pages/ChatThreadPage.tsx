@@ -813,7 +813,7 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
           title={
             <div className="flex items-center gap-2">
               <Avatar seed={peerId} label={displayName.slice(0, 2)} size={36} />
-              <div className="font-semibold text-base truncate font-mono">
+              <div className="font-semibold text-base truncate">
                 {displayName}
                 {peer?.peer.isOfficial && (
                   <span aria-label="Officially verified" title="Official VeilChat account" className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[10px] font-black text-amber-950 align-[1px]">✓</span>
