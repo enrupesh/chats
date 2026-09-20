@@ -111,12 +111,20 @@ async function ensureSchema(sql: ReturnType<typeof postgres>) {
       "name" text NOT NULL,
       "location" text NOT NULL,
       "contact" text NOT NULL,
+      "contact_method" text NOT NULL DEFAULT 'Email',
       "amount" integer,
+      "currency" text NOT NULL DEFAULT 'USD',
       "payment_method" text NOT NULL,
       "note" text,
       "created_at" timestamptz NOT NULL DEFAULT NOW()
     )
   `);
+  await sql.unsafe(
+    `ALTER TABLE "donation_requests" ADD COLUMN IF NOT EXISTS "currency" text NOT NULL DEFAULT 'USD'`,
+  );
+  await sql.unsafe(
+    `ALTER TABLE "donation_requests" ADD COLUMN IF NOT EXISTS "contact_method" text NOT NULL DEFAULT 'Email'`,
+  );
   await sql.unsafe(
     `CREATE INDEX IF NOT EXISTS "donation_requests_created_at_idx" ON "donation_requests" ("created_at")`,
   );

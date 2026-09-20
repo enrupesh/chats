@@ -1,14 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ErrorMessage, Logo, PrimaryButton, SecondaryButton } from "../components/Layout";
 import { getApiBaseUrl } from "../lib/apiBase";
+import { useAuthStore } from "../lib/store";
+import { trpc } from "../lib/trpc";
 import { useDocumentMeta } from "../lib/useDocumentMeta";
 
 type DonationForm = {
   name: string;
   location: string;
   contact: string;
+  contactMethod: string;
   amount: string;
+  currency: string;
   paymentMethod: string;
   note: string;
 };
@@ -17,7 +21,9 @@ const initialForm: DonationForm = {
   name: "",
   location: "",
   contact: "",
+  contactMethod: "Email",
   amount: "",
+  currency: "USD",
   paymentMethod: "UPI",
   note: "",
 };
@@ -28,6 +34,11 @@ export function DonatePage() {
     description: "Donate to help keep VeilChat private, open, and accessible.",
     noindex: false,
   });
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const meQuery = trpc.me.get.useQuery(undefined, {
+    enabled: !!accessToken,
+    retry: false,
+  });
   const [form, setForm] = useState<DonationForm>(initialForm);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +47,16 @@ export function DonatePage() {
   function update<K extends keyof DonationForm>(key: K, value: DonationForm[K]) {
     setForm((current) => ({ ...current, [key]: value }));
   }
+
+  useEffect(() => {
+    if (
+      form.contactMethod === "Wellchat" &&
+      !form.contact &&
+      meQuery.data?.username
+    ) {
+      update("contact", meQuery.data.username);
+    }
+  }, [form.contact, form.contactMethod, meQuery.data?.username]);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -49,7 +70,9 @@ export function DonatePage() {
           name: form.name.trim(),
           location: form.location.trim(),
           contact: form.contact.trim(),
+          contactMethod: form.contactMethod,
           amount: form.amount.trim(),
+          currency: form.currency.trim().toUpperCase(),
           paymentMethod: form.paymentMethod,
           note: form.note.trim(),
         }),
@@ -102,10 +125,10 @@ export function DonatePage() {
 
             <div className="mt-10 rounded-2xl border border-[#9DDBAA]/20 bg-[#9DDBAA]/10 p-5">
               <div className="text-3xl font-bold tracking-tight text-white">
-                ₹5,09,882
+                5,09,882
               </div>
               <div className="mt-1 text-sm text-[#BFEAC7]">
-                has been donated by our community
+                people have donated
               </div>
             </div>
 
@@ -153,17 +176,70 @@ export function DonatePage() {
                 />
               </Field>
               <Field label="How can our team contact you?" required>
+                <select
+                  required
+                  value={form.contactMethod}
+                  onChange={(e) => {
+                    update("contactMethod", e.target.value);
+                    update("contact", "");
+                  }}
+                  className="donate-input"
+                >
+                  <option>Email</option>
+                  <option>Phone</option>
+                  <option>Wellchat</option>
+                </select>
+              </Field>
+              <Field
+                label={
+                  form.contactMethod === "Email"
+                    ? "Email address"
+                    : form.contactMethod === "Phone"
+                      ? "Phone number"
+                      : "Wellchat username"
+                }
+                required
+              >
                 <input
                   required
+                  type={
+                    form.contactMethod === "Email"
+                      ? "email"
+                      : form.contactMethod === "Phone"
+                        ? "tel"
+                        : "text"
+                  }
                   value={form.contact}
                   onChange={(e) => update("contact", e.target.value)}
                   maxLength={160}
-                  placeholder="Email or phone / WhatsApp"
+                  autoComplete={
+                    form.contactMethod === "Email"
+                      ? "email"
+                      : form.contactMethod === "Phone"
+                        ? "tel"
+                        : "username"
+                  }
+                  placeholder={
+                    form.contactMethod === "Email"
+                      ? "you@example.com"
+                      : form.contactMethod === "Phone"
+                        ? "+1 555 123 4567"
+                        : meQuery.data?.username
+                          ? "Your Wellchat username"
+                          : "Enter your Wellchat username"
+                  }
                   className="donate-input"
                 />
+                {form.contactMethod === "Wellchat" && (
+                  <span className="mt-1.5 block text-xs font-normal text-[#253D2C]/55">
+                    {meQuery.data?.username
+                      ? "Your username was filled from your account. You can edit it."
+                      : "If you are not signed in, enter your username manually."}
+                  </span>
+                )}
               </Field>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Intended amount (INR)" required>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <Field label="Intended amount" required>
                   <input
                     required
                     inputMode="numeric"
@@ -171,6 +247,20 @@ export function DonatePage() {
                     onChange={(e) => update("amount", e.target.value)}
                     maxLength={10}
                     placeholder="e.g. 500"
+                    className="donate-input"
+                  />
+                </Field>
+                <Field label="Currency" required>
+                  <input
+                    required
+                    value={form.currency}
+                    onChange={(e) =>
+                      update("currency", e.target.value.replace(/[^a-z]/gi, "").toUpperCase())
+                    }
+                    maxLength={10}
+                    pattern="[A-Z]{3,10}"
+                    title="Enter a currency code such as USD, EUR, or INR."
+                    placeholder="USD"
                     className="donate-input"
                   />
                 </Field>

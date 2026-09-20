@@ -923,7 +923,9 @@ export const donationRequests = pgTable(
     name: text("name").notNull(),
     location: text("location").notNull(),
     contact: text("contact").notNull(),
+    contactMethod: text("contact_method").notNull().default("Email"),
     amount: integer("amount"),
+    currency: text("currency").notNull().default("USD"),
     paymentMethod: text("payment_method").notNull(),
     note: text("note"),
     createdAt: timestamp("created_at", { withTimezone: true })

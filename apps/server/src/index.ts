@@ -515,7 +515,9 @@ app.post<{
     name?: string;
     location?: string;
     contact?: string;
+    contactMethod?: string;
     amount?: string | number;
+    currency?: string;
     paymentMethod?: string;
     note?: string;
   };
@@ -524,6 +526,8 @@ app.post<{
   const name = body.name?.trim();
   const location = body.location?.trim();
   const contact = body.contact?.trim();
+  const contactMethod = body.contactMethod?.trim();
+  const currency = body.currency?.trim().toUpperCase();
   const paymentMethod = body.paymentMethod?.trim();
   const note = body.note?.trim() || null;
   const amountText =
@@ -537,6 +541,18 @@ app.post<{
     "Card checkout",
     "Other",
   ]);
+  const allowedContactMethods = new Set(["Email", "Phone", "Wellchat"]);
+  const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact ?? "");
+  const validPhone = /^[0-9+().\-\s]{7,24}$/.test(contact ?? "");
+  const validWellchat = /^@?[A-Za-z0-9_.-]{2,64}$/.test(contact ?? "");
+  const validContact =
+    contactMethod === "Email"
+      ? validEmail
+      : contactMethod === "Phone"
+        ? validPhone
+        : contactMethod === "Wellchat"
+          ? validWellchat
+          : false;
 
   if (
     !name ||
@@ -545,6 +561,11 @@ app.post<{
     location.length > 120 ||
     !contact ||
     contact.length > 160 ||
+    !contactMethod ||
+    !allowedContactMethods.has(contactMethod) ||
+    !validContact ||
+    !currency ||
+    !/^[A-Z]{3,10}$/.test(currency) ||
     !paymentMethod ||
     !allowedMethods.has(paymentMethod) ||
     !Number.isInteger(amount) ||
@@ -554,7 +575,8 @@ app.post<{
     (note !== null && note.length > 500)
   ) {
     return reply.status(400).send({
-      error: "Please provide valid name, location, contact, amount, and payment method.",
+      error:
+        "Please provide valid name, location, contact, amount, currency, and payment method.",
     });
   }
 
@@ -565,7 +587,9 @@ app.post<{
       name,
       location,
       contact,
+      contactMethod,
       amount,
+      currency,
       paymentMethod,
       note,
     })
@@ -590,7 +614,9 @@ app.get("/admin/donations", async (req, reply) => {
       name: schema.donationRequests.name,
       location: schema.donationRequests.location,
       contact: schema.donationRequests.contact,
+      contactMethod: schema.donationRequests.contactMethod,
       amount: schema.donationRequests.amount,
+      currency: schema.donationRequests.currency,
       paymentMethod: schema.donationRequests.paymentMethod,
       note: schema.donationRequests.note,
       createdAt: schema.donationRequests.createdAt,

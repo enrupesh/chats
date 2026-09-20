@@ -290,7 +290,9 @@ interface DonationRequest {
   name: string;
   location: string;
   contact: string;
+  contactMethod: string;
   amount: number | null;
+  currency: string;
   paymentMethod: string;
   note: string | null;
   createdAt: string;
@@ -1150,6 +1152,17 @@ function DonationInbox({
                   style={{
                     display: "block",
                     marginTop: 3,
+                    color: "#2E6F40",
+                    fontSize: 10.5,
+                    fontWeight: 700,
+                  }}
+                >
+                  Contact via {donation.contactMethod}
+                </span>
+                <span
+                  style={{
+                    display: "block",
+                    marginTop: 3,
                     color: "rgba(37,61,44,0.42)",
                     fontSize: 10.5,
                   }}
@@ -1161,7 +1174,7 @@ function DonationInbox({
                 <strong style={{ display: "block", color: "#2E6F40" }}>
                   {donation.amount === null
                     ? "Amount not provided"
-                    : `₹${donation.amount.toLocaleString("en-IN")}`}
+                    : `${donation.amount.toLocaleString("en-US")} ${donation.currency}`}
                 </strong>
                 <span
                   style={{
