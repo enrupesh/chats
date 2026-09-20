@@ -13,7 +13,6 @@ import {
   FAB,
   PlusIcon,
   SearchIcon,
-  MoreVerticalIcon,
   ChatIcon,
   PrimaryButton,
   DoubleTickIcon,
@@ -23,6 +22,7 @@ import {
   PeopleIcon,
 } from "../components/Layout";
 import { MainShell } from "../components/MainShell";
+import { HeaderMenu } from "../components/HeaderMenu";
 import { UnlockGate } from "../components/UnlockGate";
 import { db, setChatPref } from "../lib/db";
 import { peerLabel } from "../lib/peerLabel";
@@ -256,9 +256,7 @@ export function ChatsPage() {
               </span>
             )}
           </button>
-          <IconButton label="Menu" className="text-text-oncolor">
-            <MoreVerticalIcon />
-          </IconButton>
+          <HeaderMenu />
         </>
       }
     >

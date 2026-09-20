@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 const UPDATE_BANNER_DISMISS_KEY = "veil:product_updates_banner_dismissed_v1";
 
@@ -72,8 +73,8 @@ export function ProductUpdateBanner({
 
   const isLanding = variant === "landing";
   const surface = isLanding
-    ? "bg-white/65 border-[#253D2C]/12 text-[#253D2C] shadow-[0_18px_38px_-26px_rgba(46,111,64,0.55)]"
-    : "bg-panel/80 border-line/80 text-text shadow-card";
+    ? "bg-gradient-to-r from-[#E5F3E7] via-[#F1FAF2] to-white border-[#68BA7F]/35 text-[#253D2C] shadow-[0_18px_38px_-26px_rgba(46,111,64,0.55)]"
+    : "bg-gradient-to-r from-wa-green/15 via-panel/95 to-panel/80 border-wa-green/30 text-text shadow-card";
 
   return (
     <>
@@ -121,6 +122,18 @@ export function ProductUpdateBanner({
         >
           Explore updates
         </button>
+        <Link
+          to="/donate"
+          className={[
+            "shrink-0 rounded-full px-3.5 py-1.5 text-[12px] font-bold transition-all",
+            "ring-1 ring-wa-green/30 hover:-translate-y-0.5 hover:shadow-[0_5px_16px_rgba(0,168,132,0.22)]",
+            isLanding
+              ? "bg-[#2E6F40] text-white hover:bg-[#253D2C]"
+              : "bg-wa-green text-text-oncolor hover:bg-wa-green-dark",
+          ].join(" ")}
+        >
+          Donate
+        </Link>
         <button
           type="button"
           onClick={dismiss}

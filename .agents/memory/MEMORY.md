@@ -1,1 +1,2 @@
 - [Monorepo shared package build](shared-package-build.md) — build the shared workspace package before client checks when imported dependencies have no generated dist output.
+- [Donation payment boundary](donation-payment-boundary.md) — collect donation intent only until a payment provider is explicitly selected; never collect payment credentials in VeilChat forms.

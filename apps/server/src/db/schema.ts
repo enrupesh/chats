@@ -910,6 +910,32 @@ export const securityAlerts = pgTable(
     ),
   }),
 );
+
+/* ─────────── donation_requests ─────────── */
+/**
+ * Public donation interest submissions. This stores contact intent only:
+ * payment credentials are never accepted by the public form.
+ */
+export const donationRequests = pgTable(
+  "donation_requests",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    location: text("location").notNull(),
+    contact: text("contact").notNull(),
+    amount: integer("amount"),
+    paymentMethod: text("payment_method").notNull(),
+    note: text("note"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    createdAtIdx: index("donation_requests_created_at_idx").on(t.createdAt),
+  }),
+);
+
+export type DonationRequestRow = typeof donationRequests.$inferSelect;
 export type SecurityAlertRow = typeof securityAlerts.$inferSelect;
 
 export type ScheduledMessageRow = typeof scheduledMessages.$inferSelect;

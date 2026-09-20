@@ -285,6 +285,50 @@ function useRegisteredUsers() {
   return { data, loading, error, search, setSearch, filtered, refetch, displayName };
 }
 
+interface DonationRequest {
+  id: string;
+  name: string;
+  location: string;
+  contact: string;
+  amount: number | null;
+  paymentMethod: string;
+  note: string | null;
+  createdAt: string;
+}
+
+function useDonations() {
+  const [donations, setDonations] = useState<DonationRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const refetch = useCallback(async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/admin/donations`, {
+        cache: "no-store",
+        headers: { "x-admin-token": ADMIN_TOKEN },
+      });
+      if (!response.ok) throw new Error("donations unavailable");
+      const json = (await response.json()) as {
+        donations?: DonationRequest[];
+      };
+      setDonations(json.donations ?? []);
+      setError(false);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refetch();
+    const timer = setInterval(() => void refetch(), 15_000);
+    return () => clearInterval(timer);
+  }, [refetch]);
+
+  return { donations, loading, error, refetch };
+}
+
 interface TeamMessage {
   id: string;
   senderUserId: string;
@@ -582,6 +626,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
   const { count, history, error } = useLiveUserCount(5000);
   const users = useRegisteredUsers();
   const team = useTeamInbox();
+  const donations = useDonations();
   const [tick, setTick] = useState(0);
   const [activeTab, setActiveTab] = useState<"overview" | "status">("overview");
   const [selectedUser, setSelectedUser] = useState<RegisteredUser | null>(null);
@@ -793,6 +838,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
 
         {/* ── Registered users section ── */}
         <TeamInbox team={team} />
+        <DonationInbox donations={donations} />
 
         <div style={{ marginTop: 32 }}>
 
@@ -975,6 +1021,185 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
         @keyframes taCount { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
       `}</style>
     </div>
+  );
+}
+
+function DonationInbox({
+  donations,
+}: {
+  donations: ReturnType<typeof useDonations>;
+}) {
+  return (
+    <section
+      style={{
+        marginTop: 32,
+        background: "white",
+        border: "1px solid rgba(37,61,44,0.1)",
+        borderRadius: 16,
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          padding: "18px 20px",
+          borderBottom: "1px solid rgba(37,61,44,0.08)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: 12,
+        }}
+      >
+        <div>
+          <h2 style={{ margin: 0, fontSize: 18, color: "#111B21" }}>
+            Donation requests
+          </h2>
+          <p
+            style={{
+              margin: "4px 0 0",
+              fontSize: 12,
+              color: "rgba(37,61,44,0.5)",
+            }}
+          >
+            People who asked the team to follow up about supporting VeilChat.
+          </p>
+        </div>
+        <span
+          style={{
+            alignSelf: "center",
+            fontSize: 11,
+            fontWeight: 700,
+            color: "#2E6F40",
+            background: "#E5F3E7",
+            padding: "5px 9px",
+            borderRadius: 100,
+          }}
+        >
+          {donations.donations.length} requests
+        </span>
+      </div>
+
+      {donations.error ? (
+        <div style={{ padding: 24, color: "#A33A2B", fontSize: 13 }}>
+          Could not load donation requests.
+        </div>
+      ) : donations.loading ? (
+        <div
+          style={{
+            padding: 24,
+            color: "rgba(37,61,44,0.45)",
+            fontSize: 13,
+          }}
+        >
+          Loading donation requests…
+        </div>
+      ) : donations.donations.length === 0 ? (
+        <div
+          style={{
+            padding: 28,
+            color: "rgba(37,61,44,0.45)",
+            fontSize: 13,
+          }}
+        >
+          No donation requests yet.
+        </div>
+      ) : (
+        <div style={{ maxHeight: 520, overflowY: "auto" }}>
+          {donations.donations.map((donation, index) => (
+            <div
+              key={donation.id}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "36px minmax(160px, 1fr) minmax(150px, 1fr) 130px",
+                gap: 14,
+                padding: "15px 20px",
+                borderBottom: "1px solid rgba(37,61,44,0.07)",
+                background: index % 2 === 0 ? "white" : "#FBFDFB",
+              }}
+            >
+              <div
+                style={{
+                  color: "rgba(37,61,44,0.35)",
+                  fontSize: 12,
+                  fontWeight: 700,
+                }}
+              >
+                {index + 1}
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <strong
+                  style={{
+                    display: "block",
+                    color: "#111B21",
+                    fontSize: 13.5,
+                  }}
+                >
+                  {donation.name}
+                </strong>
+                <span
+                  style={{
+                    display: "block",
+                    marginTop: 4,
+                    color: "rgba(37,61,44,0.52)",
+                    fontSize: 11,
+                    overflowWrap: "anywhere",
+                  }}
+                >
+                  {donation.contact}
+                </span>
+                <span
+                  style={{
+                    display: "block",
+                    marginTop: 3,
+                    color: "rgba(37,61,44,0.42)",
+                    fontSize: 10.5,
+                  }}
+                >
+                  {donation.location}
+                </span>
+              </div>
+              <div style={{ fontSize: 12, color: "#253D2C" }}>
+                <strong style={{ display: "block", color: "#2E6F40" }}>
+                  {donation.amount === null
+                    ? "Amount not provided"
+                    : `₹${donation.amount.toLocaleString("en-IN")}`}
+                </strong>
+                <span
+                  style={{
+                    display: "block",
+                    marginTop: 4,
+                    color: "rgba(37,61,44,0.5)",
+                  }}
+                >
+                  {donation.paymentMethod}
+                </span>
+                {donation.note && (
+                  <span
+                    style={{
+                      display: "block",
+                      marginTop: 4,
+                      color: "rgba(37,61,44,0.5)",
+                      overflowWrap: "anywhere",
+                    }}
+                  >
+                    {donation.note}
+                  </span>
+                )}
+              </div>
+              <time
+                dateTime={donation.createdAt}
+                style={{
+                  color: "rgba(37,61,44,0.45)",
+                  fontSize: 10.5,
+                  textAlign: "right",
+                }}
+              >
+                {formatDate(donation.createdAt)}
+              </time>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 

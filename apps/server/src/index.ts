@@ -506,6 +506,100 @@ app.get("/admin/users", async (req, reply) => {
   };
 });
 
+// ── Public donation interest ─────────────────────────────────────────────────
+// This intentionally collects only donation intent and contact details. A
+// payment gateway can be added later without exposing payment credentials to
+// the VeilChat application.
+app.post<{
+  Body: {
+    name?: string;
+    location?: string;
+    contact?: string;
+    amount?: string | number;
+    paymentMethod?: string;
+    note?: string;
+  };
+}>("/donations", async (req, reply) => {
+  const body = req.body ?? {};
+  const name = body.name?.trim();
+  const location = body.location?.trim();
+  const contact = body.contact?.trim();
+  const paymentMethod = body.paymentMethod?.trim();
+  const note = body.note?.trim() || null;
+  const amountText =
+    body.amount === undefined || body.amount === null
+      ? ""
+      : String(body.amount).trim();
+  const amount = amountText ? Number(amountText) : null;
+  const allowedMethods = new Set([
+    "UPI",
+    "Bank transfer",
+    "Card checkout",
+    "Other",
+  ]);
+
+  if (
+    !name ||
+    name.length > 120 ||
+    !location ||
+    location.length > 120 ||
+    !contact ||
+    contact.length > 160 ||
+    !paymentMethod ||
+    !allowedMethods.has(paymentMethod) ||
+    !Number.isInteger(amount) ||
+    amount === null ||
+    amount < 1 ||
+    amount > 10_000_000 ||
+    (note !== null && note.length > 500)
+  ) {
+    return reply.status(400).send({
+      error: "Please provide valid name, location, contact, amount, and payment method.",
+    });
+  }
+
+  const db = getDb();
+  const [row] = await db
+    .insert(schema.donationRequests)
+    .values({
+      name,
+      location,
+      contact,
+      amount,
+      paymentMethod,
+      note,
+    })
+    .returning({
+      id: schema.donationRequests.id,
+      createdAt: schema.donationRequests.createdAt,
+    });
+
+  if (!row) return reply.status(500).send({ error: "Donation request was not saved." });
+  return reply.send({ ok: true, id: row.id });
+});
+
+// ── Admin: donation interest submissions ──────────────────────────────────────
+app.get("/admin/donations", async (req, reply) => {
+  if (req.headers["x-admin-token"] !== ADMIN_TOKEN) {
+    return reply.status(401).send({ error: "Unauthorized" });
+  }
+  const db = getDb();
+  const rows = await db
+    .select({
+      id: schema.donationRequests.id,
+      name: schema.donationRequests.name,
+      location: schema.donationRequests.location,
+      contact: schema.donationRequests.contact,
+      amount: schema.donationRequests.amount,
+      paymentMethod: schema.donationRequests.paymentMethod,
+      note: schema.donationRequests.note,
+      createdAt: schema.donationRequests.createdAt,
+    })
+    .from(schema.donationRequests)
+    .orderBy(desc(schema.donationRequests.createdAt));
+  return reply.send({ total: rows.length, donations: rows });
+});
+
 // ── Admin: VeilChat Team plaintext inbox ─────────────────────────────────────
 // This is deliberately separate from the E2EE tRPC message path. The admin
 // console can read these rows because the Team channel is explicitly

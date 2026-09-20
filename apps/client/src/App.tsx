@@ -45,6 +45,7 @@ const GroupsPage = lazy(() => import("./pages/GroupsPage").then((m) => ({ defaul
 const GroupChatPage = lazy(() => import("./pages/GroupChatPage").then((m) => ({ default: m.GroupChatPage })));
 const GroupSettingsPage = lazy(() => import("./pages/GroupSettingsPage").then((m) => ({ default: m.GroupSettingsPage })));
 const InvitePage = lazy(() => import("./pages/InvitePage").then((m) => ({ default: m.InvitePage })));
+const DonatePage = lazy(() => import("./pages/DonatePage").then((m) => ({ default: m.DonatePage })));
 const InviteRedeemPage = lazy(() => import("./pages/InviteRedeemPage").then((m) => ({ default: m.InviteRedeemPage })));
 const ConnectionsPage = lazy(() => import("./pages/ConnectionsPage").then((m) => ({ default: m.ConnectionsPage })));
 const DiscoverPage = lazy(() => import("./pages/DiscoverPage").then((m) => ({ default: m.DiscoverPage })));
@@ -201,6 +202,7 @@ export function App() {
                 <Route path="/groups/:groupId" element={<GroupChatPage />} />
                 <Route path="/groups/:groupId/settings" element={<GroupSettingsPage />} />
                 <Route path="/invite" element={<InvitePage />} />
+                <Route path="/donate" element={<DonatePage />} />
                 <Route path="/connections" element={<ConnectionsPage />} />
                 <Route path="/discover" element={<DiscoverPage />} />
                 <Route path="/discover/:userId" element={<DiscoverProfilePage />} />

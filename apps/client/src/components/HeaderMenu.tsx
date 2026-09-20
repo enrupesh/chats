@@ -96,6 +96,15 @@ export function HeaderMenu() {
             badge={pendingCount > 0 ? pendingCount : undefined}
             onClick={() => setOpen(false)}
           />
+          <div className="border-t border-line/60" />
+          <MenuItem
+            to="/donate"
+            label="Donate"
+            sub="Help keep private chat free"
+            icon={<HeartIcon />}
+            accent
+            onClick={() => setOpen(false)}
+          />
         </div>
       )}
     </div>
@@ -108,6 +117,7 @@ function MenuItem({
   sub,
   icon,
   badge,
+  accent,
   onClick,
 }: {
   to: string;
@@ -115,6 +125,7 @@ function MenuItem({
   sub?: string;
   icon?: React.ReactNode;
   badge?: number;
+  accent?: boolean;
   onClick?: () => void;
 }) {
   return (
@@ -129,12 +140,24 @@ function MenuItem({
       }
     >
       {icon && (
-        <span className="size-9 rounded-full bg-elevated text-text-muted grid place-items-center shrink-0">
+        <span
+          className={
+            "size-9 rounded-full grid place-items-center shrink-0 " +
+            (accent
+              ? "bg-wa-green/15 text-wa-green"
+              : "bg-elevated text-text-muted")
+          }
+        >
           {icon}
         </span>
       )}
       <span className="flex-1 min-w-0">
-        <span className="block text-[14px] font-semibold leading-tight">
+        <span
+          className={
+            "block text-[14px] font-semibold leading-tight " +
+            (accent ? "text-wa-green" : "text-text")
+          }
+        >
           {label}
         </span>
         {sub && (
@@ -186,6 +209,24 @@ function InboxIcon() {
     >
       <path d="M3 13h4l1.5 2.5h7L17 13h4" />
       <path d="M5 5h14l2 8v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6L5 5z" />
+    </svg>
+  );
+}
+
+function HeartIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={18}
+      height={18}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M20.8 8.8c0 5.4-8.8 10.2-8.8 10.2S3.2 14.2 3.2 8.8A4.6 4.6 0 0 1 12 6.1a4.6 4.6 0 0 1 8.8 2.7Z" />
     </svg>
   );
 }

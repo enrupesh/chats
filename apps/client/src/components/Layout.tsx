@@ -16,10 +16,12 @@ export function ScreenShell({
   children,
   back,
   phase,
+  rightAction,
 }: {
   children: ReactNode;
   back?: string;
   phase?: string;
+  rightAction?: ReactNode;
 }) {
   return (
     <main className="min-h-full flex flex-col bg-bg text-text">
@@ -36,11 +38,14 @@ export function ScreenShell({
           ) : (
             <span />
           )}
-          {phase && (
-            <span className="text-xs uppercase tracking-wider text-text-oncolor/80">
-              {phase}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {phase && (
+              <span className="text-xs uppercase tracking-wider text-text-oncolor/80">
+                {phase}
+              </span>
+            )}
+            {rightAction}
+          </div>
         </header>
       )}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 md:px-10 md:py-12">

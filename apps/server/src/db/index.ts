@@ -104,6 +104,22 @@ async function ensureSchema(sql: ReturnType<typeof postgres>) {
   await sql.unsafe(
     `CREATE INDEX IF NOT EXISTS "site_visitor_days_day_idx" ON "site_visitor_days" ("day")`,
   );
+
+  await sql.unsafe(`
+    CREATE TABLE IF NOT EXISTS "donation_requests" (
+      "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+      "name" text NOT NULL,
+      "location" text NOT NULL,
+      "contact" text NOT NULL,
+      "amount" integer,
+      "payment_method" text NOT NULL,
+      "note" text,
+      "created_at" timestamptz NOT NULL DEFAULT NOW()
+    )
+  `);
+  await sql.unsafe(
+    `CREATE INDEX IF NOT EXISTS "donation_requests_created_at_idx" ON "donation_requests" ("created_at")`,
+  );
 }
 
 /**

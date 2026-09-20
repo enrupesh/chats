@@ -21,6 +21,7 @@ import { loadIdentity } from "../lib/db";
 import { base64ToBytes, publicKeyFingerprint } from "../lib/crypto";
 import { useNoindex } from "../lib/useDocumentMeta";
 import { toPublicAbsoluteUrl } from "../lib/publicAppUrl";
+import { HeaderMenu } from "../components/HeaderMenu";
 
 export function InvitePage() {
   useNoindex("Invite · VeilChat");
@@ -77,7 +78,11 @@ export function InvitePage() {
   const noInvites = list.data && list.data.length === 0;
 
   return (
-    <ScreenShell back="/chats" phase="Phase 2 · Invite">
+    <ScreenShell
+      back="/chats"
+      phase="Phase 2 · Invite"
+      rightAction={<HeaderMenu />}
+    >
       <div className="flex flex-col items-center gap-3">
         <Logo />
         <h2 className="text-2xl font-semibold">Invite someone</h2>
