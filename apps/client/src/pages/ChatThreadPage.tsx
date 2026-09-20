@@ -815,8 +815,8 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
               <Avatar seed={peerId} label={displayName.slice(0, 2)} size={36} />
               <div className="font-semibold text-base truncate">
                 {displayName}
-                {peer?.peer.isOfficial && (
-                  <span aria-label="Officially verified" title="Official VeilChat account" className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[10px] font-black text-amber-950 align-[1px]">✓</span>
+                {(peer?.peer.isOfficial || peer?.peer.isFounder) && (
+                  <span aria-label={peer?.peer.isFounder ? "Founder verified" : "Officially verified"} title={peer?.peer.isFounder ? "Founder verified" : "Official VeilChat account"} className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[10px] font-black text-amber-950 align-[1px]">✓</span>
                 )}
               </div>
             </div>
@@ -1081,6 +1081,7 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
           }
             isOfficial={isOfficialChat}
         />
+          {isOfficialChat && <SupportFollowUps />}
         {!filteredMessages || filteredMessages.length === 0 ? (
           <EmptyState
             title={searchOpen && searchQuery ? "No matches" : "No messages yet"}
@@ -4300,6 +4301,153 @@ export function EncryptionNoticeBanner({
         </button>
       )}
     </div>
+  );
+}
+
+type SupportFollowUp = {
+  id: string;
+  question: string;
+  answer: ReactNode;
+};
+
+function SupportFollowUps() {
+  const [openId, setOpenId] = useState<string | null>("use");
+  const followUps: SupportFollowUp[] = [
+    {
+      id: "use",
+      question: "How do I use VeilChat?",
+      answer: (
+        <ol className="list-decimal space-y-1.5 pl-5">
+          <li>Create an account and save your recovery kit somewhere safe.</li>
+          <li>Open <strong>Chats</strong> and tap <strong>+</strong>, or open <strong>People → Find</strong>.</li>
+          <li>Choose a person, send a chat request, and wait for them to accept.</li>
+          <li>Open the new chat, type your message, and tap send. Normal chats are end-to-end encrypted.</li>
+        </ol>
+      ),
+    },
+    {
+      id: "chat",
+      question: "How do I chat with someone?",
+      answer: (
+        <p>
+          Go to <strong>Discover</strong> from the menu, search their name or
+          username, open their profile, and tap <strong>Send chat request</strong>.
+          After they accept, open <strong>Chats</strong> and select their name.
+          You can also use an invite link if they are not listed in Discover.
+        </p>
+      ),
+    },
+    {
+      id: "founder",
+      question: "Do you want to talk to the founder?",
+      answer: (
+        <p>
+          Yes. Open Discover, search for <strong>@founder</strong>, open the
+          verified Founder profile, and send a chat request.{" "}
+          <Link to="/discover?search=founder" className="font-bold text-wa-green underline underline-offset-2">
+            Open the founder link
+          </Link>
+          . The profile will appear once the founder has enabled Discover.
+        </p>
+      ),
+    },
+    {
+      id: "donate",
+      question: "How can I donate?",
+      answer: (
+        <p>
+          Open the{" "}
+          <Link to="/donate" className="font-bold text-wa-green underline underline-offset-2">
+            donation page
+          </Link>
+          , share your contact and intended amount, and the team will follow up
+          with next steps. Never send a card number, UPI PIN, password, or
+          recovery phrase in this support chat.
+        </p>
+      ),
+    },
+    {
+      id: "team",
+      question: "How can I work with the VeilChat team?",
+      answer: (
+        <p>
+          Contact the verified founder at <strong>@founder</strong> through
+          Discover and explain what you can contribute. While VeilChat is free,
+          some early contributions may be voluntary or unpaid. Possible
+          share-based or future paid arrangements must be agreed separately in
+          writing; they are not guaranteed by this message.{" "}
+          <Link to="/discover?search=founder" className="font-bold text-wa-green underline underline-offset-2">
+            Talk to the founder
+          </Link>
+          .
+        </p>
+      ),
+    },
+    {
+      id: "privacy",
+      question: "How private are my chats?",
+      answer: (
+        <p>
+          Normal personal chats are end-to-end encrypted, so the server stores
+          opaque message data. This support chat is different: support messages
+          may be readable by the VeilChat team. Do not share passwords or
+          recovery keys here.
+        </p>
+      ),
+    },
+    {
+      id: "recovery",
+      question: "How do I protect or recover my account?",
+      answer: (
+        <p>
+          Keep your recovery kit offline, add a passkey in Settings when
+          available, and never share recovery words. If you lose access, use
+          the recovery flow from the login screen.
+        </p>
+      ),
+    },
+  ];
+
+  return (
+    <section
+      aria-label="VeilChat support follow-ups"
+      className="mx-auto mb-2 w-full max-w-md rounded-2xl border border-amber-300/30 bg-amber-50/90 px-3 py-3 text-[12px] text-amber-950 shadow-sm"
+    >
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <div>
+          <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-amber-800">
+            Support shortcuts
+          </div>
+          <div className="mt-0.5 text-[11px] text-amber-900/70">
+            Tap a question to see the steps.
+          </div>
+        </div>
+        <span aria-hidden="true" className="text-base">✦</span>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {followUps.map((item) => {
+          const open = openId === item.id;
+          return (
+            <div key={item.id} className="w-full">
+              <button
+                type="button"
+                onClick={() => setOpenId(open ? null : item.id)}
+                aria-expanded={open}
+                className="w-full rounded-xl border border-amber-700/15 bg-white/55 px-3 py-2 text-left font-semibold text-amber-950 transition hover:bg-white/85"
+              >
+                <span className="mr-2 text-amber-700">{open ? "−" : "+"}</span>
+                {item.question}
+              </button>
+              {open && (
+                <div className="px-3 pb-2 pt-2 leading-relaxed text-amber-950/80">
+                  {item.answer}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 

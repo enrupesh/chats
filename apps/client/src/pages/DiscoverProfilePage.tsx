@@ -96,7 +96,18 @@ export function DiscoverProfilePage() {
           size={132}
         />
         <h1 className="mt-5 text-[22px] font-bold leading-tight">
-          {name}
+          <span className="inline-flex items-center gap-2">
+            {name}
+            {(user.isFounder || user.isOfficial) && (
+              <span
+                aria-label={user.isFounder ? "Founder verified" : "Officially verified"}
+                title={user.isFounder ? "Founder verified" : "Official VeilChat account"}
+                className="inline-flex size-5 items-center justify-center rounded-full bg-amber-400 text-[11px] font-black text-amber-950"
+              >
+                ✓
+              </span>
+            )}
+          </span>
         </h1>
         {user.username && (
           <p className="mt-1 text-[14px] text-text-muted">
@@ -107,6 +118,21 @@ export function DiscoverProfilePage() {
           <p className="mt-4 text-[15px] leading-snug text-text max-w-md whitespace-pre-wrap">
             {user.bio}
           </p>
+        )}
+        {user.isFounder && (
+          <div className="mt-4 rounded-2xl border border-amber-400/35 bg-amber-50/10 px-4 py-3 text-left">
+            <div className="flex items-center gap-2 text-[13px] font-bold text-amber-300">
+              <span className="inline-flex size-5 items-center justify-center rounded-full bg-amber-400 text-[11px] font-black text-amber-950">
+                ✓
+              </span>
+              Founder profile
+            </div>
+            <p className="mt-1 text-[12px] leading-relaxed text-text-muted">
+              Founder access includes early product previews and other benefits
+              as they become available. Any future paid or share-based
+              arrangement is discussed separately and is not promised by this badge.
+            </p>
+          </div>
         )}
       </div>
 

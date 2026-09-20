@@ -24,7 +24,9 @@ function shape(u: {
   displayName: string | null;
   bio: string | null;
   avatarDataUrl: string | null;
+  isOfficial?: boolean;
 }): DiscoverableUser {
+  const isFounder = u.username?.trim().toLowerCase() === "founder";
   return {
     id: u.id,
     accountType: u.accountType,
@@ -33,6 +35,9 @@ function shape(u: {
     displayName: u.displayName ?? null,
     bio: u.bio ?? null,
     avatarDataUrl: u.avatarDataUrl ?? null,
+    isOfficial: u.isOfficial ?? false,
+    isFounder,
+    isPremium: isFounder,
   };
 }
 
@@ -117,17 +122,22 @@ export const discoverRouter = router({
         );
       }
 
-      // Cursor pagination on (lower(displayName/username), id) so we
-      // get a deterministic order even when many users share a sort
-      // key. We expose the cursor as `${sortKey}\x00${id}`.
+      // Cursor pagination on (founder priority, lower(displayName/username),
+      // id) so the founder stays first without appearing again on page two.
       const cursor = input.cursor;
       if (cursor) {
-        const sep = cursor.indexOf("\x00");
-        if (sep > 0) {
-          const sortKey = cursor.slice(0, sep);
-          const lastId = cursor.slice(sep + 1);
+        const firstSep = cursor.indexOf("\x00");
+        const secondSep = cursor.indexOf("\x00", firstSep + 1);
+        if (firstSep > 0 && secondSep > firstSep) {
+          const priority = Number(cursor.slice(0, firstSep));
+          const sortKey = cursor.slice(firstSep + 1, secondSep);
+          const lastId = cursor.slice(secondSep + 1);
           conditions.push(
-            sql`(lower(coalesce(${schema.users.displayName}, ${schema.users.username}, '')), ${schema.users.id}) > (${sortKey}, ${lastId})`,
+            sql`(
+              CASE WHEN lower(${schema.users.username}) = 'founder' THEN 0 ELSE 1 END,
+              lower(coalesce(${schema.users.displayName}, ${schema.users.username}, '')),
+              ${schema.users.id}
+            ) > (${priority}, ${sortKey}, ${lastId})`,
           );
         }
       }
@@ -140,11 +150,13 @@ export const discoverRouter = router({
           username: schema.users.username,
           displayName: schema.users.displayName,
           bio: schema.users.bio,
-          avatarDataUrl: schema.users.avatarDataUrl,
+           avatarDataUrl: schema.users.avatarDataUrl,
+           isOfficial: schema.users.isOfficial,
         })
         .from(schema.users)
         .where(and(...conditions))
-        .orderBy(
+         .orderBy(
+          sql`CASE WHEN lower(${schema.users.username}) = 'founder' THEN 0 ELSE 1 END`,
           sql`lower(coalesce(${schema.users.displayName}, ${schema.users.username}, ''))`,
           schema.users.id,
         )
@@ -155,12 +167,13 @@ export const discoverRouter = router({
       let nextCursor: string | null = null;
       if (hasMore) {
         const last = page[page.length - 1]!;
+        const priority = last.username?.trim().toLowerCase() === "founder" ? 0 : 1;
         const sortKey = (
           last.displayName ??
           last.username ??
           ""
         ).toLowerCase();
-        nextCursor = `${sortKey}\x00${last.id}`;
+        nextCursor = `${priority}\x00${sortKey}\x00${last.id}`;
       }
 
       return {
@@ -195,7 +208,8 @@ export const discoverRouter = router({
           username: schema.users.username,
           displayName: schema.users.displayName,
           bio: schema.users.bio,
-          avatarDataUrl: schema.users.avatarDataUrl,
+           avatarDataUrl: schema.users.avatarDataUrl,
+           isOfficial: schema.users.isOfficial,
           isDiscoverable: schema.users.isDiscoverable,
         })
         .from(schema.users)

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { trpc } from "../lib/trpc";
 import { useAuthStore } from "../lib/store";
 import { AppBar, Avatar, Spinner } from "../components/Layout";
@@ -21,7 +21,10 @@ export function DiscoverPage() {
   useNoindex("Discover · VeilChat");
   const accessToken = useAuthStore((s) => s.accessToken);
   const navigate = useNavigate();
-  const [rawQuery, setRawQuery] = useState("");
+  const [searchParams] = useSearchParams();
+  const [rawQuery, setRawQuery] = useState(
+    () => searchParams.get("search")?.trim() ?? "",
+  );
   const [query, setQuery] = useState("");
 
   // Redirect to login if the page was opened without an active session
@@ -108,11 +111,16 @@ export function DiscoverPage() {
                     size={48}
                   />
                   <div className="min-w-0 flex-1">
-                    <div className="text-[15px] font-semibold truncate">
-                      {u.displayName ?? u.username ?? "VeilChat user"}
+                    <div className="text-[15px] font-semibold truncate inline-flex items-center gap-1.5 max-w-full">
+                      <span className="truncate">
+                        {u.displayName ?? u.username ?? "VeilChat user"}
+                      </span>
+                      {(u.isFounder || u.isOfficial) && <GoldenBadge label={u.isFounder ? "Founder" : "Official"} />}
                     </div>
                     <div className="text-[13px] text-text-muted truncate">
-                      {u.bio?.trim()
+                      {u.isFounder
+                        ? "Founder · VeilChat"
+                        : u.bio?.trim()
                         ? u.bio
                         : u.username
                           ? `@${u.username}`
@@ -188,5 +196,17 @@ function SearchIcon() {
       <circle cx="11" cy="11" r="7" />
       <path d="m20 20-3.2-3.2" />
     </svg>
+  );
+}
+
+function GoldenBadge({ label }: { label: string }) {
+  return (
+    <span
+      aria-label={`${label} verified`}
+      title={`${label} verified`}
+      className="inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-amber-400 text-[10px] font-black text-amber-950 shadow-[0_0_0_2px_rgba(251,191,36,0.18)]"
+    >
+      ✓
+    </span>
   );
 }

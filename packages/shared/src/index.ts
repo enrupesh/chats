@@ -86,6 +86,10 @@ export const PublicUserSchema = z.object({
   avatarDataUrl: z.string().nullable().optional(),
   /** Official VeilChat-managed account. */
   isOfficial: z.boolean().optional(),
+  /** Founder account with a golden verification badge and founder benefits. */
+  isFounder: z.boolean().optional(),
+  /** Product access marker reserved for founder benefits and future plans. */
+  isPremium: z.boolean().optional(),
 });
 export type PublicUser = z.infer<typeof PublicUserSchema>;
 
@@ -253,6 +257,10 @@ export const PeerSchema = z.object({
   avatarDataUrl: z.string().nullable().optional(),
   /** Official VeilChat-managed account. */
   isOfficial: z.boolean().optional(),
+  /** Founder account with a golden verification badge and founder benefits. */
+  isFounder: z.boolean().optional(),
+  /** Product access marker reserved for founder benefits and future plans. */
+  isPremium: z.boolean().optional(),
   /**
    * Private nickname the requesting user has saved for this peer
    * (WhatsApp-style "saved contact name"). Visible only to the
@@ -1575,6 +1583,8 @@ export const DiscoverableUserSchema = z.object({
   bio: z.string().nullable().optional(),
   avatarDataUrl: z.string().nullable().optional(),
   isOfficial: z.boolean().optional(),
+  isFounder: z.boolean().optional(),
+  isPremium: z.boolean().optional(),
 });
 export type DiscoverableUser = z.infer<typeof DiscoverableUserSchema>;
 

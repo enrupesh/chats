@@ -46,6 +46,8 @@ function peer(
     bio?: string | null;
     avatarDataUrl?: string | null;
     isOfficial?: boolean;
+    isFounder?: boolean;
+    isPremium?: boolean;
   },
   contactName?: string | null,
 ): Peer {
@@ -59,6 +61,8 @@ function peer(
     bio: u.bio ?? null,
     avatarDataUrl: u.avatarDataUrl ?? null,
     isOfficial: u.isOfficial ?? false,
+    isFounder: u.username?.trim().toLowerCase() === "founder",
+    isPremium: u.username?.trim().toLowerCase() === "founder",
     contactName: contactName ?? null,
   };
 }

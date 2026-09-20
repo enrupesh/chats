@@ -384,6 +384,15 @@ export function ChatsPage() {
                       <span className="truncate">
                         {peerLabel(conn.peer)}
                       </span>
+                      {conn.peer.isFounder && (
+                        <span
+                          aria-label="Founder verified"
+                          title="Founder verified"
+                          className="inline-flex size-3.5 shrink-0 items-center justify-center rounded-full bg-amber-400 text-[9px] font-black text-amber-950"
+                        >
+                          ✓
+                        </span>
+                      )}
                       {mood && (
                         <span
                           className="text-[10.5px] px-1.5 py-0.5 rounded-full bg-wa-green-soft/40 text-text-muted inline-flex items-center gap-0.5 shrink-0 max-w-[140px] truncate"
