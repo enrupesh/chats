@@ -106,10 +106,6 @@ export type AuthResult = z.infer<typeof AuthResultSchema>;
 
 /* ─────────── Post-auth onboarding survey ─────────── */
 
-export const OnboardingSurveyCountrySchema = z
-  .string()
-  .regex(/^[A-Z]{2}$/, "Choose a valid country.");
-
 export const OnboardingSurveyDeviceSchema = z.enum([
   "mobile",
   "tablet",
@@ -118,42 +114,19 @@ export const OnboardingSurveyDeviceSchema = z.enum([
   "other",
 ]);
 
-export const OnboardingSurveySourceSchema = z.enum([
-  "search",
-  "social",
-  "friend",
-  "website",
-  "advertisement",
-  "app_store",
-  "other",
-]);
-
-export const OnboardingSurveyGoalSchema = z.enum([
-  "private_messaging",
-  "switching",
-  "groups",
-  "exploring",
-  "other",
-]);
-
 export const OnboardingSurveyInput = z
   .object({
     skipped: z.boolean().default(false),
-    countryCode: OnboardingSurveyCountrySchema.optional(),
     device: OnboardingSurveyDeviceSchema.optional(),
-    source: OnboardingSurveySourceSchema.optional(),
-    goal: OnboardingSurveyGoalSchema.optional(),
   })
   .superRefine((value, ctx) => {
     if (value.skipped) return;
-    for (const field of ["countryCode", "device", "source"] as const) {
-      if (!value[field]) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: [field],
-          message: "This answer is required.",
-        });
-      }
+    if (!value.device) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["device"],
+        message: "Choose a device.",
+      });
     }
   });
 export type OnboardingSurveyInput = z.infer<typeof OnboardingSurveyInput>;

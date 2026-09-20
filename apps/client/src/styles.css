@@ -359,23 +359,26 @@ html.veil-privacy-blur .veil-app-wrapper {
   z-index: 100;
   display: grid;
   place-items: center;
-  padding: 20px;
+  padding: 16px;
   background: rgb(6 20 18 / 0.58);
   backdrop-filter: blur(10px);
 }
 
 .veil-survey-modal {
-  width: min(100%, 500px);
-  max-height: min(760px, calc(100dvh - 40px));
-  overflow: hidden;
+  width: min(100%, 520px);
+  max-height: min(720px, calc(100dvh - 32px));
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  padding: 28px;
+  padding: clamp(22px, 4vw, 32px);
   color: rgb(var(--wa-text));
-  background: rgb(var(--wa-surface));
-  border: 1px solid rgb(var(--wa-line) / 0.8);
-  border-radius: 24px;
-  box-shadow: 0 24px 80px rgb(0 0 0 / 0.24);
+  background:
+    radial-gradient(circle at 100% 0%, rgb(var(--wa-green) / 0.12), transparent 34%),
+    rgb(var(--wa-surface));
+  border: 1px solid rgb(var(--wa-line) / 0.9);
+  border-radius: 26px;
+  box-shadow: 0 26px 90px rgb(0 0 0 / 0.28);
+  scrollbar-width: thin;
 }
 
 .veil-survey-topline,
@@ -388,9 +391,9 @@ html.veil-privacy-blur .veil-app-wrapper {
 
 .veil-survey-brand {
   color: rgb(var(--wa-green-dark));
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
 }
 
 .veil-survey-brand span {
@@ -400,20 +403,20 @@ html.veil-privacy-blur .veil-app-wrapper {
 .veil-survey-step,
 .veil-survey-footnote {
   color: rgb(var(--wa-text-muted));
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .veil-survey-progress {
   display: flex;
-  gap: 5px;
-  margin: 18px 0 30px;
+  gap: 6px;
+  margin: 18px 0 28px;
 }
 
 .veil-survey-progress span {
-  height: 4px;
+  height: 5px;
   flex: 1;
   border-radius: 999px;
-  background: rgb(var(--wa-line));
+  background: rgb(var(--wa-line) / 0.72);
   transition: background-color 160ms ease;
 }
 
@@ -422,31 +425,31 @@ html.veil-privacy-blur .veil-app-wrapper {
 }
 
 .veil-survey-heading {
-  margin-bottom: 22px;
+  margin-bottom: 20px;
 }
 
 .veil-survey-eyebrow {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   color: rgb(var(--wa-green-dark));
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
 }
 
 .veil-survey-heading h2 {
   margin: 0;
-  font-size: clamp(24px, 5vw, 32px);
-  line-height: 1.1;
-  letter-spacing: -0.03em;
+  font-size: clamp(25px, 5vw, 34px);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
 }
 
 .veil-survey-heading > p:last-child {
   max-width: 390px;
-  margin: 10px 0 0;
+  margin: 12px 0 0;
   color: rgb(var(--wa-text-muted));
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.55;
 }
 
 .veil-survey-country label {
@@ -518,15 +521,15 @@ html.veil-privacy-blur .veil-app-wrapper {
   align-items: center;
   gap: 13px;
   width: 100%;
-  padding: 13px;
-  border-radius: 14px;
+  min-height: 58px;
+  padding: 11px 13px;
+  border-radius: 15px;
 }
 
 .veil-survey-options {
   display: grid;
   gap: 8px;
-  overflow-y: auto;
-  max-height: 340px;
+  flex: 0 0 auto;
 }
 
 .veil-survey-option-icon {
@@ -538,7 +541,7 @@ html.veil-privacy-blur .veil-app-wrapper {
   color: rgb(var(--wa-green-dark));
   background: rgb(var(--wa-green) / 0.12);
   border-radius: 10px;
-  font-size: 19px;
+  font-size: 18px;
 }
 
 .veil-survey-option > span:nth-child(2) {
@@ -548,12 +551,13 @@ html.veil-privacy-blur .veil-app-wrapper {
 
 .veil-survey-option strong,
 .veil-survey-source strong {
-  font-size: 13px;
+  font-size: 14px;
+  letter-spacing: -0.01em;
 }
 
 .veil-survey-option small {
   color: rgb(var(--wa-text-muted));
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .veil-survey-check {
@@ -608,17 +612,21 @@ html.veil-privacy-blur .veil-app-wrapper {
 }
 
 .veil-survey-actions {
-  margin-top: 24px;
+  position: sticky;
+  bottom: 0;
+  margin-top: 22px;
+  padding-top: 16px;
+  background: linear-gradient(to bottom, transparent, rgb(var(--wa-surface)) 24%);
 }
 
 .veil-survey-skip,
 .veil-survey-continue {
-  min-height: 42px;
-  padding: 0 16px;
-  border-radius: 11px;
+  min-height: 46px;
+  padding: 0 17px;
+  border-radius: 13px;
   cursor: pointer;
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -635,7 +643,13 @@ html.veil-privacy-blur .veil-app-wrapper {
   color: rgb(var(--wa-text-oncolor));
   background: rgb(var(--wa-green));
   border: 0;
-  box-shadow: 0 5px 14px rgb(var(--wa-green) / 0.22);
+  box-shadow: 0 8px 18px rgb(var(--wa-green) / 0.26);
+  transition: transform 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+}
+
+.veil-survey-continue:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgb(var(--wa-green) / 0.32);
 }
 
 .veil-survey-continue:disabled {
@@ -644,18 +658,19 @@ html.veil-privacy-blur .veil-app-wrapper {
 }
 
 .veil-survey-footnote {
-  margin: 16px 0 0;
+  margin: 12px 0 0;
   text-align: center;
 }
 
 @media (max-width: 520px) {
   .veil-survey-modal {
-    padding: 22px 18px;
+    max-height: calc(100dvh - 24px);
+    padding: 22px 18px 18px;
     border-radius: 20px;
   }
 
-  .veil-survey-country-list {
-    max-height: 230px;
+  .veil-survey-option {
+    min-height: 54px;
   }
 }
 

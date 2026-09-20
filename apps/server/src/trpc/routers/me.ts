@@ -57,10 +57,10 @@ export const meRouter = router({
       await db
         .update(schema.users)
         .set({
-          onboardingCountry: input.skipped ? null : input.countryCode ?? null,
+          onboardingCountry: null,
           onboardingDevice: input.skipped ? null : input.device ?? null,
-          onboardingSource: input.skipped ? null : input.source ?? null,
-          onboardingGoal: input.skipped ? null : input.goal ?? null,
+          onboardingSource: null,
+          onboardingGoal: null,
           onboardingSurveyCompletedAt: new Date(),
         })
         .where(eq(schema.users.id, ctx.userId));
