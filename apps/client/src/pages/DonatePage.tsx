@@ -105,12 +105,12 @@ export function DonatePage() {
                 ₹5,09,882
               </div>
               <div className="mt-1 text-sm text-[#BFEAC7]">
-                लोगों ने donate किया है
+                has been donated by our community
               </div>
             </div>
 
             <p className="mt-8 text-sm leading-relaxed text-[#FCF5EB]/65">
-              आपका contribution किसी unnecessary luxury के लिए नहीं है। It
+              Your contribution does not go toward unnecessary luxuries. It
               goes back into hosting, security reviews, accessibility, and
               making this site better for the people who use it.
             </p>
@@ -223,7 +223,7 @@ export function DonatePage() {
               Thank you
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-[#253D2C]/65">
-              हमारी team जल्दी आपसे संपर्क करेगी।
+              Our team will contact you soon.
             </p>
             <SecondaryButton className="mt-6 w-full" onClick={() => setSubmitted(false)}>
               Done
