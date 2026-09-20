@@ -11,7 +11,7 @@ import { registerWebSocketRoutes } from "./lib/wsServer.js";
 import { initPush } from "./lib/push.js";
 import { verifyAccessToken } from "./lib/jwt.js";
 import { getDb, awaitDbBootstrap, ensureVeilChatTeam, schema } from "./db/index.js";
-import { eq, and, desc, gte, gt, isNull, or } from "drizzle-orm";
+import { eq, and, count, desc, gte, gt, isNull, or } from "drizzle-orm";
 import { createHmac } from "node:crypto";
 import { startMediaSweeper } from "./lib/mediaSweeper.js";
 import { startMessageSweeper } from "./lib/messageSweeper.js";
@@ -326,6 +326,82 @@ app.get("/active-users", async () => {
   return { count };
 });
 
+// ── Public product launch waitlist ───────────────────────────────────────────
+const validWaitlistEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function optionalHttpUrl(value: unknown, label: string): string | null {
+  if (value === undefined || value === null || String(value).trim() === "") {
+    return null;
+  }
+  const raw = String(value).trim();
+  if (raw.length > 500) {
+    throw new Error(`${label} is too long`);
+  }
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      throw new Error("unsupported protocol");
+    }
+    return url.toString();
+  } catch {
+    throw new Error(`${label} must be a valid http(s) URL`);
+  }
+}
+
+app.get("/waitlist/count", async (_req, reply) => {
+  try {
+    const db = getDb();
+    const [row] = await db
+      .select({ total: count() })
+      .from(schema.productWaitlist);
+    return reply.send({ count: row?.total ?? 0 });
+  } catch (error) {
+    app.log.error({ err: error }, "waitlist count failed");
+    return reply.status(503).send({ error: "Waitlist is temporarily unavailable" });
+  }
+});
+
+app.post<{
+  Body: { email?: string; websiteUrl?: string; linkedinUrl?: string };
+}>("/waitlist", async (req, reply) => {
+  const email = req.body?.email?.trim().toLowerCase();
+  if (!email || email.length > 254 || !validWaitlistEmail.test(email)) {
+    return reply.status(400).send({ error: "Enter a valid email address." });
+  }
+
+  let websiteUrl: string | null;
+  let linkedinUrl: string | null;
+  try {
+    websiteUrl = optionalHttpUrl(req.body?.websiteUrl, "Website");
+    linkedinUrl = optionalHttpUrl(req.body?.linkedinUrl, "LinkedIn");
+  } catch (error) {
+    return reply.status(400).send({
+      error: error instanceof Error ? error.message : "Please check your links.",
+    });
+  }
+
+  try {
+    const db = getDb();
+    const [created] = await db
+      .insert(schema.productWaitlist)
+      .values({ email, websiteUrl, linkedinUrl })
+      .onConflictDoNothing()
+      .returning({ id: schema.productWaitlist.id });
+
+    const [row] = await db
+      .select({ total: count() })
+      .from(schema.productWaitlist);
+    return reply.send({
+      joined: Boolean(created),
+      alreadyJoined: !created,
+      count: row?.total ?? 0,
+    });
+  } catch (error) {
+    app.log.error({ err: error }, "waitlist signup failed");
+    return reply.status(503).send({ error: "We couldn't save your spot. Please try again." });
+  }
+});
+
 // ── Admin: registered users ───────────────────────────────────────────────────
 // Protected by a static token (SHA-256 of admin credentials, never plain-text).
 const ADMIN_TOKEN = "2ada6ca17dcc4f828a68c94eb629bc8d7cf46ea7e22b084d08cd58ea35690869";
@@ -504,6 +580,24 @@ app.get("/admin/users", async (req, reply) => {
     },
     users,
   };
+});
+
+app.get("/admin/waitlist", async (req, reply) => {
+  if (req.headers["x-admin-token"] !== ADMIN_TOKEN) {
+    return reply.status(401).send({ error: "Unauthorized" });
+  }
+  const db = getDb();
+  const entries = await db
+    .select({
+      id: schema.productWaitlist.id,
+      email: schema.productWaitlist.email,
+      websiteUrl: schema.productWaitlist.websiteUrl,
+      linkedinUrl: schema.productWaitlist.linkedinUrl,
+      createdAt: schema.productWaitlist.createdAt,
+    })
+    .from(schema.productWaitlist)
+    .orderBy(desc(schema.productWaitlist.createdAt));
+  return reply.send({ total: entries.length, entries });
 });
 
 // ── Public donation interest ─────────────────────────────────────────────────

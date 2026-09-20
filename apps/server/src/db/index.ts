@@ -128,6 +128,25 @@ async function ensureSchema(sql: ReturnType<typeof postgres>) {
   await sql.unsafe(
     `CREATE INDEX IF NOT EXISTS "donation_requests_created_at_idx" ON "donation_requests" ("created_at")`,
   );
+
+  // Product launch waitlist. Public signup only collects an email plus
+  // optional founder qualification links; duplicate emails are prevented
+  // at the database boundary.
+  await sql.unsafe(`
+    CREATE TABLE IF NOT EXISTS "product_waitlist" (
+      "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+      "email" text NOT NULL,
+      "website_url" text,
+      "linkedin_url" text,
+      "created_at" timestamptz NOT NULL DEFAULT NOW()
+    )
+  `);
+  await sql.unsafe(
+    `CREATE UNIQUE INDEX IF NOT EXISTS "product_waitlist_email_idx" ON "product_waitlist" ("email")`,
+  );
+  await sql.unsafe(
+    `CREATE INDEX IF NOT EXISTS "product_waitlist_created_at_idx" ON "product_waitlist" ("created_at")`,
+  );
 }
 
 /**

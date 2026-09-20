@@ -36,6 +36,7 @@ export function LandingPage() {
         variant="landing"
         className="mt-20 pt-2 sm:mt-20 sm:pt-3"
       />
+      <WaitlistAnnouncement />
       <AndroidDownloadBanner />
       {/* Wrap the page content in a `<main>` landmark so screen readers
           and Lighthouse can identify the primary content region. */}
@@ -251,6 +252,34 @@ function AndroidDownloadBanner() {
         </button>
       </div>
     </div>
+  );
+}
+
+function WaitlistAnnouncement() {
+  return (
+    <section
+      aria-label="Product launch waitlist"
+      className="mx-auto mt-4 max-w-7xl px-5 sm:px-8"
+    >
+      <div className="flex flex-col gap-4 rounded-2xl border border-[#2E6F40]/15 bg-[#E8FAEE] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2E6F40]">
+            New product launch · 2 February 2027
+          </p>
+          <p className="mt-1 text-sm leading-relaxed text-[#253D2C]">
+            Professional email on your domain for $1, plus free early access to
+            premium templates, analytics, and AI email tools. Founders may
+            qualify for 5 months free.
+          </p>
+        </div>
+        <Link
+          to="/waitlist"
+          className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#2E6F40] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#253D2C]"
+        >
+          Join the waitlist →
+        </Link>
+      </div>
+    </section>
   );
 }
 
@@ -510,6 +539,13 @@ function Hero() {
                     <path d="M13 5l7 7-7 7" />
                   </svg>
                 </span>
+              </Link>
+              <Link
+                to="/waitlist"
+                className="group inline-flex items-center justify-center gap-2.5 bg-[#E8FAEE] hover:bg-[#CFFFDC] border border-[#2E6F40]/15 text-[#2E6F40] font-semibold text-[16px] px-7 py-4 rounded-full transition-all"
+              >
+                Join the $1 email waitlist
+                <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
               </Link>
               <a
                 href="#how"
@@ -2410,6 +2446,12 @@ function FinalCTA() {
                   <path d="M13 5l7 7-7 7" />
                 </svg>
               </Link>
+              <Link
+                to="/waitlist"
+                className="inline-flex items-center justify-center gap-2 border border-white/30 text-white hover:bg-white/10 font-semibold text-[16px] px-8 py-4 rounded-full transition-colors"
+              >
+                Join the launch waitlist
+              </Link>
             </div>
           </div>
         </div>
@@ -2469,6 +2511,7 @@ function Footer() {
               { label: "Sign up", to: "/welcome" },
               { label: "Sign in", to: "/login" },
               { label: "Donate", to: "/donate" },
+              { label: "Join launch waitlist", to: "/waitlist" },
               { label: "Install as PWA", href: "#install" },
             ]}
           />

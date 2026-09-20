@@ -937,7 +937,31 @@ export const donationRequests = pgTable(
   }),
 );
 
+/* ─────────── product_waitlist ─────────── */
+/**
+ * Public launch waitlist signups. Email is intentionally stored in a
+ * normalized form so duplicate submissions remain one lead. Website and
+ * LinkedIn are optional qualification links for founder early access.
+ */
+export const productWaitlist = pgTable(
+  "product_waitlist",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    email: text("email").notNull(),
+    websiteUrl: text("website_url"),
+    linkedinUrl: text("linkedin_url"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    emailIdx: uniqueIndex("product_waitlist_email_idx").on(t.email),
+    createdAtIdx: index("product_waitlist_created_at_idx").on(t.createdAt),
+  }),
+);
+
 export type DonationRequestRow = typeof donationRequests.$inferSelect;
+export type ProductWaitlistRow = typeof productWaitlist.$inferSelect;
 export type SecurityAlertRow = typeof securityAlerts.$inferSelect;
 
 export type ScheduledMessageRow = typeof scheduledMessages.$inferSelect;

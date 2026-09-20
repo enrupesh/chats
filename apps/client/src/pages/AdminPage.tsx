@@ -398,6 +398,57 @@ function useTeamInbox() {
   return { messages, teamId, conversations, selectedUserId, setSelectedUserId, draft, setDraft, sendReply, sending, loading, error };
 }
 
+interface WaitlistEntry {
+  id: string;
+  email: string;
+  websiteUrl: string | null;
+  linkedinUrl: string | null;
+  createdAt: string;
+}
+
+function useWaitlist() {
+  const [data, setData] = useState<{ total: number; entries: WaitlistEntry[] } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const refetch = useCallback(async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/admin/waitlist`, {
+        cache: "no-store",
+        headers: { "x-admin-token": ADMIN_TOKEN },
+      });
+      if (!response.ok) throw new Error("waitlist unavailable");
+      const json = (await response.json()) as {
+        total?: number;
+        entries?: WaitlistEntry[];
+      };
+      setData({ total: json.total ?? 0, entries: json.entries ?? [] });
+      setError(false);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refetch();
+    const timer = setInterval(() => void refetch(), 15_000);
+    return () => clearInterval(timer);
+  }, [refetch]);
+
+  const query = search.trim().toLowerCase();
+  const filtered = data?.entries.filter((entry) =>
+    !query ||
+    entry.email.toLowerCase().includes(query) ||
+    (entry.websiteUrl ?? "").toLowerCase().includes(query) ||
+    (entry.linkedinUrl ?? "").toLowerCase().includes(query),
+  ) ?? [];
+
+  return { data, loading, error, search, setSearch, filtered, refetch };
+}
+
 function formatLabel(value: string | null | undefined): string {
   if (!value) return "Not available";
   if (/^[A-Z]{2}$/.test(value)) {
@@ -526,6 +577,106 @@ function RecentVisitorActivity({
   );
 }
 
+function WaitlistContent({
+  waitlist,
+}: {
+  waitlist: ReturnType<typeof useWaitlist>;
+}) {
+  const linkedCount = waitlist.data?.entries.filter(
+    (entry) => entry.websiteUrl || entry.linkedinUrl,
+  ).length;
+
+  return (
+    <div style={{ minHeight: "calc(100vh - 60px)", backgroundColor: "#FCF5EB" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 24px 80px" }}>
+        <div style={{ marginBottom: 28 }}>
+          <p style={{ margin: "0 0 6px", color: "#2E6F40", fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase" }}>
+            Launch leads
+          </p>
+          <h1 style={{ fontSize: "clamp(26px, 3vw, 38px)", fontWeight: 800, color: "#111B21", letterSpacing: "-0.03em", margin: "0 0 8px" }}>
+            Product waitlist
+          </h1>
+          <p style={{ fontSize: 14, color: "rgba(37,61,44,0.58)", margin: 0, maxWidth: 620 }}>
+            Founders and early users interested in $1 custom-domain email,
+            premium templates, analytics, and AI email tools.
+          </p>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 12, marginBottom: 20 }}>
+          <div style={{ background: "#253D2C", color: "#FCF5EB", borderRadius: 16, padding: 20 }}>
+            <div style={{ color: "rgba(252,245,235,0.65)", fontSize: 11, marginBottom: 8 }}>Total signups</div>
+            <strong style={{ display: "block", fontSize: 30, letterSpacing: "-0.04em" }}>{waitlist.data?.total ?? "—"}</strong>
+            <span style={{ display: "block", marginTop: 5, color: "rgba(252,245,235,0.58)", fontSize: 11 }}>All launch waitlist entries</span>
+          </div>
+          <div style={{ background: "white", border: "1px solid rgba(37,61,44,0.1)", borderRadius: 16, padding: 20 }}>
+            <div style={{ color: "rgba(37,61,44,0.48)", fontSize: 11, marginBottom: 8 }}>Founder links shared</div>
+            <strong style={{ display: "block", color: "#111B21", fontSize: 30, letterSpacing: "-0.04em" }}>{linkedCount ?? "—"}</strong>
+            <span style={{ display: "block", marginTop: 5, color: "rgba(37,61,44,0.45)", fontSize: 11 }}>Website or LinkedIn included</span>
+          </div>
+        </div>
+
+        <section style={{ background: "white", border: "1px solid rgba(37,61,44,0.1)", borderRadius: 18, overflow: "hidden" }}>
+          <div style={{ padding: "16px 18px", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12, borderBottom: "1px solid rgba(37,61,44,0.08)" }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: 15, color: "#111B21" }}>Early access requests</h2>
+              <p style={{ margin: "4px 0 0", color: "rgba(37,61,44,0.45)", fontSize: 11 }}>Refreshes automatically every 15 seconds.</p>
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input
+                value={waitlist.search}
+                onChange={(event) => waitlist.setSearch(event.target.value)}
+                placeholder="Search email or link"
+                aria-label="Search waitlist"
+                style={{ width: "min(260px, 58vw)", border: "1px solid rgba(37,61,44,0.16)", borderRadius: 9, padding: "9px 11px", fontSize: 12, outline: "none" }}
+              />
+              <button type="button" onClick={() => void waitlist.refetch()} style={{ border: "1px solid rgba(37,61,44,0.15)", borderRadius: 9, background: "#FCF5EB", color: "#253D2C", padding: "0 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                Refresh
+              </button>
+            </div>
+          </div>
+
+          {waitlist.loading ? (
+            <div style={{ padding: 28, color: "rgba(37,61,44,0.45)", fontSize: 13 }}>Loading waitlist…</div>
+          ) : waitlist.error ? (
+            <div style={{ padding: 28, color: "#A33A2B", fontSize: 13 }}>Could not load the waitlist.</div>
+          ) : waitlist.filtered.length === 0 ? (
+            <div style={{ padding: 32, color: "rgba(37,61,44,0.45)", fontSize: 13 }}>
+              {waitlist.search ? "No entries match this search." : "No one has joined yet."}
+            </div>
+          ) : (
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 720 }}>
+                <thead>
+                  <tr style={{ background: "#F8FAF8", color: "rgba(37,61,44,0.5)", fontSize: 10.5, textAlign: "left", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                    <th style={{ padding: "11px 18px", fontWeight: 800 }}>Email</th>
+                    <th style={{ padding: "11px 12px", fontWeight: 800 }}>Website</th>
+                    <th style={{ padding: "11px 12px", fontWeight: 800 }}>LinkedIn</th>
+                    <th style={{ padding: "11px 18px 11px 12px", fontWeight: 800 }}>Joined</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {waitlist.filtered.map((entry) => (
+                    <tr key={entry.id} style={{ borderTop: "1px solid rgba(37,61,44,0.07)", fontSize: 12 }}>
+                      <td style={{ padding: "14px 18px", color: "#253D2C", fontWeight: 700 }}>{entry.email}</td>
+                      <td style={{ padding: "14px 12px", maxWidth: 220 }}>
+                        {entry.websiteUrl ? <a href={entry.websiteUrl} target="_blank" rel="noreferrer" style={{ color: "#2E6F40", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>{entry.websiteUrl}</a> : <span style={{ color: "rgba(37,61,44,0.35)" }}>—</span>}
+                      </td>
+                      <td style={{ padding: "14px 12px", maxWidth: 220 }}>
+                        {entry.linkedinUrl ? <a href={entry.linkedinUrl} target="_blank" rel="noreferrer" style={{ color: "#2E6F40", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>{entry.linkedinUrl}</a> : <span style={{ color: "rgba(37,61,44,0.35)" }}>—</span>}
+                      </td>
+                      <td style={{ padding: "14px 18px 14px 12px", color: "rgba(37,61,44,0.5)", whiteSpace: "nowrap" }}>{formatDate(entry.createdAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </div>
+    </div>
+  );
+}
+
 function UserAnalytics({ user, onClose }: { user: RegisteredUser; onClose: () => void }) {
   const name = user.username || user.displayName || user.randomId || user.id.slice(0, 8);
   return (
@@ -629,8 +780,9 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
   const users = useRegisteredUsers();
   const team = useTeamInbox();
   const donations = useDonations();
+  const waitlist = useWaitlist();
   const [tick, setTick] = useState(0);
-  const [activeTab, setActiveTab] = useState<"overview" | "status">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "waitlist" | "status">("overview");
   const [selectedUser, setSelectedUser] = useState<RegisteredUser | null>(null);
 
   // Force re-render key on count change for number animation
@@ -640,7 +792,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
   const barMax = Math.max(peak, 1);
   const lastUpdated = history.at(-1)?.ts;
 
-  const tabStyle = (tab: "overview" | "status"): React.CSSProperties => ({
+  const tabStyle = (tab: "overview" | "waitlist" | "status"): React.CSSProperties => ({
     fontSize: 13,
     fontWeight: 600,
     padding: "6px 16px",
@@ -680,6 +832,9 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
           {/* Tab switcher */}
           <div style={{ display: "flex", alignItems: "center", gap: 2, backgroundColor: activeTab === "status" ? "rgba(255,255,255,0.06)" : "rgba(37,61,44,0.07)", borderRadius: 10, padding: 3 }}>
             <button style={tabStyle("overview")} onClick={() => setActiveTab("overview")}>Overview</button>
+            <button style={tabStyle("waitlist")} onClick={() => setActiveTab("waitlist")}>
+              Waitlist{waitlist.data ? ` (${waitlist.data.total})` : ""}
+            </button>
             <button style={tabStyle("status")}   onClick={() => setActiveTab("status")}>System Status</button>
           </div>
 
@@ -697,6 +852,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
 
       {/* ── System Status tab ── */}
       {activeTab === "status" && <StatusContent />}
+      {activeTab === "waitlist" && <WaitlistContent waitlist={waitlist} />}
 
       {/* ── Overview tab body ── */}
       {activeTab === "overview" && (
