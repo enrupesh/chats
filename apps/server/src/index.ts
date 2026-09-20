@@ -11,7 +11,7 @@ import { registerWebSocketRoutes } from "./lib/wsServer.js";
 import { initPush } from "./lib/push.js";
 import { verifyAccessToken } from "./lib/jwt.js";
 import { getDb, awaitDbBootstrap, ensureVeilChatTeam, schema } from "./db/index.js";
-import { eq, and, desc, gte, or } from "drizzle-orm";
+import { eq, and, desc, gte, gt, isNull, or } from "drizzle-orm";
 import { createHmac } from "node:crypto";
 import { startMediaSweeper } from "./lib/mediaSweeper.js";
 import { startMessageSweeper } from "./lib/messageSweeper.js";
@@ -655,9 +655,15 @@ app.get("/admin/team/messages", async (req, reply) => {
     .from(schema.messages)
     .innerJoin(schema.users, eq(schema.users.id, schema.messages.senderUserId))
     .where(
-      or(
-        eq(schema.messages.senderUserId, team[0].id),
-        eq(schema.messages.recipientUserId, team[0].id),
+      and(
+        or(
+          eq(schema.messages.senderUserId, team[0].id),
+          eq(schema.messages.recipientUserId, team[0].id),
+        ),
+        or(
+          isNull(schema.messages.expiresAt),
+          gt(schema.messages.expiresAt, new Date()),
+        ),
       ),
     )
     .orderBy(desc(schema.messages.createdAt))

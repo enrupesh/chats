@@ -17,6 +17,7 @@ Here are a few things you can do:
 Meet people who have chosen to be discoverable and start a conversation: [Open Discover People](/discover)
 
 More than 1 million happy users are already part of our community. We’re glad you’re here — enjoy VeilChat! 💚`;
+const WELCOME_TTL_MS = 24 * 60 * 60 * 1000;
 
 function conversationIdFor(a: string, b: string): string {
   return a < b ? `${a}:${b}` : `${b}:${a}`;
@@ -35,6 +36,15 @@ export async function sendWelcomeMessage(recipientUserId: string): Promise<void>
     // normal server bootstrap has completed, or after a partial deployment.
     await ensureVeilChatTeam();
     const db = getDb();
+    const recipient = await db
+      .select({ createdAt: schema.users.createdAt })
+      .from(schema.users)
+      .where(eq(schema.users.id, recipientUserId))
+      .limit(1);
+    const account = recipient[0];
+    if (!account) {
+      return;
+    }
     const team = await db
       .select({ id: schema.users.id })
       .from(schema.users)
@@ -50,7 +60,11 @@ export async function sendWelcomeMessage(recipientUserId: string): Promise<void>
     if (senderUserId === recipientUserId) return;
 
     const existing = await db
-      .select({ id: schema.messages.id })
+      .select({
+        id: schema.messages.id,
+        createdAt: schema.messages.createdAt,
+        expiresAt: schema.messages.expiresAt,
+      })
       .from(schema.messages)
       .where(
         and(
@@ -60,8 +74,33 @@ export async function sendWelcomeMessage(recipientUserId: string): Promise<void>
         ),
       )
       .limit(1);
-    if (existing.length > 0) return;
+    const previous = existing[0];
+    if (previous) {
+      // Legacy welcome rows were created before the one-day TTL existed.
+      // Give those rows the same account-relative expiry instead of leaving
+      // them permanently visible in the Team inbox.
+      if (!previous.expiresAt) {
+        await db
+          .update(schema.messages)
+          .set({
+            expiresAt: new Date(
+              previous.createdAt.getTime() + WELCOME_TTL_MS,
+            ),
+          })
+          .where(eq(schema.messages.id, previous.id));
+      }
+      return;
+    }
 
+    // This helper is also called from connections.list as a recovery path
+    // for accounts created while the Team profile was unavailable. Restrict
+    // that recovery to the account's first 24 hours so an expired welcome
+    // can never be recreated on a later login.
+    if (account.createdAt.getTime() + WELCOME_TTL_MS <= Date.now()) {
+      return;
+    }
+
+    const expiresAt = new Date(account.createdAt.getTime() + WELCOME_TTL_MS);
     const [row] = await db
       .insert(schema.messages)
       .values({
@@ -71,10 +110,12 @@ export async function sendWelcomeMessage(recipientUserId: string): Promise<void>
         header: Buffer.alloc(0),
         ciphertext: Buffer.alloc(0),
         plaintext: WELCOME_MESSAGE,
+        expiresAt,
       })
       .returning({
         id: schema.messages.id,
         createdAt: schema.messages.createdAt,
+        expiresAt: schema.messages.expiresAt,
       });
 
     if (!row) return;
@@ -88,7 +129,7 @@ export async function sendWelcomeMessage(recipientUserId: string): Promise<void>
         plaintext: WELCOME_MESSAGE,
         isPlaintext: true,
         createdAt: row.createdAt.toISOString(),
-        expiresAt: null,
+        expiresAt: row.expiresAt?.toISOString() ?? expiresAt.toISOString(),
         groupId: null,
       },
     });

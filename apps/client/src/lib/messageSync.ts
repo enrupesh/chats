@@ -340,6 +340,7 @@ async function ingestInboxMessageInner(
       plaintext: officialMedia?.plaintext ?? m.plaintext ?? "",
       ...(officialMedia ? { attachment: officialMedia.attachment } : {}),
       createdAt: m.createdAt,
+       ...(m.expiresAt ? { expiresAt: m.expiresAt } : {}),
       status: "received",
     });
     if (!wsMarkDelivered([m.id])) {
@@ -466,6 +467,7 @@ export async function pollAndDecrypt(
         plaintext: officialMedia?.plaintext ?? m.plaintext ?? "",
         ...(officialMedia ? { attachment: officialMedia.attachment } : {}),
         createdAt: m.createdAt,
+          ...(m.expiresAt ? { expiresAt: m.expiresAt } : {}),
         status: "received",
       });
       acked.push(m.id);
@@ -976,6 +978,7 @@ async function persistHistoryEntry(
       plaintext: officialMedia?.plaintext ?? m.plaintext ?? "",
       ...(officialMedia ? { attachment: officialMedia.attachment } : {}),
       createdAt: m.createdAt,
+       ...(m.expiresAt ? { expiresAt: m.expiresAt } : {}),
       status: "received",
     });
     return true;

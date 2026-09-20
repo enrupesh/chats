@@ -396,6 +396,8 @@ export const messagesRouter = router({
           createdAt: r.createdAt.toISOString(),
           expiresAt: r.expiresAt ? r.expiresAt.toISOString() : null,
           groupId: r.groupId ?? null,
+           plaintext: r.plaintext ?? null,
+           isPlaintext: r.plaintext !== null,
         })),
       };
     }),
