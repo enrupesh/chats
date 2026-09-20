@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
 import { trpc } from "../lib/trpc";
 import { ChatTwoPaneShell } from "../components/ChatTwoPaneShell";
@@ -173,6 +173,7 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
     ? peerLabel(peer.peer)
     : fingerprint || `${peerId.slice(0, 8)}…`;
   const subDisplay = peer?.peer ? peerSubLabel(peer.peer) : null;
+  const isOfficialChat = peer?.peer.isOfficial === true;
 
   // Per-peer prefs (TTL, biometric, view-once default).
   const chatPref = useLiveQuery(
@@ -371,8 +372,18 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
     peerId,
   });
   const wallpaperStyle = useMemo(
-    () => getWallpaperStyle(wallpaperPref),
-    [wallpaperPref],
+    () =>
+      isOfficialChat
+        ? {
+            backgroundColor: "#d9c4ad",
+            backgroundImage:
+              'linear-gradient(rgba(31, 44, 37, 0.24), rgba(31, 44, 37, 0.24)), url("/support-wallpaper.jpg")',
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }
+        : getWallpaperStyle(wallpaperPref),
+    [isOfficialChat, wallpaperPref],
   );
 
   // Peer online status — seeded from REST query, kept live via WS presence events.
@@ -1054,10 +1065,11 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
           "xl:px-[max(1.5rem,calc((100%-56rem)/2))]"
         }
       >
-        <EncryptionNoticeBanner
+          <EncryptionNoticeBanner
           peerLabel={
             peer?.peer?.username ? `@${peer.peer.username}` : displayName
           }
+            isOfficial={isOfficialChat}
         />
         {!filteredMessages || filteredMessages.length === 0 ? (
           <EmptyState
@@ -4141,95 +4153,142 @@ function DeleteMessageDialog({
 /* ───────────── Phase-1 polish components: pin banner, edit, info, starred ───────────── */
 
 /**
- * WhatsApp-style end-to-end encryption notice. Renders as a small,
- * centered "pill" at the very top of the chat scroll area — the first
- * thing the user sees inside the conversation. Uses a custom inline
- * SVG padlock (rounded shackle, filled body, keyhole) so the icon
- * stays crisp at any size and reads as premium.
+ * Chat privacy notice. Normal conversations keep the E2EE notice; the
+ * managed support channel is intentionally server-readable and must say so
+ * clearly instead of displaying an inaccurate encryption claim.
  */
-export function EncryptionNoticeBanner({ peerLabel }: { peerLabel: string }) {
+export function EncryptionNoticeBanner({
+  peerLabel,
+  isOfficial = false,
+}: {
+  peerLabel: string;
+  isOfficial?: boolean;
+}) {
   const navigate = useNavigate();
+  const bannerClass =
+    "max-w-[92%] sm:max-w-md flex items-start gap-2.5 px-3.5 py-2.5 rounded-2xl shadow-card ring-1 ring-black/5";
+
   return (
     <div
       className="self-center w-full flex justify-center pt-1 pb-2 animate-fade-in"
       role="note"
-      aria-label="End-to-end encryption notice"
+      aria-label={
+        isOfficial
+          ? "This official support chat is not end-to-end encrypted"
+          : "End-to-end encryption notice"
+      }
     >
-      <button
-        type="button"
-        onClick={() => navigate("/encryption")}
-        aria-label="Learn more about end-to-end encryption"
-        className="
-          max-w-[88%] sm:max-w-md
-          flex items-start gap-2.5
-          px-3.5 py-2
-          rounded-2xl
-          shadow-card
-          ring-1 ring-black/5
-          text-center
-          transition
-          hover:brightness-[0.98] active:scale-[0.99]
-          wa-tap
-        "
-        style={{
-          backgroundColor: "rgb(var(--wa-encryption-bg, 255 248 196))",
-          color: "rgb(var(--wa-encryption-text, 84 64 12))",
-        }}
-      >
-        <span
-          className="shrink-0 mt-[2px] inline-flex items-center justify-center"
-          aria-hidden="true"
+      {isOfficial ? (
+        <div
+          className={bannerClass}
+          style={{
+            backgroundColor: "rgba(255, 245, 205, 0.96)",
+            color: "rgb(86 59 10)",
+          }}
         >
-          <svg
-            width="14"
-            height="16"
-            viewBox="0 0 14 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+          <span
+            className="shrink-0 mt-[2px] inline-flex items-center justify-center"
+            aria-hidden="true"
           >
-            <path
-              d="M3 7V5a4 4 0 1 1 8 0v2"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              opacity="0.9"
-            />
-            <rect
-              x="1.5"
-              y="7"
-              width="11"
-              height="8"
-              rx="2.2"
-              fill="currentColor"
-              opacity="0.95"
-            />
-            <circle cx="7" cy="10.6" r="1.1" fill="white" opacity="0.95" />
-            <rect
-              x="6.45"
-              y="11"
-              width="1.1"
-              height="2.2"
-              rx="0.5"
-              fill="white"
-              opacity="0.95"
-            />
-          </svg>
-        </span>
-        <div className="flex-1 min-w-0 text-left">
-          <div className="text-[11.5px] font-semibold leading-tight tracking-tight">
-            End-to-end encrypted
-          </div>
-          <div className="text-[11px] leading-snug opacity-85 mt-0.5 break-words">
-            Only you and{" "}
-            <span className="font-medium">{peerLabel}</span>{" "}
-            can read these messages.{" "}
-            <span className="font-semibold underline underline-offset-2 whitespace-nowrap">
-              Know more
-            </span>
+            <svg
+              width="16"
+              height="17"
+              viewBox="0 0 16 17"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M4 7V5.5a4 4 0 0 1 7.6-1.8"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+              />
+              <rect
+                x="1.8"
+                y="7"
+                width="12.4"
+                height="8"
+                rx="2.2"
+                fill="currentColor"
+              />
+              <circle cx="8" cy="10.7" r="1.1" fill="#fff5cd" />
+              <rect x="7.45" y="11" width="1.1" height="2.2" rx="0.5" fill="#fff5cd" />
+            </svg>
+          </span>
+          <div className="flex-1 min-w-0 text-left">
+            <div className="text-[11.5px] font-semibold leading-tight tracking-tight">
+              Not end-to-end encrypted
+            </div>
+            <div className="text-[11px] leading-snug opacity-90 mt-0.5 break-words">
+              Messages in this official support chat may be readable by the
+              VeilChat support team. Don&apos;t share passwords or recovery keys.
+            </div>
+            <div className="mt-1.5 flex items-center gap-3 text-[10.5px] font-semibold">
+              <Link
+                to="/privacy-policy"
+                className="underline underline-offset-2 hover:opacity-70"
+              >
+                Privacy policy
+              </Link>
+              <Link
+                to="/terms"
+                className="underline underline-offset-2 hover:opacity-70"
+              >
+                Terms &amp; Conditions
+              </Link>
+            </div>
           </div>
         </div>
-      </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => navigate("/encryption")}
+          aria-label="Learn more about end-to-end encryption"
+          className={`${bannerClass} text-center transition hover:brightness-[0.98] active:scale-[0.99] wa-tap`}
+          style={{
+            backgroundColor: "rgb(var(--wa-encryption-bg, 255 248 196))",
+            color: "rgb(var(--wa-encryption-text, 84 64 12))",
+          }}
+        >
+          <span
+            className="shrink-0 mt-[2px] inline-flex items-center justify-center"
+            aria-hidden="true"
+          >
+            <svg
+              width="14"
+              height="16"
+              viewBox="0 0 14 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M3 7V5a4 4 0 1 1 8 0v2"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity="0.9"
+              />
+              <rect x="1.5" y="7" width="11" height="8" rx="2.2" fill="currentColor" opacity="0.95" />
+              <circle cx="7" cy="10.6" r="1.1" fill="white" opacity="0.95" />
+              <rect x="6.45" y="11" width="1.1" height="2.2" rx="0.5" fill="white" opacity="0.95" />
+            </svg>
+          </span>
+          <div className="flex-1 min-w-0 text-left">
+            <div className="text-[11.5px] font-semibold leading-tight tracking-tight">
+              End-to-end encrypted
+            </div>
+            <div className="text-[11px] leading-snug opacity-85 mt-0.5 break-words">
+              Only you and{" "}
+              <span className="font-medium">{peerLabel}</span>{" "}
+              can read these messages.{" "}
+              <span className="font-semibold underline underline-offset-2 whitespace-nowrap">
+                Know more
+              </span>
+            </div>
+          </div>
+        </button>
+      )}
     </div>
   );
 }
