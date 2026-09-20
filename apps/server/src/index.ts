@@ -541,17 +541,17 @@ app.post<{
     "Card checkout",
     "Other",
   ]);
-  const allowedContactMethods = new Set(["Email", "Phone", "Wellchat"]);
+  const allowedContactMethods = new Set(["Email", "Phone", "VeilChat"]);
   const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact ?? "");
   const validPhone = /^[0-9+().\-\s]{7,24}$/.test(contact ?? "");
-  const validWellchat = /^@?[A-Za-z0-9_.-]{2,64}$/.test(contact ?? "");
+  const validVeilChat = /^@?[A-Za-z0-9_.-]{2,64}$/.test(contact ?? "");
   const validContact =
     contactMethod === "Email"
       ? validEmail
       : contactMethod === "Phone"
         ? validPhone
-        : contactMethod === "Wellchat"
-          ? validWellchat
+        : contactMethod === "VeilChat"
+          ? validVeilChat
           : false;
 
   if (

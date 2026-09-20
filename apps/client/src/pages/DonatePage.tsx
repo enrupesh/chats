@@ -50,7 +50,7 @@ export function DonatePage() {
 
   useEffect(() => {
     if (
-      form.contactMethod === "Wellchat" &&
+      form.contactMethod === "VeilChat" &&
       !form.contact &&
       meQuery.data?.username
     ) {
@@ -187,7 +187,7 @@ export function DonatePage() {
                 >
                   <option>Email</option>
                   <option>Phone</option>
-                  <option>Wellchat</option>
+                  <option>VeilChat</option>
                 </select>
               </Field>
               <Field
@@ -196,7 +196,7 @@ export function DonatePage() {
                     ? "Email address"
                     : form.contactMethod === "Phone"
                       ? "Phone number"
-                      : "Wellchat username"
+                      : "VeilChat username"
                 }
                 required
               >
@@ -225,12 +225,12 @@ export function DonatePage() {
                       : form.contactMethod === "Phone"
                         ? "+1 555 123 4567"
                         : meQuery.data?.username
-                          ? "Your Wellchat username"
-                          : "Enter your Wellchat username"
+                           ? "Your VeilChat username"
+                           : "Enter your VeilChat username"
                   }
                   className="donate-input"
                 />
-                {form.contactMethod === "Wellchat" && (
+                {form.contactMethod === "VeilChat" && (
                   <span className="mt-1.5 block text-xs font-normal text-[#253D2C]/55">
                     {meQuery.data?.username
                       ? "Your username was filled from your account. You can edit it."
