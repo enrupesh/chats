@@ -116,21 +116,9 @@ export const OnboardingSurveyDeviceSchema = z.enum([
   "other",
 ]);
 
-export const OnboardingSurveyInput = z
-  .object({
-    skipped: z.boolean().default(false),
-    device: OnboardingSurveyDeviceSchema.optional(),
-  })
-  .superRefine((value, ctx) => {
-    if (value.skipped) return;
-    if (!value.device) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["device"],
-        message: "Choose a device.",
-      });
-    }
-  });
+export const OnboardingSurveyInput = z.object({
+  device: OnboardingSurveyDeviceSchema,
+});
 export type OnboardingSurveyInput = z.infer<typeof OnboardingSurveyInput>;
 
 export const OnboardingSurveyStatusSchema = z.object({

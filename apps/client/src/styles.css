@@ -619,7 +619,6 @@ html.veil-privacy-blur .veil-app-wrapper {
   background: linear-gradient(to bottom, transparent, rgb(var(--wa-surface)) 24%);
 }
 
-.veil-survey-skip,
 .veil-survey-continue {
   min-height: 46px;
   padding: 0 17px;
@@ -628,12 +627,6 @@ html.veil-privacy-blur .veil-app-wrapper {
   font: inherit;
   font-size: 14px;
   font-weight: 700;
-}
-
-.veil-survey-skip {
-  color: rgb(var(--wa-text-muted));
-  background: transparent;
-  border: 0;
 }
 
 .veil-survey-continue {

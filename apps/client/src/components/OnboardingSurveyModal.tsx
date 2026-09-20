@@ -19,21 +19,21 @@ export function OnboardingSurveyModal() {
     retry: false,
     staleTime: Infinity,
   });
-  const submit = trpc.me.submitOnboardingSurvey.useMutation();
+  const utils = trpc.useUtils();
+  const submit = trpc.me.submitOnboardingSurvey.useMutation({
+    onSuccess: () => {
+      void utils.me.onboardingSurvey.invalidate();
+    },
+  });
   const [device, setDevice] = useState<Device>();
-  const [closed, setClosed] = useState(false);
 
-  if (!accessToken || !status.data || status.data.completed || closed) return null;
+  if (!accessToken || !status.data || status.data.completed) return null;
 
   const canContinue = Boolean(device);
 
   function next() {
-    if (!canContinue) return;
-    void submit.mutateAsync({ device }).then(() => setClosed(true));
-  }
-
-  function skip() {
-    void submit.mutateAsync({ skipped: true }).then(() => setClosed(true));
+    if (!device) return;
+    void submit.mutateAsync({ device });
   }
 
   return (
@@ -84,9 +84,6 @@ export function OnboardingSurveyModal() {
         )}
 
         <div className="veil-survey-actions">
-          <button type="button" className="veil-survey-skip" onClick={skip} disabled={submit.isPending}>
-            Not now
-          </button>
           <button
             type="button"
             className="veil-survey-continue"
@@ -97,7 +94,9 @@ export function OnboardingSurveyModal() {
             {!submit.isPending && <span aria-hidden="true">→</span>}
           </button>
         </div>
-        <p className="veil-survey-footnote">Your answers are used only to improve VeilChat.</p>
+        <p className="veil-survey-footnote">
+          Choose one to continue. Your answer is used only to improve VeilChat.
+        </p>
       </section>
     </div>
   );

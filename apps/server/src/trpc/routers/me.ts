@@ -58,7 +58,7 @@ export const meRouter = router({
         .update(schema.users)
         .set({
           onboardingCountry: null,
-          onboardingDevice: input.skipped ? null : input.device ?? null,
+          onboardingDevice: input.device,
           onboardingSource: null,
           onboardingGoal: null,
           onboardingSurveyCompletedAt: new Date(),

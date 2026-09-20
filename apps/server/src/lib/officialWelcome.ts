@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { getDb, schema } from "../db/index.js";
+import { ensureVeilChatTeam, getDb, schema } from "../db/index.js";
 import { publish } from "./wsHub.js";
 
 const WELCOME_MESSAGE = `Welcome to VeilChat! 🎉
@@ -30,45 +30,71 @@ function conversationIdFor(a: string, b: string): string {
  * message before it has any contacts or a second device.
  */
 export async function sendWelcomeMessage(recipientUserId: string): Promise<void> {
-  const db = getDb();
-  const team = await db
-    .select({ id: schema.users.id })
-    .from(schema.users)
-    .where(and(eq(schema.users.isOfficial, true), eq(schema.users.username, "veilchatteam")))
-    .limit(1);
+  try {
+    // Make the sender available even when this helper is called before the
+    // normal server bootstrap has completed, or after a partial deployment.
+    await ensureVeilChatTeam();
+    const db = getDb();
+    const team = await db
+      .select({ id: schema.users.id })
+      .from(schema.users)
+      .where(eq(schema.users.isOfficial, true))
+      .limit(1);
 
-  if (!team[0]) {
-    throw new Error("VeilChat Team account is not initialized");
-  }
+    if (!team[0]) {
+      console.warn("[welcome] VeilChat Team account is not initialized");
+      return;
+    }
 
-  const senderUserId = team[0].id;
-  const [row] = await db
-    .insert(schema.messages)
-    .values({
-      senderUserId,
-      recipientUserId,
-      conversationId: conversationIdFor(senderUserId, recipientUserId),
-      header: Buffer.alloc(0),
-      ciphertext: Buffer.alloc(0),
-      plaintext: WELCOME_MESSAGE,
-    })
-    .returning({
-      id: schema.messages.id,
-      createdAt: schema.messages.createdAt,
+    const senderUserId = team[0].id;
+    if (senderUserId === recipientUserId) return;
+
+    const existing = await db
+      .select({ id: schema.messages.id })
+      .from(schema.messages)
+      .where(
+        and(
+          eq(schema.messages.senderUserId, senderUserId),
+          eq(schema.messages.recipientUserId, recipientUserId),
+          eq(schema.messages.plaintext, WELCOME_MESSAGE),
+        ),
+      )
+      .limit(1);
+    if (existing.length > 0) return;
+
+    const [row] = await db
+      .insert(schema.messages)
+      .values({
+        senderUserId,
+        recipientUserId,
+        conversationId: conversationIdFor(senderUserId, recipientUserId),
+        header: Buffer.alloc(0),
+        ciphertext: Buffer.alloc(0),
+        plaintext: WELCOME_MESSAGE,
+      })
+      .returning({
+        id: schema.messages.id,
+        createdAt: schema.messages.createdAt,
+      });
+
+    if (!row) return;
+    publish(recipientUserId, {
+      type: "new_message",
+      message: {
+        id: row.id,
+        senderUserId,
+        header: "",
+        ciphertext: "",
+        plaintext: WELCOME_MESSAGE,
+        isPlaintext: true,
+        createdAt: row.createdAt.toISOString(),
+        expiresAt: null,
+        groupId: null,
+      },
     });
-
-  publish(recipientUserId, {
-    type: "new_message",
-    message: {
-      id: row!.id,
-      senderUserId,
-      header: "",
-      ciphertext: "",
-      plaintext: WELCOME_MESSAGE,
-      isPlaintext: true,
-      createdAt: row!.createdAt.toISOString(),
-      expiresAt: null,
-      groupId: null,
-    },
-  });
+  } catch (error) {
+    // A welcome message must never turn a successful account creation or
+    // connection-list request into an auth failure.
+    console.error("[welcome] Could not send VeilChat Team message:", error);
+  }
 }
