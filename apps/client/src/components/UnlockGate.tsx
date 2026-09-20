@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useUnlockStore } from "../lib/unlockStore";
 import { useAuthStore } from "../lib/store";
 import {
@@ -15,6 +15,7 @@ import {
   PrimaryButton,
   LockIcon,
 } from "./Layout";
+import { readRecoveryPhraseFile } from "../lib/recoveryPhraseFile";
 
 /**
  * Prompts the user to enter their Backup PIN (email/phone accounts) or
@@ -57,6 +58,8 @@ export function UnlockGate({ children }: { children?: React.ReactNode }) {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const recoveryFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploadingRecoveryKey, setUploadingRecoveryKey] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -84,6 +87,22 @@ export function UnlockGate({ children }: { children?: React.ReactNode }) {
     setInput("");
     setError(null);
     setMode(next);
+  }
+
+  async function onUploadRecoveryKey(file: File) {
+    setError(null);
+    setUploadingRecoveryKey(true);
+    try {
+      setInput(await readRecoveryPhraseFile(file));
+    } catch (e) {
+      setError(
+        e instanceof Error && e.message
+          ? e.message
+          : "Couldn't read that recovery key file.",
+      );
+    } finally {
+      setUploadingRecoveryKey(false);
+    }
   }
 
   async function onUnlock() {
@@ -242,6 +261,32 @@ export function UnlockGate({ children }: { children?: React.ReactNode }) {
             placeholder="word1 word2 word3 …"
             className="w-full rounded-xl bg-bg border border-line text-text px-4 py-3 outline-none focus:border-wa-green transition resize-none text-sm"
           />
+          <button
+            type="button"
+            onClick={() => recoveryFileInputRef.current?.click()}
+            disabled={uploadingRecoveryKey}
+            className="mt-2 w-full rounded-xl border border-dashed border-line bg-bg px-3 py-2.5 text-sm text-text-muted hover:border-wa-green/60 hover:text-text transition-colors disabled:opacity-60 disabled:cursor-progress"
+          >
+            {uploadingRecoveryKey
+              ? "Reading recovery key…"
+              : input.trim()
+                ? "Upload a different recovery key file"
+                : "Or upload recovery key file (.pdf, .txt, .json)"}
+          </button>
+          <input
+            ref={recoveryFileInputRef}
+            type="file"
+            accept=".pdf,.txt,.json,.csv,application/pdf,text/plain,application/json"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) void onUploadRecoveryKey(file);
+              event.target.value = "";
+            }}
+          />
+          <p className="mt-1.5 text-[11.5px] text-text-faint">
+            The file is read only on this device and is never uploaded.
+          </p>
         </div>
       ) : isDailyPasswordEntry ? (
         <div>

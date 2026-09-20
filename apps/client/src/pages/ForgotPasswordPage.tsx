@@ -20,6 +20,7 @@ import {
 import { humanizeErrorMessage } from "../lib/humanizeError";
 import { toast } from "../lib/toast";
 import { useNoindex } from "../lib/useDocumentMeta";
+import { readRecoveryPhraseFile } from "../lib/recoveryPhraseFile";
 
 /**
  * Forgot-password flow for username accounts.
@@ -101,21 +102,9 @@ export function ForgotPasswordPage() {
     setError(null);
     setUploading(true);
     try {
-      // Pull readable text out of the file. We support:
-      //   • Plain .txt / .json / .csv dumps  (FileReader → text)
-      //   • The actual VeilChat Recovery Kit PDF (pdfjs-dist, lazy-loaded)
-      // Either way the result feeds into `extractPhrase`, which
-      // sliding-windows over the words and validates against BIP-39.
-      const text = await readPhraseSource(file);
-      const candidate = extractPhrase(text);
-      if (candidate && isValidRecoveryPhrase(candidate)) {
-        setPhrase(candidate);
-        toast.success("Recovery key loaded.");
-      } else {
-        setError(
-          "Couldn't find a 12-word recovery key in that file. Try pasting it instead.",
-        );
-      }
+      const candidate = await readRecoveryPhraseFile(file);
+      setPhrase(candidate);
+      toast.success("Recovery key loaded.");
     } catch (e) {
       setError(
         e instanceof Error && e.message
@@ -501,77 +490,6 @@ function markPasskeySetupRequested(): void {
   } catch {
     /* ignore storage errors */
   }
-}
-
-/**
- * Read text from an uploaded recovery file. Plain text formats are
- * read directly. PDFs are handed to pdfjs-dist (lazy-loaded so the
- * worker only ships when the user actually uploads a PDF).
- */
-async function readPhraseSource(file: File): Promise<string> {
-  const isPdf =
-    file.type === "application/pdf" ||
-    /\.pdf$/i.test(file.name);
-  if (!isPdf) {
-    return await file.text();
-  }
-  return await extractTextFromPdf(file);
-}
-
-/**
- * Use pdfjs-dist to read text out of every page of a PDF. Concatenates
- * the items with spaces so a sliding-window word search can find the
- * 12-word phrase even if it was rendered as numbered cards.
- */
-async function extractTextFromPdf(file: File): Promise<string> {
-  // Lazy-load pdfjs-dist + its worker; ?url gives Vite a stable URL
-  // to the worker bundle so it can be loaded off the main thread.
-  const [pdfjs, workerUrlMod] = await Promise.all([
-    import("pdfjs-dist"),
-    import("pdfjs-dist/build/pdf.worker.min.mjs?url"),
-  ]);
-  pdfjs.GlobalWorkerOptions.workerSrc = workerUrlMod.default;
-
-  const buf = await file.arrayBuffer();
-  const doc = await pdfjs.getDocument({ data: new Uint8Array(buf) }).promise;
-  const out: string[] = [];
-  try {
-    for (let p = 1; p <= doc.numPages; p++) {
-      const page = await doc.getPage(p);
-      const tc = await page.getTextContent();
-      for (const it of tc.items) {
-        if (typeof (it as { str?: unknown }).str === "string") {
-          out.push((it as { str: string }).str);
-        }
-      }
-    }
-  } finally {
-    try {
-      await doc.destroy();
-    } catch {
-      /* ignore */
-    }
-  }
-  return out.join(" ");
-}
-
-/**
- * Pull a 12-word lowercase BIP-39 phrase out of arbitrary text.
- * Handles JSON exports, comma-separated lists, numbered lines, etc.
- */
-function extractPhrase(text: string): string | null {
-  const cleaned = text
-    .toLowerCase()
-    .replace(/[^a-z\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  const words = cleaned.split(" ").filter((w) => w.length >= 3);
-  // Try every 12-word window — first one that validates wins.
-  for (let i = 0; i + 12 <= words.length; i++) {
-    const candidate = words.slice(i, i + 12).join(" ");
-    if (isValidRecoveryPhrase(candidate)) return candidate;
-  }
-  return null;
 }
 
 function SuccessCheck() {

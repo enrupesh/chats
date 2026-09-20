@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { trpc } from "../lib/trpc";
 import { useAuthStore } from "../lib/store";
@@ -16,6 +16,7 @@ import {
   isValidRecoveryPhrase,
   signMessage,
 } from "../lib/crypto";
+import { readRecoveryPhraseFile } from "../lib/recoveryPhraseFile";
 import {
   Logo,
   PrimaryButton,
@@ -67,6 +68,8 @@ export function DailyVerificationGate() {
   const [open, setOpen] = useState(false);
   const [resetMode, setResetMode] = useState(false);
   const [challengeNonce, setChallengeNonce] = useState("");
+  const recoveryFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploadingRecoveryKey, setUploadingRecoveryKey] = useState(false);
 
   // Re-evaluate whether the gate should appear whenever the user,
   // route, or focus changes. Reopening the tab after sleep should
@@ -192,6 +195,22 @@ export function DailyVerificationGate() {
     }
   }
 
+  async function onUploadRecoveryKey(file: File) {
+    setError(null);
+    setUploadingRecoveryKey(true);
+    try {
+      setRecoveryKey(await readRecoveryPhraseFile(file));
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message
+          ? err.message
+          : "Couldn't read that recovery key file.",
+      );
+    } finally {
+      setUploadingRecoveryKey(false);
+    }
+  }
+
   function cancelRecoveryReset() {
     setRecoveryKey("");
     setNewPassword("");
@@ -230,6 +249,32 @@ export function DailyVerificationGate() {
               spellCheck={false}
               className="w-full min-h-24 rounded-xl bg-surface border border-line px-3 py-2.5 text-sm text-text outline-none focus:border-wa-green transition resize-none"
             />
+            <button
+              type="button"
+              onClick={() => recoveryFileInputRef.current?.click()}
+              disabled={uploadingRecoveryKey}
+              className="mt-2 w-full rounded-xl border border-dashed border-line bg-surface px-3 py-2.5 text-sm text-text-muted hover:border-wa-green/60 hover:text-text transition-colors disabled:opacity-60 disabled:cursor-progress"
+            >
+              {uploadingRecoveryKey
+                ? "Reading recovery key…"
+                : recoveryKey.trim()
+                  ? "Upload a different recovery key file"
+                  : "Or upload recovery key file (.pdf, .txt, .json)"}
+            </button>
+            <input
+              ref={recoveryFileInputRef}
+              type="file"
+              accept=".pdf,.txt,.json,.csv,application/pdf,text/plain,application/json"
+              className="hidden"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) void onUploadRecoveryKey(file);
+                event.target.value = "";
+              }}
+            />
+            <p className="mt-1.5 text-[11.5px] text-text-faint">
+              The file is read only on this device and is never uploaded.
+            </p>
           </div>
 
           <div>
