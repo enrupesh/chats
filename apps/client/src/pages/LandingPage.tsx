@@ -2468,7 +2468,7 @@ function Footer() {
             links={[
               { label: "Sign up", to: "/welcome" },
               { label: "Sign in", to: "/login" },
-              { label: "Support VeilChat", to: "/donate" },
+              { label: "Donate", to: "/donate" },
               { label: "Install as PWA", href: "#install" },
             ]}
           />
