@@ -53,7 +53,8 @@ type Token =
   | { kind: "text"; value: string }
   | { kind: "bold"; value: Token[] }
   | { kind: "italic"; value: Token[] }
-  | { kind: "code"; value: string };
+  | { kind: "code"; value: string }
+  | { kind: "link"; label: string; href: string };
 
 function tokenizeInline(s: string): Token[] {
   const tokens: Token[] = [];
@@ -67,6 +68,23 @@ function tokenizeInline(s: string): Token[] {
   };
   while (i < s.length) {
     const ch = s[i];
+    if (ch === "[") {
+      const labelEnd = s.indexOf("](", i + 1);
+      const hrefEnd = labelEnd >= 0 ? s.indexOf(")", labelEnd + 2) : -1;
+      if (labelEnd > i + 1 && hrefEnd > labelEnd + 2) {
+        const href = s.slice(labelEnd + 2, hrefEnd);
+        if (href.startsWith("/") || /^https?:\/\//.test(href)) {
+          flush();
+          tokens.push({
+            kind: "link",
+            label: s.slice(i + 1, labelEnd),
+            href,
+          });
+          i = hrefEnd + 1;
+          continue;
+        }
+      }
+    }
     if (ch === "`") {
       const end = s.indexOf("`", i + 1);
       if (end > i) {
@@ -126,6 +144,20 @@ function renderInline(
       );
     if (t.kind === "italic")
       return <em key={k}>{renderInline(t.value, `${k}.`, renderText)}</em>;
+    if (t.kind === "link") {
+      const external = /^https?:\/\//.test(t.href);
+      return (
+        <a
+          key={k}
+          href={t.href}
+          className="text-wa-green-dark dark:text-wa-green underline underline-offset-2"
+          target={external ? "_blank" : undefined}
+          rel={external ? "noreferrer" : undefined}
+        >
+          {t.label}
+        </a>
+      );
+    }
     return (
       <code
         key={k}

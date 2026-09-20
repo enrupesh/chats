@@ -28,6 +28,7 @@ import type { UnlockedIdentity } from "./signal/session";
 import type { InboxMessage, HistoryMessage } from "@veil/shared";
 import { decodeEnvelope, encodeEnvelope, type ChatEnvelope } from "./messageEnvelope";
 import type { ChatMessageRecord } from "./db";
+import type { MediaAttachment } from "./media";
 import { getCachedStealthPrefs } from "./stealthPrefs";
 import { feedback } from "./feedback";
 import {
@@ -35,6 +36,37 @@ import {
   handleIncomingSenderKeyRequest,
   ingestGroupInboxMessage,
 } from "./groupSync";
+
+const OFFICIAL_MEDIA_PREFIX = "veil-official-media:v1:";
+
+function parseOfficialMedia(
+  text: string,
+): { plaintext: string; attachment: MediaAttachment } | null {
+  if (!text.startsWith(OFFICIAL_MEDIA_PREFIX)) return null;
+  try {
+    const parsed = JSON.parse(text.slice(OFFICIAL_MEDIA_PREFIX.length)) as {
+      caption?: unknown;
+      attachment?: Partial<MediaAttachment>;
+    };
+    const attachment = parsed.attachment;
+    if (
+      !attachment ||
+      (attachment.kind !== "image" && attachment.kind !== "voice") ||
+      typeof attachment.blobId !== "string" ||
+      typeof attachment.key !== "string" ||
+      typeof attachment.mime !== "string" ||
+      typeof attachment.sizeBytes !== "number"
+    ) {
+      return null;
+    }
+    return {
+      plaintext: typeof parsed.caption === "string" ? parsed.caption : "",
+      attachment: attachment as MediaAttachment,
+    };
+  } catch {
+    return null;
+  }
+}
 
 function envelopeToRecordFields(
   env: ChatEnvelope,
@@ -300,11 +332,13 @@ async function ingestInboxMessageInner(
     return "duplicate";
   }
   if (m.isPlaintext) {
+    const officialMedia = parseOfficialMedia(m.plaintext ?? "");
     await appendChatMessage({
       peerId: m.senderUserId,
       serverId: m.id,
       direction: "in",
-      plaintext: m.plaintext ?? "",
+      plaintext: officialMedia?.plaintext ?? m.plaintext ?? "",
+      ...(officialMedia ? { attachment: officialMedia.attachment } : {}),
       createdAt: m.createdAt,
       status: "received",
     });
@@ -424,11 +458,13 @@ export async function pollAndDecrypt(
       continue;
     }
     if (m.isPlaintext) {
+      const officialMedia = parseOfficialMedia(m.plaintext ?? "");
       await appendChatMessage({
         peerId: m.senderUserId,
         serverId: m.id,
         direction: "in",
-        plaintext: m.plaintext ?? "",
+        plaintext: officialMedia?.plaintext ?? m.plaintext ?? "",
+        ...(officialMedia ? { attachment: officialMedia.attachment } : {}),
         createdAt: m.createdAt,
         status: "received",
       });
@@ -539,6 +575,37 @@ export async function sendChatMessage(
   if (opts.replyTo) env.re = opts.replyTo;
   if (opts.viewOnce) env.vo = true;
   return sendChatEnvelope(identity, peerId, env);
+}
+
+/** Send a photo or voice note through the official, non-E2EE Team channel. */
+export async function sendOfficialMedia(
+  peerId: string,
+  attachment: MediaAttachment,
+  caption = "",
+): Promise<number> {
+  const localId = await appendChatMessage({
+    peerId,
+    serverId: null,
+    direction: "out",
+    plaintext: caption,
+    attachment,
+    createdAt: new Date().toISOString(),
+    status: "pending",
+  });
+  try {
+    const sent = await trpcClientProxy().messages.sendPlaintextMedia.mutate({
+      recipientUserId: peerId,
+      caption,
+      attachment,
+    });
+    await setChatMessageStatus(localId, "sent", sent.id);
+    feedback.send();
+  } catch (err) {
+    await setChatMessageStatus(localId, "failed");
+    feedback.error();
+    throw err;
+  }
+  return localId;
 }
 
 /**
@@ -875,6 +942,9 @@ async function persistHistoryEntry(
 ): Promise<boolean> {
   const isOutbound = m.senderUserId === myUserId;
   const otherPeer = isOutbound ? m.recipientUserId : m.senderUserId;
+  const officialMedia = m.isPlaintext
+    ? parseOfficialMedia(m.plaintext ?? "")
+    : null;
 
   if (isOutbound) {
     const status: ChatMessageRecord["status"] = m.readAt
@@ -886,9 +956,9 @@ async function persistHistoryEntry(
       peerId: otherPeer,
       serverId: m.id,
       direction: "out",
-      plaintext: m.isPlaintext
-        ? (m.plaintext ?? "")
-        : "[sent on another device]",
+      plaintext: officialMedia?.plaintext ??
+        (m.isPlaintext ? (m.plaintext ?? "") : "[sent on another device]"),
+      ...(officialMedia ? { attachment: officialMedia.attachment } : {}),
       createdAt: m.createdAt,
       status,
       ...(m.expiresAt ? { expiresAt: m.expiresAt } : {}),
@@ -903,7 +973,8 @@ async function persistHistoryEntry(
       peerId: otherPeer,
       serverId: m.id,
       direction: "in",
-      plaintext: m.plaintext ?? "",
+      plaintext: officialMedia?.plaintext ?? m.plaintext ?? "",
+      ...(officialMedia ? { attachment: officialMedia.attachment } : {}),
       createdAt: m.createdAt,
       status: "received",
     });

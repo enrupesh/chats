@@ -26,6 +26,7 @@ import {
   reportRead,
   sendChatEnvelope,
   sendChatMessage,
+  sendOfficialMedia,
   sendChatPoll,
   sendChatPollVote,
   sendReaction,
@@ -375,12 +376,13 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
     () =>
       isOfficialChat
         ? {
-            backgroundColor: "#d9c4ad",
+            backgroundColor: "rgba(37, 61, 44, 0.12)",
             backgroundImage:
-              'linear-gradient(rgba(31, 44, 37, 0.24), rgba(31, 44, 37, 0.24)), url("/support-wallpaper.jpg")',
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
+              "radial-gradient(circle at 12% 8%, rgba(244, 201, 93, 0.26), transparent 34%), linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(220, 238, 226, 0.42))",
+            backgroundSize: "auto, auto",
+            backdropFilter: "blur(18px) saturate(125%)",
+            WebkitBackdropFilter: "blur(18px) saturate(125%)",
+            borderTop: "1px solid rgba(255, 255, 255, 0.42)",
           }
         : getWallpaperStyle(wallpaperPref),
     [isOfficialChat, wallpaperPref],
@@ -741,16 +743,20 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
         height: down.height,
         thumbB64: thumb?.thumbB64,
       };
-      await sendChatEnvelope(identity, peerId, {
-        v: 2,
-        t: "image",
-        ...(caption ? { body: caption } : {}),
-        media,
-        ...(ttlSeconds ? { ttl: ttlSeconds } : {}),
-        ...(seenTtlSeconds > 0 ? { sttl: seenTtlSeconds } : {}),
-        ...(viewOnceDefault || oneShotViewOnce ? { vo: true } : {}),
-        ...(replyTo ? { re: replyTo.ref } : {}),
-      });
+      if (isOfficialChat) {
+        await sendOfficialMedia(peerId, media, caption);
+      } else {
+        await sendChatEnvelope(identity, peerId, {
+          v: 2,
+          t: "image",
+          ...(caption ? { body: caption } : {}),
+          media,
+          ...(ttlSeconds ? { ttl: ttlSeconds } : {}),
+          ...(seenTtlSeconds > 0 ? { sttl: seenTtlSeconds } : {}),
+          ...(viewOnceDefault || oneShotViewOnce ? { vo: true } : {}),
+          ...(replyTo ? { re: replyTo.ref } : {}),
+        });
+      }
       setDraft("");
       setReplyTo(null);
       setOneShotViewOnce(false);
@@ -779,13 +785,17 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
         sizeBytes: upload.sizeBytes,
         durationMs,
       };
-      await sendChatEnvelope(identity, peerId, {
-        v: 2,
-        t: "voice",
-        media,
-        ...(ttlSeconds ? { ttl: ttlSeconds } : {}),
-        ...(seenTtlSeconds > 0 ? { sttl: seenTtlSeconds } : {}),
-      });
+      if (isOfficialChat) {
+        await sendOfficialMedia(peerId, media);
+      } else {
+        await sendChatEnvelope(identity, peerId, {
+          v: 2,
+          t: "voice",
+          media,
+          ...(ttlSeconds ? { ttl: ttlSeconds } : {}),
+          ...(seenTtlSeconds > 0 ? { sttl: seenTtlSeconds } : {}),
+        });
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't send voice note.");
     } finally {

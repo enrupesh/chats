@@ -32,6 +32,19 @@ import { isBlockedEitherWay } from "./privacy.js";
 import { z } from "zod";
 
 const MAX_FETCH = 200;
+const OFFICIAL_MEDIA_PREFIX = "veil-official-media:v1:";
+
+const OfficialMediaAttachmentInput = z.object({
+  kind: z.enum(["image", "voice"]),
+  blobId: z.string().uuid(),
+  key: z.string().min(1).max(200),
+  mime: z.string().min(1).max(120),
+  sizeBytes: z.number().int().nonnegative(),
+  durationMs: z.number().int().nonnegative().optional(),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  thumbB64: z.string().max(20_000).optional(),
+});
 
 function conversationIdFor(a: string, b: string): string {
   return a < b ? `${a}:${b}` : `${b}:${a}`;
@@ -217,6 +230,67 @@ export const messagesRouter = router({
           header: "",
           ciphertext: "",
           plaintext: input.plaintext.trim(),
+          isPlaintext: true,
+          createdAt: row.createdAt.toISOString(),
+          expiresAt: null,
+          groupId: null,
+        },
+      });
+      return { id: row.id, createdAt: row.createdAt.toISOString() };
+    }),
+
+  /**
+   * Official support media. The Team channel is intentionally not E2EE, so
+   * the attachment descriptor is stored alongside the message body. The
+   * media bytes remain encrypted at rest; the descriptor includes the
+   * client-side key so the Team inbox can support the uploaded media too.
+   */
+  sendPlaintextMedia: protectedProcedure
+    .input(
+      z.object({
+        recipientUserId: z.string().uuid(),
+        caption: z.string().trim().max(4000).default(""),
+        attachment: OfficialMediaAttachmentInput,
+      }),
+    )
+    .output(SendMessageResult)
+    .mutation(async ({ ctx, input }) => {
+      const db = getDb();
+      if (!(await isOfficialAccount(db, input.recipientUserId))) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Plaintext media is only available for VeilChat Team.",
+        });
+      }
+
+      const plaintext =
+        `${OFFICIAL_MEDIA_PREFIX}${JSON.stringify({
+          caption: input.caption.trim(),
+          attachment: input.attachment,
+        })}`;
+      const inserted = await db
+        .insert(schema.messages)
+        .values({
+          senderUserId: ctx.userId,
+          recipientUserId: input.recipientUserId,
+          conversationId: conversationIdFor(ctx.userId, input.recipientUserId),
+          header: Buffer.alloc(0),
+          ciphertext: Buffer.alloc(0),
+          plaintext,
+        })
+        .returning({
+          id: schema.messages.id,
+          createdAt: schema.messages.createdAt,
+        });
+      const row = inserted[0]!;
+      publish(input.recipientUserId, {
+        type: "new_message",
+        message: {
+          id: row.id,
+          senderUserId: ctx.userId,
+          header: "",
+          ciphertext: "",
+          plaintext,
           isPlaintext: true,
           createdAt: row.createdAt.toISOString(),
           expiresAt: null,
