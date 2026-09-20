@@ -299,6 +299,21 @@ async function ingestInboxMessageInner(
     }
     return "duplicate";
   }
+  if (m.isPlaintext) {
+    await appendChatMessage({
+      peerId: m.senderUserId,
+      serverId: m.id,
+      direction: "in",
+      plaintext: m.plaintext ?? "",
+      createdAt: m.createdAt,
+      status: "received",
+    });
+    if (!wsMarkDelivered([m.id])) {
+      void trpcClientProxy().messages.markDelivered.mutate({ ids: [m.id ] }).catch(() => undefined);
+    }
+    feedback.receive();
+    return "new";
+  }
   try {
     const plaintext = await decryptIncoming(identity, m);
     const env = decodeEnvelope(plaintext);
@@ -408,6 +423,19 @@ export async function pollAndDecrypt(
       acked.push(m.id);
       continue;
     }
+    if (m.isPlaintext) {
+      await appendChatMessage({
+        peerId: m.senderUserId,
+        serverId: m.id,
+        direction: "in",
+        plaintext: m.plaintext ?? "",
+        createdAt: m.createdAt,
+        status: "received",
+      });
+      acked.push(m.id);
+      added += 1;
+      continue;
+    }
     try {
       const plaintext = await decryptIncoming(identity, m);
       const env = decodeEnvelope(plaintext);
@@ -478,8 +506,32 @@ export async function sendChatMessage(
     linkPreview?: import("./messageEnvelope").EnvelopeLinkPreview;
     replyTo?: import("./messageEnvelope").EnvelopeReplyRef;
     viewOnce?: boolean;
+    official?: boolean;
   } = {},
 ): Promise<number> {
+  if (opts.official) {
+    const localId = await appendChatMessage({
+      peerId,
+      serverId: null,
+      direction: "out",
+      plaintext,
+      createdAt: new Date().toISOString(),
+      status: "pending",
+    });
+    try {
+      const sent = await trpcClientProxy().messages.sendPlaintext.mutate({
+        recipientUserId: peerId,
+        plaintext,
+      });
+      await setChatMessageStatus(localId, "sent", sent.id);
+      feedback.send();
+    } catch (err) {
+      await setChatMessageStatus(localId, "failed");
+      feedback.error();
+      throw err;
+    }
+    return localId;
+  }
   const env: ChatEnvelope = { v: 2, t: "text", body: plaintext };
   if (opts.ttlSeconds && opts.ttlSeconds > 0) env.ttl = opts.ttlSeconds;
   if (opts.seenTtlSeconds && opts.seenTtlSeconds > 0) env.sttl = opts.seenTtlSeconds;
@@ -834,12 +886,26 @@ async function persistHistoryEntry(
       peerId: otherPeer,
       serverId: m.id,
       direction: "out",
-      plaintext: "[sent on another device]",
+      plaintext: m.isPlaintext
+        ? (m.plaintext ?? "")
+        : "[sent on another device]",
       createdAt: m.createdAt,
       status,
       ...(m.expiresAt ? { expiresAt: m.expiresAt } : {}),
       ...(m.deliveredAt ? { deliveredAt: m.deliveredAt } : {}),
       ...(m.readAt ? { readAt: m.readAt } : {}),
+    });
+    return true;
+  }
+
+  if (m.isPlaintext) {
+    await appendChatMessage({
+      peerId: otherPeer,
+      serverId: m.id,
+      direction: "in",
+      plaintext: m.plaintext ?? "",
+      createdAt: m.createdAt,
+      status: "received",
     });
     return true;
   }

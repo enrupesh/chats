@@ -1,6 +1,8 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { resolve4 } from "node:dns/promises";
+import { randomBytes } from "node:crypto";
+import { eq } from "drizzle-orm";
 import { env } from "../env.js";
 import * as schema from "./schema.js";
 
@@ -28,6 +30,15 @@ async function ensureSchema(sql: ReturnType<typeof postgres>) {
   );
   await sql.unsafe(
     `CREATE INDEX IF NOT EXISTS "users_discoverable_idx" ON "users" ("is_discoverable") WHERE "is_discoverable" = true`,
+  );
+  await sql.unsafe(
+    `ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "is_official" boolean NOT NULL DEFAULT false`,
+  );
+  await sql.unsafe(
+    `CREATE INDEX IF NOT EXISTS "users_official_idx" ON "users" ("is_official") WHERE "is_official" = true`,
+  );
+  await sql.unsafe(
+    `ALTER TABLE "messages" ADD COLUMN IF NOT EXISTS "plaintext" text`,
   );
 
   // FCM token table for Android Capacitor push notifications (added after
@@ -161,6 +172,48 @@ export async function awaitDbBootstrap(): Promise<void> {
   }
 
   await _bootstrapPromise;
+}
+
+/**
+ * Creates the managed WellChat Team profile once. It is intentionally not a
+ * normal login account: Team replies use the separate admin console and the
+ * Team channel is explicitly server-readable rather than E2EE.
+ */
+export async function ensureWellChatTeam(): Promise<void> {
+  if (!env.DATABASE_URL) return;
+  const db = getDb();
+  const existing = await db
+    .select({ id: schema.users.id })
+    .from(schema.users)
+    .where(eq(schema.users.isOfficial, true))
+    .limit(1);
+  const avatarDataUrl =
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='32' fill='%23F4C95D'/%3E%3Cpath d='M64 22 99 36v25c0 22-15 37-35 45C44 98 29 83 29 61V36l35-14Z' fill='%23253D2C'/%3E%3Cpath d='m48 64 11 11 22-25' fill='none' stroke='%23F4C95D' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E";
+  if (existing.length > 0) {
+    await db
+      .update(schema.users)
+      .set({
+        username: "wellchatteam",
+        displayName: "WellChat Team",
+        bio: "Official WellChat support. Ask us anything about your account, privacy, or using VeilChat.",
+        avatarDataUrl,
+        isDiscoverable: true,
+        isOfficial: true,
+      })
+      .where(eq(schema.users.id, existing[0]!.id));
+    return;
+  }
+  await db.insert(schema.users).values({
+    accountType: "random",
+    randomId: "system:wellchat-team",
+    username: "wellchatteam",
+    displayName: "WellChat Team",
+    bio: "Official WellChat support. Ask us anything about your account, privacy, or using VeilChat.",
+    avatarDataUrl,
+    isDiscoverable: true,
+    isOfficial: true,
+    identityPubkey: randomBytes(32),
+  });
 }
 
 export function getDb() {

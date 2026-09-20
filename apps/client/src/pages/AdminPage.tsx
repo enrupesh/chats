@@ -285,6 +285,73 @@ function useRegisteredUsers() {
   return { data, loading, error, search, setSearch, filtered, refetch, displayName };
 }
 
+interface TeamMessage {
+  id: string;
+  senderUserId: string;
+  recipientUserId: string;
+  text: string;
+  createdAt: string;
+  sender: { username: string | null; displayName: string | null };
+}
+
+function useTeamInbox() {
+  const [messages, setMessages] = useState<TeamMessage[]>([]);
+  const [teamId, setTeamId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const refetch = useCallback(async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/admin/team/messages`, {
+        cache: "no-store",
+        headers: { "x-admin-token": ADMIN_TOKEN },
+      });
+      if (!response.ok) throw new Error("inbox unavailable");
+      const json = (await response.json()) as { team?: { id: string } | null; messages?: TeamMessage[] };
+      setTeamId(json.team?.id ?? null);
+      setMessages(json.messages ?? []);
+      setError(false);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refetch();
+    const timer = setInterval(() => void refetch(), 12_000);
+    return () => clearInterval(timer);
+  }, [refetch]);
+
+  const conversations = [...new Set(messages.map((message) =>
+    message.senderUserId === teamId ? message.recipientUserId : message.senderUserId,
+  ))];
+
+  async function sendReply() {
+    const text = draft.trim();
+    if (!selectedUserId || !text || sending) return;
+    setSending(true);
+    try {
+      const response = await fetch(`${BACKEND_URL}/admin/team/messages`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-admin-token": ADMIN_TOKEN },
+        body: JSON.stringify({ recipientUserId: selectedUserId, plaintext: text }),
+      });
+      if (!response.ok) throw new Error("reply failed");
+      setDraft("");
+      await refetch();
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return { messages, teamId, conversations, selectedUserId, setSelectedUserId, draft, setDraft, sendReply, sending, loading, error };
+}
+
 function formatLabel(value: string | null | undefined): string {
   if (!value) return "Not available";
   if (/^[A-Z]{2}$/.test(value)) {
@@ -514,6 +581,7 @@ function useLiveUserCount(refreshMs = 5000) {
 function Dashboard({ onSignOut }: { onSignOut: () => void }) {
   const { count, history, error } = useLiveUserCount(5000);
   const users = useRegisteredUsers();
+  const team = useTeamInbox();
   const [tick, setTick] = useState(0);
   const [activeTab, setActiveTab] = useState<"overview" | "status">("overview");
   const [selectedUser, setSelectedUser] = useState<RegisteredUser | null>(null);
@@ -724,6 +792,8 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
         </div>
 
         {/* ── Registered users section ── */}
+        <TeamInbox team={team} />
+
         <div style={{ marginTop: 32 }}>
 
           {/* Section header row */}
@@ -905,6 +975,78 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
         @keyframes taCount { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
       `}</style>
     </div>
+  );
+}
+
+function TeamInbox({ team }: { team: ReturnType<typeof useTeamInbox> }) {
+  const selected = team.selectedUserId
+    ? team.messages.filter((message) =>
+        message.senderUserId === team.selectedUserId ||
+        message.recipientUserId === team.selectedUserId,
+      ).reverse()
+    : [];
+  const displayName = (id: string) => {
+    const message = team.messages.find((item) => item.senderUserId === id);
+    return message?.sender.displayName || message?.sender.username || id.slice(0, 8);
+  };
+
+  return (
+    <section style={{ marginTop: 32, background: "white", border: "1px solid rgba(37,61,44,0.1)", borderRadius: 16, overflow: "hidden" }}>
+      <div style={{ padding: "18px 20px", borderBottom: "1px solid rgba(37,61,44,0.08)", display: "flex", justifyContent: "space-between", gap: 12 }}>
+        <div>
+          <h2 style={{ margin: 0, fontSize: 18, color: "#111B21" }}>WellChat Team inbox</h2>
+          <p style={{ margin: "4px 0 0", fontSize: 12, color: "rgba(37,61,44,0.5)" }}>
+            Official support messages are readable here and are not E2EE.
+          </p>
+        </div>
+        <span style={{ alignSelf: "center", fontSize: 11, fontWeight: 700, color: "#8A5A00", background: "#FFF4CC", padding: "5px 9px", borderRadius: 100 }}>
+          {team.messages.length} messages
+        </span>
+      </div>
+      {team.error ? (
+        <div style={{ padding: 24, color: "#A33A2B", fontSize: 13 }}>Could not load the Team inbox.</div>
+      ) : team.loading ? (
+        <div style={{ padding: 24, color: "rgba(37,61,44,0.45)", fontSize: 13 }}>Loading Team messages…</div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(160px, 0.35fr) minmax(0, 1fr)", minHeight: 220 }}>
+          <div style={{ borderRight: "1px solid rgba(37,61,44,0.08)" }}>
+            {team.conversations.length === 0 ? (
+              <div style={{ padding: 18, color: "rgba(37,61,44,0.45)", fontSize: 12 }}>No user messages yet.</div>
+            ) : team.conversations.map((id) => (
+              <button key={id} type="button" onClick={() => team.setSelectedUserId(id)} style={{
+                display: "block", width: "100%", textAlign: "left", border: 0,
+                borderBottom: "1px solid rgba(37,61,44,0.06)", padding: "12px 14px",
+                background: team.selectedUserId === id ? "#F1F8F2" : "white", cursor: "pointer",
+                color: "#253D2C", fontWeight: 700, fontSize: 12,
+              }}>
+                {displayName(id)}
+                <span style={{ display: "block", marginTop: 4, color: "rgba(37,61,44,0.45)", fontWeight: 400, fontSize: 10 }}>{id.slice(0, 8)}</span>
+              </button>
+            ))}
+          </div>
+          <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+            {!team.selectedUserId ? (
+              <div style={{ color: "rgba(37,61,44,0.45)", fontSize: 13 }}>Select a conversation to reply.</div>
+            ) : (
+              <>
+                <div style={{ flex: 1, display: "grid", gap: 8, alignContent: "start", maxHeight: 240, overflowY: "auto" }}>
+                  {selected.map((message) => (
+                    <div key={message.id} style={{ justifySelf: message.senderUserId === team.selectedUserId ? "start" : "end", maxWidth: "82%", background: message.senderUserId === team.selectedUserId ? "#F3F5F3" : "#E5F3E7", borderRadius: 12, padding: "8px 10px", fontSize: 12, color: "#253D2C" }}>
+                      <div>{message.text}</div>
+                      <time style={{ display: "block", marginTop: 4, fontSize: 9, opacity: 0.45 }}>{formatDate(message.createdAt)}</time>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <input value={team.draft} onChange={(event) => team.setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void team.sendReply(); }} placeholder="Reply as WellChat Team…" style={{ flex: 1, minWidth: 0, border: "1px solid rgba(37,61,44,0.16)", borderRadius: 9, padding: "9px 10px", fontSize: 12 }} />
+                  <button type="button" onClick={() => void team.sendReply()} disabled={team.sending || !team.draft.trim()} style={{ border: 0, borderRadius: 9, padding: "0 14px", background: "#2E6F40", color: "white", fontWeight: 700, cursor: "pointer", opacity: team.sending || !team.draft.trim() ? 0.5 : 1 }}>Send</button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
 

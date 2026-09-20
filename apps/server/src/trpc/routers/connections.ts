@@ -44,6 +44,7 @@ function peer(
     displayName?: string | null;
     bio?: string | null;
     avatarDataUrl?: string | null;
+    isOfficial?: boolean;
   },
   contactName?: string | null,
 ): Peer {
@@ -56,6 +57,7 @@ function peer(
     displayName: u.displayName ?? null,
     bio: u.bio ?? null,
     avatarDataUrl: u.avatarDataUrl ?? null,
+    isOfficial: u.isOfficial ?? false,
     contactName: contactName ?? null,
   };
 }
@@ -155,11 +157,27 @@ export const connectionsRouter = router({
           ),
         )
         .orderBy(desc(schema.connections.createdAt));
-      return rows.map((r) => ({
+      const result = rows.map((r) => ({
         id: r.conn.id,
         peer: peer(r.a, r.contactName),
         createdAt: r.conn.createdAt.toISOString(),
       }));
+      // WellChat Team is a first-class inbox entry for every account, but
+      // does not require a user-created connection request.
+      const team = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.isOfficial, true))
+        .limit(1);
+      const official = team[0];
+      if (official && official.id !== me && !result.some((r) => r.peer.id === official.id)) {
+        result.unshift({
+          id: official.id,
+          peer: peer(official),
+          createdAt: official.createdAt.toISOString(),
+        });
+      }
+      return result;
     }),
 
   accept: protectedProcedure
@@ -276,6 +294,18 @@ export const connectionsRouter = router({
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "You can't connect to yourself.",
+        });
+      }
+
+      const official = await db
+        .select({ id: schema.users.id })
+        .from(schema.users)
+        .where(and(eq(schema.users.id, peer), eq(schema.users.isOfficial, true)))
+        .limit(1);
+      if (official.length > 0) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "WellChat Team is already available in your chats.",
         });
       }
 

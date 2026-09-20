@@ -29,6 +29,7 @@ import { getDb, schema } from "../../db/index.js";
 import { publish } from "../../lib/wsHub.js";
 import { notifyUser } from "../../lib/push.js";
 import { isBlockedEitherWay } from "./privacy.js";
+import { z } from "zod";
 
 const MAX_FETCH = 200;
 
@@ -74,6 +75,18 @@ async function canCommunicateDirectly(
     )
     .limit(1);
   return shared.length > 0;
+}
+
+async function isOfficialAccount(
+  db: ReturnType<typeof getDb>,
+  userId: string,
+): Promise<boolean> {
+  const rows = await db
+    .select({ id: schema.users.id })
+    .from(schema.users)
+    .where(and(eq(schema.users.id, userId), eq(schema.users.isOfficial, true)))
+    .limit(1);
+  return rows.length > 0;
 }
 
 function bufToB64(b: Buffer | Uint8Array): string {
@@ -161,6 +174,59 @@ export const messagesRouter = router({
     }),
 
   /**
+   * Official support channel. Unlike normal messages this body is readable
+   * by the WellChat admin console. It is only accepted when the recipient is
+   * the managed official account, so it cannot weaken ordinary E2EE chats.
+   */
+  sendPlaintext: protectedProcedure
+    .input(
+      z.object({
+        recipientUserId: z.string().uuid(),
+        plaintext: z.string().trim().min(1).max(4000),
+      }),
+    )
+    .output(SendMessageResult)
+    .mutation(async ({ ctx, input }) => {
+      const db = getDb();
+      if (!(await isOfficialAccount(db, input.recipientUserId))) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Plaintext messaging is only available for WellChat Team.",
+        });
+      }
+      const inserted = await db
+        .insert(schema.messages)
+        .values({
+          senderUserId: ctx.userId,
+          recipientUserId: input.recipientUserId,
+          conversationId: conversationIdFor(ctx.userId, input.recipientUserId),
+          header: Buffer.alloc(0),
+          ciphertext: Buffer.alloc(0),
+          plaintext: input.plaintext.trim(),
+        })
+        .returning({
+          id: schema.messages.id,
+          createdAt: schema.messages.createdAt,
+        });
+      const row = inserted[0]!;
+      publish(input.recipientUserId, {
+        type: "new_message",
+        message: {
+          id: row.id,
+          senderUserId: ctx.userId,
+          header: "",
+          ciphertext: "",
+          plaintext: input.plaintext.trim(),
+          isPlaintext: true,
+          createdAt: row.createdAt.toISOString(),
+          expiresAt: null,
+          groupId: null,
+        },
+      });
+      return { id: row.id, createdAt: row.createdAt.toISOString() };
+    }),
+
+  /**
    * Return all undelivered messages for me. Server *does not* delete them
    * — it just returns the list. The client must call `markDelivered`
    * (or send `mark_delivered` over WS) once they're persisted locally,
@@ -198,6 +264,8 @@ export const messagesRouter = router({
           createdAt: r.createdAt.toISOString(),
           expiresAt: r.expiresAt ? r.expiresAt.toISOString() : null,
           groupId: r.groupId ?? null,
+          plaintext: r.plaintext ?? null,
+          isPlaintext: r.plaintext !== null,
         })),
       };
     }),
@@ -357,7 +425,9 @@ export const messagesRouter = router({
           ),
         )
         .limit(1);
-      if (conn.length === 0) {
+      const officialChat =
+        (await isOfficialAccount(db, me)) || (await isOfficialAccount(db, peer));
+      if (conn.length === 0 && !officialChat) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "Not connected to this user.",
@@ -400,6 +470,8 @@ export const messagesRouter = router({
           groupId: r.groupId ?? null,
           deliveredAt: r.deliveredAt ? r.deliveredAt.toISOString() : null,
           readAt: r.readAt ? r.readAt.toISOString() : null,
+          plaintext: r.plaintext ?? null,
+          isPlaintext: r.plaintext !== null,
         })),
         hasMore,
       };

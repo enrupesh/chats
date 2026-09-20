@@ -10,12 +10,13 @@ import { createContext } from "./trpc/context.js";
 import { registerWebSocketRoutes } from "./lib/wsServer.js";
 import { initPush } from "./lib/push.js";
 import { verifyAccessToken } from "./lib/jwt.js";
-import { getDb, awaitDbBootstrap, schema } from "./db/index.js";
-import { eq, and, desc, gte } from "drizzle-orm";
+import { getDb, awaitDbBootstrap, ensureWellChatTeam, schema } from "./db/index.js";
+import { eq, and, desc, gte, or } from "drizzle-orm";
 import { createHmac } from "node:crypto";
 import { startMediaSweeper } from "./lib/mediaSweeper.js";
 import { startMessageSweeper } from "./lib/messageSweeper.js";
 import { startScheduledSweeper } from "./lib/scheduledSweeper.js";
+import { publish } from "./lib/wsHub.js";
 import {
   deviceInfo,
   lookupCity,
@@ -505,6 +506,117 @@ app.get("/admin/users", async (req, reply) => {
   };
 });
 
+// ── Admin: WellChat Team plaintext inbox ─────────────────────────────────────
+// This is deliberately separate from the E2EE tRPC message path. The admin
+// console can read these rows because the Team channel is explicitly
+// server-readable and marked as such in the user-facing chat header.
+app.get("/admin/team/messages", async (req, reply) => {
+  if (req.headers["x-admin-token"] !== ADMIN_TOKEN) {
+    return reply.status(401).send({ error: "Unauthorized" });
+  }
+  const db = getDb();
+  const team = await db
+    .select({ id: schema.users.id })
+    .from(schema.users)
+    .where(eq(schema.users.isOfficial, true))
+    .limit(1);
+  if (!team[0]) return reply.send({ team: null, conversations: [] });
+
+  const rows = await db
+    .select({
+      id: schema.messages.id,
+      senderUserId: schema.messages.senderUserId,
+      recipientUserId: schema.messages.recipientUserId,
+      plaintext: schema.messages.plaintext,
+      createdAt: schema.messages.createdAt,
+      senderUsername: schema.users.username,
+      senderDisplayName: schema.users.displayName,
+    })
+    .from(schema.messages)
+    .innerJoin(schema.users, eq(schema.users.id, schema.messages.senderUserId))
+    .where(
+      or(
+        eq(schema.messages.senderUserId, team[0].id),
+        eq(schema.messages.recipientUserId, team[0].id),
+      ),
+    )
+    .orderBy(desc(schema.messages.createdAt))
+    .limit(2000);
+  return reply.send({
+    team: { id: team[0].id, username: "wellchatteam", displayName: "WellChat Team" },
+    messages: rows
+      .filter((row) => row.plaintext !== null)
+      .map((row) => ({
+        id: row.id,
+        senderUserId: row.senderUserId,
+        recipientUserId: row.recipientUserId,
+        text: row.plaintext,
+        createdAt: row.createdAt,
+        sender: {
+          username: row.senderUsername,
+          displayName: row.senderDisplayName,
+        },
+      })),
+  });
+});
+
+app.post<{
+  Body: { recipientUserId?: string; plaintext?: string };
+}>("/admin/team/messages", async (req, reply) => {
+  if (req.headers["x-admin-token"] !== ADMIN_TOKEN) {
+    return reply.status(401).send({ error: "Unauthorized" });
+  }
+  const recipientUserId = req.body?.recipientUserId?.trim();
+  const plaintext = req.body?.plaintext?.trim();
+  if (!recipientUserId || !plaintext || plaintext.length > 4000) {
+    return reply.status(400).send({ error: "recipientUserId and plaintext are required" });
+  }
+  const db = getDb();
+  const team = await db
+    .select({ id: schema.users.id })
+    .from(schema.users)
+    .where(eq(schema.users.isOfficial, true))
+    .limit(1);
+  if (!team[0]) return reply.status(503).send({ error: "WellChat Team is not initialized" });
+  const recipient = await db
+    .select({ id: schema.users.id })
+    .from(schema.users)
+    .where(eq(schema.users.id, recipientUserId))
+    .limit(1);
+  if (!recipient[0]) return reply.status(404).send({ error: "User not found" });
+
+  const [row] = await db
+    .insert(schema.messages)
+    .values({
+      senderUserId: team[0].id,
+      recipientUserId,
+      conversationId:
+        team[0].id < recipientUserId
+          ? `${team[0].id}:${recipientUserId}`
+          : `${recipientUserId}:${team[0].id}`,
+      header: Buffer.alloc(0),
+      ciphertext: Buffer.alloc(0),
+      plaintext,
+    })
+    .returning({ id: schema.messages.id, createdAt: schema.messages.createdAt });
+  if (!row) return reply.status(500).send({ error: "Message was not created" });
+  publish(recipientUserId, {
+    type: "new_message",
+    message: {
+      id: row.id,
+      senderUserId: team[0].id,
+      header: "",
+      ciphertext: "",
+      plaintext,
+      isPlaintext: true,
+      createdAt: row.createdAt.toISOString(),
+      expiresAt: null,
+      groupId: null,
+    },
+  });
+  return reply.send({ id: row.id, createdAt: row.createdAt });
+});
+
 /**
  * POST /push/fcm-token
  * Register an FCM device token for the authenticated user (Android app).
@@ -626,6 +738,7 @@ if (!env.RESEND_API_KEY && isDev) {
 // Render's infrastructure cannot route IPv6; Supabase's direct-connection
 // hostname resolves to an IPv6 address which causes ENETUNREACH on every tick.
 await awaitDbBootstrap();
+await ensureWellChatTeam();
 
 initPush(app.log);
 startMediaSweeper(app.log);
