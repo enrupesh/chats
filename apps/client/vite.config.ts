@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
+import { resolve } from "node:path";
 
 const isCapacitor = process.env.VITE_CAPACITOR === "true";
 
@@ -81,5 +82,11 @@ export default defineConfig({
     // Inline assets under 4 kb so the APK doesn't have thousands of tiny
     // HTTP requests for icons/spinners during first paint.
     assetsInlineLimit: 4096,
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, "index.html"),
+        waitlist: resolve(__dirname, "waitlist.html"),
+      },
+    },
   },
 });

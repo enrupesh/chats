@@ -3,3 +3,4 @@
 - [Founder and support account boundary](founder-support-boundary.md) — keep founder verification/access separate from the official support flag so founder chats retain normal privacy behavior.
 - [Official Team welcome](official-welcome-ttl.md) — keep onboarding copy as permanent Team-chat UI, not as a database message or account-creation side effect.
 - [Workspace dependency materialization](workspace-dependency-materialization.md) — a locked workspace dependency may still need a filtered pnpm install before Vite/typechecks can resolve it.
+- [Vercel route-specific OG metadata](vercel-route-og.md) — SPA catch-all rewrites serve root metadata; use a built route HTML entry plus an exact rewrite for share previews.
