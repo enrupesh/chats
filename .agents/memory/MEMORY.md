@@ -4,3 +4,4 @@
 - [Official Team welcome](official-welcome-ttl.md) — keep onboarding copy as permanent Team-chat UI, not as a database message or account-creation side effect.
 - [Workspace dependency materialization](workspace-dependency-materialization.md) — a locked workspace dependency may still need a filtered pnpm install before Vite/typechecks can resolve it.
 - [Vercel route-specific OG metadata](vercel-route-og.md) — SPA catch-all rewrites serve root metadata; use a built route HTML entry plus an exact rewrite for share previews.
+- [X preview cache invalidation](x-preview-cache.md) — live route metadata can be correct while X shows an older root card; disable route caching and version the image URL.

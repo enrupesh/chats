@@ -28,7 +28,7 @@ export function WaitlistPage() {
     description:
       "Get a professional email address on your own custom domain for just $1. Join the VeilChat founder waitlist for early access and five months free.",
     canonical: "https://www.veilchat.me/waitlist",
-    ogImage: "https://www.veilchat.me/waitlist-og.jpg",
+    ogImage: "https://www.veilchat.me/waitlist-og.jpg?v=2",
     ogType: "website",
   });
 

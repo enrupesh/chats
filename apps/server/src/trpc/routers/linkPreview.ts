@@ -31,7 +31,7 @@ const ALLOWED_ICON_MIME = new Set([
 
 const cache = new Map<string, { at: number; data: LinkPreview }>();
 const CACHE_TTL_MS = 10 * 60 * 1000;
-const WAITLIST_IMAGE_URL = "https://www.veilchat.me/waitlist-og.jpg";
+const WAITLIST_IMAGE_URL = "https://www.veilchat.me/waitlist-og.jpg?v=2";
 const WAITLIST_TITLE = "VeilChat for founders — professional email for $1";
 const WAITLIST_DESCRIPTION =
   "Get a professional email address on your own custom domain for just $1. Join the VeilChat founder waitlist for early access and five months free.";
