@@ -329,6 +329,28 @@ export function WaitlistPage() {
                     ↗
                   </span>
                 </a>
+                <a
+                  href="https://www.veilchat.me/discover/64c2bf97-4eac-4420-ad9d-5b9fe58df06a"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Open the official VeilChat profile"
+                  className="group flex items-center gap-3 rounded-2xl border border-[#68BA7F]/30 bg-[#E8FAEE]/80 px-4 py-3.5 text-[#253D2C] backdrop-blur transition hover:-translate-y-0.5 hover:bg-[#E8FAEE]"
+                >
+                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#2E6F40] text-sm font-bold text-white">
+                    V
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#2E6F40]">
+                      Official VeilChat profile
+                    </span>
+                    <span className="mt-0.5 block truncate text-sm font-bold">
+                      Meet VeilChat
+                    </span>
+                  </span>
+                  <span className="text-lg text-[#2E6F40] transition-transform group-hover:translate-x-0.5">
+                    ↗
+                  </span>
+                </a>
               </div>
             </div>
           </section>
