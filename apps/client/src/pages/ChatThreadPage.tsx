@@ -29,6 +29,7 @@ import {
   sendOfficialMedia,
   sendChatPoll,
   sendChatPollVote,
+  isLegacyOfficialWelcome,
   sendReaction,
   deleteMessageForEveryone,
   editChatMessage,
@@ -236,6 +237,29 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
     [peerId],
     [],
   );
+
+  // The former onboarding welcome was a server row. Remove any copy left in
+  // this browser now that the Team welcome is rendered as permanent UI.
+  useEffect(() => {
+    if (!isOfficialChat) return;
+    void db.chatMessages
+      .where("peerId")
+      .equals(peerId)
+      .toArray()
+      .then((rows) =>
+        Promise.all(
+          rows
+            .filter(
+              (row) =>
+                row.direction === "in" &&
+                row.serverId &&
+                isLegacyOfficialWelcome(row.plaintext),
+            )
+            .map((row) => (row.id === undefined ? undefined : db.chatMessages.delete(row.id))),
+        ),
+      )
+      .catch(() => undefined);
+  }, [isOfficialChat, peerId]);
 
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -1123,6 +1147,7 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
           }
             isOfficial={isOfficialChat}
         />
+          {isOfficialChat && <OfficialWelcomeMessage />}
           {isOfficialChat && <SupportFollowUps />}
         {!filteredMessages || filteredMessages.length === 0 ? (
           <EmptyState
@@ -4371,6 +4396,56 @@ type SupportFollowUp = {
   question: string;
   answer: ReactNode;
 };
+
+function OfficialWelcomeMessage() {
+  return (
+    <div className="self-start w-full max-w-md rounded-2xl rounded-tl-sm bg-wa-bubble-in px-3.5 py-3 text-sm text-text shadow-bubble">
+      <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold text-wa-green">
+        <span className="grid size-5 place-items-center rounded-full bg-wa-green/15">
+          ✓
+        </span>
+        <span>VeilChat Team · Official support</span>
+      </div>
+      <div className="space-y-2 leading-relaxed">
+        <p>
+          <strong>Welcome to VeilChat! 🎉</strong> We’re happy to have you
+          here. VeilChat is private by design — your personal conversations are
+          end-to-end encrypted, with no ads and no tracking.
+        </p>
+        <p>Here are a few things you can do:</p>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>Chat privately with friends and groups</li>
+          <li>Share photos and voice notes</li>
+          <li>
+            Use disappearing messages, replies, reactions, polls, and message
+            scheduling
+          </li>
+          <li>Protect your account with a recovery kit and passkeys</li>
+          <li>Control your privacy, notifications, themes, and focus mode</li>
+        </ul>
+        <p>
+          <strong>🌍 Discover People</strong>
+          <br />
+          Meet people who have chosen to be discoverable and start a
+          conversation:{" "}
+          <Link
+            to="/discover"
+            className="font-semibold text-wa-green underline underline-offset-2"
+          >
+            Open Discover People
+          </Link>
+        </p>
+        <p>
+          More than 1 million happy users are already part of our community.
+          We’re glad you’re here — enjoy VeilChat! 💚
+        </p>
+      </div>
+      <div className="mt-2 text-right text-[10px] text-text-muted">
+        Official VeilChat message
+      </div>
+    </div>
+  );
+}
 
 function SupportFollowUps() {
   const [openId, setOpenId] = useState<string | null>("use");

@@ -23,7 +23,6 @@ import { fingerprintForPublicKey } from "../../lib/fingerprint.js";
 import { env } from "../../env.js";
 import { isBlockedEitherWay } from "./privacy.js";
 import { notifyUser } from "../../lib/push.js";
-import { sendWelcomeMessage } from "../../lib/officialWelcome.js";
 
 const SALT_TTL_MS = 5 * 60 * 1000;
 const discoverySalts = new Map<string, { salt: string; expiresAt: number }>();
@@ -128,10 +127,6 @@ export const connectionsRouter = router({
     .query(async ({ ctx }): Promise<Connection[]> => {
       const db = getDb();
       const me = ctx.userId;
-      // Backfill the welcome for accounts created while the official
-      // account was unavailable, without blocking the connection list if
-      // the welcome service is temporarily unavailable.
-      await sendWelcomeMessage(me);
       const rows = await db
         .select({
           conn: schema.connections,

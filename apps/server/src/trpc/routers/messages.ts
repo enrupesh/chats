@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, asc, desc, eq, gt, inArray, isNull, lt, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, isNull, lt, notLike, or, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import {
   SendMessageInput,
@@ -33,6 +33,7 @@ import { z } from "zod";
 
 const MAX_FETCH = 200;
 const OFFICIAL_MEDIA_PREFIX = "veil-official-media:v1:";
+const LEGACY_WELCOME_PREFIX = "Welcome to VeilChat!";
 
 const OfficialMediaAttachmentInput = z.object({
   kind: z.enum(["image", "voice"]),
@@ -325,6 +326,10 @@ export const messagesRouter = router({
               isNull(schema.messages.expiresAt),
               gt(schema.messages.expiresAt, now),
             ),
+            or(
+              isNull(schema.messages.plaintext),
+              notLike(schema.messages.plaintext, `${LEGACY_WELCOME_PREFIX}%`),
+            ),
           ),
         )
         .orderBy(asc(schema.messages.createdAt))
@@ -365,6 +370,10 @@ export const messagesRouter = router({
             or(
               isNull(schema.messages.expiresAt),
               gt(schema.messages.expiresAt, now),
+            ),
+            or(
+              isNull(schema.messages.plaintext),
+              notLike(schema.messages.plaintext, `${LEGACY_WELCOME_PREFIX}%`),
             ),
           ),
         )
@@ -520,6 +529,10 @@ export const messagesRouter = router({
         or(
           isNull(schema.messages.expiresAt),
           gt(schema.messages.expiresAt, now),
+        )!,
+        or(
+          isNull(schema.messages.plaintext),
+          notLike(schema.messages.plaintext, `${LEGACY_WELCOME_PREFIX}%`),
         )!,
       ];
       if (before) whereClauses.push(lt(schema.messages.createdAt, before));

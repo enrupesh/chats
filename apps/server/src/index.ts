@@ -11,7 +11,7 @@ import { registerWebSocketRoutes } from "./lib/wsServer.js";
 import { initPush } from "./lib/push.js";
 import { verifyAccessToken } from "./lib/jwt.js";
 import { getDb, awaitDbBootstrap, ensureVeilChatTeam, schema } from "./db/index.js";
-import { eq, and, count, desc, gte, gt, isNull, or } from "drizzle-orm";
+import { eq, and, count, desc, gte, gt, isNull, notLike, or } from "drizzle-orm";
 import { createHmac } from "node:crypto";
 import { startMediaSweeper } from "./lib/mediaSweeper.js";
 import { startMessageSweeper } from "./lib/messageSweeper.js";
@@ -758,6 +758,7 @@ app.get("/admin/team/messages", async (req, reply) => {
           isNull(schema.messages.expiresAt),
           gt(schema.messages.expiresAt, new Date()),
         ),
+        notLike(schema.messages.plaintext, "Welcome to VeilChat!%"),
       ),
     )
     .orderBy(desc(schema.messages.createdAt))

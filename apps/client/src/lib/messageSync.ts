@@ -38,6 +38,11 @@ import {
 } from "./groupSync";
 
 const OFFICIAL_MEDIA_PREFIX = "veil-official-media:v1:";
+const LEGACY_WELCOME_PREFIX = "Welcome to VeilChat!";
+
+export function isLegacyOfficialWelcome(text: string | null | undefined): boolean {
+  return typeof text === "string" && text.startsWith(LEGACY_WELCOME_PREFIX);
+}
 
 function parseOfficialMedia(
   text: string,
@@ -331,6 +336,14 @@ async function ingestInboxMessageInner(
     }
     return "duplicate";
   }
+  if (m.isPlaintext && isLegacyOfficialWelcome(m.plaintext)) {
+    if (!wsMarkDelivered([m.id])) {
+      void trpcClientProxy()
+        .messages.markDelivered.mutate({ ids: [m.id] })
+        .catch(() => undefined);
+    }
+    return "duplicate";
+  }
   if (m.isPlaintext) {
     const officialMedia = parseOfficialMedia(m.plaintext ?? "");
     await appendChatMessage({
@@ -455,6 +468,10 @@ export async function pollAndDecrypt(
       continue;
     }
     if (await hasChatMessageWithServerId(m.id)) {
+      acked.push(m.id);
+      continue;
+    }
+    if (m.isPlaintext && isLegacyOfficialWelcome(m.plaintext)) {
       acked.push(m.id);
       continue;
     }
@@ -942,6 +959,9 @@ async function persistHistoryEntry(
   m: HistoryMessage,
   myUserId: string,
 ): Promise<boolean> {
+  if (m.isPlaintext && isLegacyOfficialWelcome(m.plaintext)) {
+    return false;
+  }
   const isOutbound = m.senderUserId === myUserId;
   const otherPeer = isOutbound ? m.recipientUserId : m.senderUserId;
   const officialMedia = m.isPlaintext

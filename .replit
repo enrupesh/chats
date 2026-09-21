@@ -30,14 +30,6 @@ task = "shell.exec"
 args = "pnpm --filter @veil/client dev"
 waitForPort = 5000
 
-[[ports]]
-localPort = 3001
-externalPort = 3001
-
-[[ports]]
-localPort = 5000
-externalPort = 80
-
 [userenv]
 
 [userenv.shared]

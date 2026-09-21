@@ -40,6 +40,16 @@ async function ensureSchema(sql: ReturnType<typeof postgres>) {
   await sql.unsafe(
     `ALTER TABLE "messages" ADD COLUMN IF NOT EXISTS "plaintext" text`,
   );
+  // Retire the old account-creation welcome rows. The Team chat now renders
+  // this onboarding copy as a permanent local UI message instead of storing
+  // one server row for every account.
+  await sql.unsafe(`
+    DELETE FROM "messages"
+    WHERE "plaintext" LIKE 'Welcome to VeilChat!%'
+      AND "sender_user_id" IN (
+        SELECT "id" FROM "users" WHERE "is_official" = true
+      )
+  `);
 
   // FCM token table for Android Capacitor push notifications (added after
   // initial schema; safe to run on every start thanks to IF NOT EXISTS).

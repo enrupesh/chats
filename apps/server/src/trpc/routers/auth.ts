@@ -122,7 +122,6 @@ import {
   isFirebaseConfigured,
   verifyFirebaseIdToken,
 } from "../../lib/firebase.js";
-import { sendWelcomeMessage } from "../../lib/officialWelcome.js";
 
 const CHALLENGE_TTL_SECONDS = 2 * 60;
 
@@ -543,7 +542,6 @@ export const authRouter = router({
           const row = inserted[0]!;
           userId = row.id;
           accountCreatedAt = row.createdAt;
-          await sendWelcomeMessage(userId);
         } catch {
           throw new TRPCError({
             code: "CONFLICT",
@@ -648,7 +646,6 @@ export const authRouter = router({
               createdAt: schema.users.createdAt,
             });
           const row = inserted[0]!;
-          await sendWelcomeMessage(row.id);
           return issueSession(ctx, row.id, "phone", row.createdAt);
         } catch {
           throw new TRPCError({
@@ -715,7 +712,6 @@ export const authRouter = router({
         .returning({ id: schema.users.id, createdAt: schema.users.createdAt });
 
       const row = inserted[0]!;
-      await sendWelcomeMessage(row.id);
       return issueSession(ctx, row.id, "random", row.createdAt);
     }),
 
@@ -1094,7 +1090,6 @@ export const authRouter = router({
         .returning({ id: schema.users.id, createdAt: schema.users.createdAt });
 
       const row = inserted[0]!;
-      await sendWelcomeMessage(row.id);
       return issueSession(ctx, row.id, "random", row.createdAt);
     }),
 
