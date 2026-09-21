@@ -162,58 +162,6 @@ export function WaitlistPage() {
               <span>Built with founders. More launch benefits will be added before release.</span>
             </div>
 
-            <div className="mt-6">
-              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#2E6F40]">
-                Follow the launch
-              </p>
-              <div className="mt-2 grid gap-3 sm:grid-cols-[1.15fr_0.85fr]">
-                <a
-                  href="https://x.com/mailforfounders"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Follow Mail for Founders on X"
-                  className="group flex items-center gap-3 rounded-2xl border border-[#253D2C] bg-[#253D2C] px-4 py-3.5 text-[#FCF5EB] shadow-[0_14px_30px_-18px_rgba(37,61,44,0.9)] transition hover:-translate-y-0.5 hover:bg-[#2E6F40]"
-                >
-                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white/10 text-lg font-semibold">
-                    𝕏
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#BFE8C8]">
-                      Official launch updates
-                    </span>
-                    <span className="mt-0.5 block truncate text-sm font-bold">
-                      @mailforfounders
-                    </span>
-                  </span>
-                  <span className="text-lg transition-transform group-hover:translate-x-0.5">
-                    ↗
-                  </span>
-                </a>
-                <a
-                  href="https://www.instagram.com/entrepreneur.rupesh/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Follow Rupesh on Instagram"
-                  className="group flex items-center gap-3 rounded-2xl border border-[#253D2C]/10 bg-white/70 px-4 py-3.5 text-[#253D2C] backdrop-blur transition hover:-translate-y-0.5 hover:bg-white"
-                >
-                  <span className="grid size-10 shrink-0 place-items-center rounded-full border border-[#253D2C]/15 text-sm font-bold">
-                    IG
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#3C5A47]/60">
-                      Behind the build
-                    </span>
-                    <span className="mt-0.5 block truncate text-sm font-bold">
-                      @entrepreneur.rupesh
-                    </span>
-                  </span>
-                  <span className="text-lg text-[#2E6F40] transition-transform group-hover:translate-x-0.5">
-                    ↗
-                  </span>
-                </a>
-              </div>
-            </div>
-
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
               {[
                 ["$1 custom-domain email", "A professional inbox on your own domain."],
@@ -332,6 +280,57 @@ export function WaitlistPage() {
                 </p>
               </>
             )}
+            <div className="mt-8 border-t border-[#253D2C]/10 pt-6">
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#2E6F40]">
+                Follow the launch
+              </p>
+              <div className="mt-2 grid gap-3 sm:grid-cols-[1.15fr_0.85fr]">
+                <a
+                  href="https://x.com/mailforfounders"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Follow Mail for Founders on X"
+                  className="group flex items-center gap-3 rounded-2xl border border-[#253D2C] bg-[#253D2C] px-4 py-3.5 text-[#FCF5EB] shadow-[0_14px_30px_-18px_rgba(37,61,44,0.9)] transition hover:-translate-y-0.5 hover:bg-[#2E6F40]"
+                >
+                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white/10 text-lg font-semibold">
+                    𝕏
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#BFE8C8]">
+                      Official launch updates
+                    </span>
+                    <span className="mt-0.5 block truncate text-sm font-bold">
+                      @mailforfounders
+                    </span>
+                  </span>
+                  <span className="text-lg transition-transform group-hover:translate-x-0.5">
+                    ↗
+                  </span>
+                </a>
+                <a
+                  href="https://www.instagram.com/entrepreneur.rupesh/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Follow Rupesh on Instagram"
+                  className="group flex items-center gap-3 rounded-2xl border border-[#253D2C]/10 bg-white/70 px-4 py-3.5 text-[#253D2C] backdrop-blur transition hover:-translate-y-0.5 hover:bg-white"
+                >
+                  <span className="grid size-10 shrink-0 place-items-center rounded-full border border-[#253D2C]/15 text-sm font-bold">
+                    IG
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#3C5A47]/60">
+                      Behind the build
+                    </span>
+                    <span className="mt-0.5 block truncate text-sm font-bold">
+                      @entrepreneur.rupesh
+                    </span>
+                  </span>
+                  <span className="text-lg text-[#2E6F40] transition-transform group-hover:translate-x-0.5">
+                    ↗
+                  </span>
+                </a>
+              </div>
+            </div>
           </section>
         </div>
       </div>
