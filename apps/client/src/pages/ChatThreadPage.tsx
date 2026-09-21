@@ -4423,6 +4423,23 @@ function OfficialWelcomeMessage() {
           <li>Protect your account with a recovery kit and passkeys</li>
           <li>Control your privacy, notifications, themes, and focus mode</li>
         </ul>
+        <div className="rounded-xl border border-wa-green/25 bg-wa-green/5 px-3 py-2.5">
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-wa-green-dark dark:text-wa-green">
+            Founder early access
+          </div>
+          <p className="mt-1">
+            Get early access to VeilChat&apos;s upcoming professional email
+            tools, including a custom-domain inbox starting at $1.
+          </p>
+          <a
+            href="https://www.veilchat.me/waitlist"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1.5 inline-flex font-semibold text-wa-green underline underline-offset-2"
+          >
+            Join the founder waitlist →
+          </a>
+        </div>
         <p>
           <strong>🌍 Discover People</strong>
           <br />
@@ -4485,6 +4502,27 @@ function SupportFollowUps() {
             Open the founder link
           </Link>
           . The profile will appear once the founder has enabled Discover.
+        </p>
+      ),
+    },
+    {
+      id: "waitlist",
+      question: "What is the VeilChat founder waitlist?",
+      answer: (
+        <p>
+          Join the founder list for early access to VeilChat&apos;s upcoming
+          professional email tools: a custom-domain inbox from $1, premium
+          templates, analytics, AI email help, and safer aliases. Qualifying
+          founders who share their website or LinkedIn can get 5 months free.{" "}
+          <a
+            href="https://www.veilchat.me/waitlist"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold text-wa-green underline underline-offset-2"
+          >
+            Reserve your founder spot
+          </a>
+          . No payment details are required.
         </p>
       ),
     },
