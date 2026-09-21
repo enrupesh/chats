@@ -205,6 +205,36 @@ export function WaitlistPage() {
                  items={["Email opens", "Link clicks", "Campaign performance"]}
                />
             </div>
+
+              <div className="waitlist-video-card mt-5 overflow-hidden rounded-[1.5rem] border border-white/80 bg-white/70 shadow-[0_18px_42px_rgba(37,61,44,0.1)] backdrop-blur">
+                <div className="flex items-center justify-between gap-4 px-4 py-3.5 sm:px-5">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#2E6F40]">
+                      See the idea
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-[#253D2C]">
+                      Built for people building in public
+                    </p>
+                  </div>
+                  <a
+                    href="https://www.youtube.com/@TryAloneFailAloneWinAlone"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 rounded-full border border-[#253D2C]/12 bg-white/75 px-3 py-2 text-xs font-bold text-[#2E6F40] transition hover:-translate-y-0.5 hover:bg-white"
+                  >
+                    YouTube ↗
+                  </a>
+                </div>
+                <div className="waitlist-video-frame">
+                  <iframe
+                    src="https://www.youtube-nocookie.com/embed/lX0VAINKnAY?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1"
+                    title="VeilChat founder launch video"
+                    loading="eager"
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
           </section>
 
           <section className="waitlist-reveal waitlist-reveal-delay-2 waitlist-form-card rounded-[2rem] border border-white/75 bg-white/90 p-6 shadow-[0_24px_70px_rgba(37,61,44,0.16)] backdrop-blur-xl sm:p-8">
@@ -305,7 +335,7 @@ export function WaitlistPage() {
               <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#2E6F40]">
                 Follow the launch
               </p>
-              <div className="mt-2 grid gap-3 sm:grid-cols-[1.15fr_0.85fr]">
+              <div className="mt-2 grid gap-3 sm:grid-cols-2">
                 <a
                   href="https://x.com/mailforfounders"
                   target="_blank"
@@ -371,6 +401,28 @@ export function WaitlistPage() {
                     </span>
                   </span>
                   <span className="text-lg text-[#2E6F40] transition-transform group-hover:translate-x-0.5">
+                    ↗
+                  </span>
+                </a>
+                <a
+                  href="https://www.youtube.com/@TryAloneFailAloneWinAlone"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Open the Try Alone Fail Alone Win Alone YouTube channel"
+                  className="group flex items-center gap-3 rounded-2xl border border-[#FF0000]/15 bg-[#FFF7F5] px-4 py-3.5 text-[#253D2C] backdrop-blur transition hover:-translate-y-0.5 hover:bg-white"
+                >
+                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#FF0000] text-sm text-white shadow-[0_8px_18px_rgba(255,0,0,0.18)]">
+                    ▶
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#D00000]/65">
+                      Behind the build
+                    </span>
+                    <span className="mt-0.5 block truncate text-sm font-bold">
+                      Try Alone · Fail Alone · Win Alone
+                    </span>
+                  </span>
+                  <span className="text-lg text-[#D00000] transition-transform group-hover:translate-x-0.5">
                     ↗
                   </span>
                 </a>
@@ -748,6 +800,25 @@ export function WaitlistPage() {
           padding: 0.85rem 1rem;
           box-shadow: 0 12px 28px rgba(212,123,41,0.08);
         }
+        .waitlist-video-card {
+          transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+        }
+        .waitlist-video-card:hover {
+          border-color: rgba(46,111,64,0.24);
+          box-shadow: 0 22px 48px rgba(37,61,44,0.14);
+          transform: translateY(-3px);
+        }
+        .waitlist-video-frame {
+          aspect-ratio: 16 / 9;
+          overflow: hidden;
+          background: #253D2C;
+        }
+        .waitlist-video-frame iframe {
+          display: block;
+          width: 100%;
+          height: 100%;
+          border: 0;
+        }
         .waitlist-category-card {
           min-height: 100%;
           transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
@@ -934,6 +1005,9 @@ export function WaitlistPage() {
           .waitlist-feature-card,
           .waitlist-category-card,
           .waitlist-form-card {
+            transition: none;
+          }
+          .waitlist-video-card {
             transition: none;
           }
         }
