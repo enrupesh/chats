@@ -1147,8 +1147,8 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
           }
             isOfficial={isOfficialChat}
         />
-          {isOfficialChat && <OfficialWelcomeMessage />}
           {isOfficialChat && <SupportFollowUps />}
+          {isOfficialChat && <OfficialWelcomeMessage />}
         {!filteredMessages || filteredMessages.length === 0 ? (
           <EmptyState
             title={searchOpen && searchQuery ? "No matches" : "No messages yet"}
