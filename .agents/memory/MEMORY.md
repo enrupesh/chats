@@ -2,3 +2,4 @@
 - [Donation payment boundary](donation-payment-boundary.md) — collect donation intent only until a payment provider is explicitly selected; never collect payment credentials in VeilChat forms.
 - [Founder and support account boundary](founder-support-boundary.md) — keep founder verification/access separate from the official support flag so founder chats retain normal privacy behavior.
 - [Official Team welcome](official-welcome-ttl.md) — keep onboarding copy as permanent Team-chat UI, not as a database message or account-creation side effect.
+- [Workspace dependency materialization](workspace-dependency-materialization.md) — a locked workspace dependency may still need a filtered pnpm install before Vite/typechecks can resolve it.

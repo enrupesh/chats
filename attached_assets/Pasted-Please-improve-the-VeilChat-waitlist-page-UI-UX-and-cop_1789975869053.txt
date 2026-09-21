@@ -1,0 +1,119 @@
+Please improve the VeilChat `/waitlist` page UI/UX and copy while keeping the same core offer and functionality.
+
+### 1. Hero section
+
+Make the main message much clearer and more professional.
+
+Use:
+**Your professional email. On your own domain. Just $1.**
+
+Add a short supporting line explaining that users get a professional custom-domain inbox plus templates, analytics, AI-powered email tools, and more.
+
+Do not make the hero overly large or cluttered.
+
+### 2. Founder perk
+
+Make the founder benefit highly visible directly below the hero:
+
+**🎁 Founder Perk — Qualifying founders get 5 months free**
+
+Keep the existing qualification concept where users can share their website or LinkedIn profile.
+
+### 3. Clarify the $1 offer
+
+Clearly specify whether the $1 price is monthly, one-time, or another billing period. Do not leave this ambiguous. Use the actual intended pricing model.
+
+### 4. Feature section
+
+Improve the current feature cards and group them into three clear categories:
+
+**Professional Email**
+
+* Custom-domain inbox
+* Premium templates
+* Temporary email aliases
+
+**AI-Powered**
+
+* AI marketing emails
+* AI reply agent
+
+**Analytics**
+
+* Email opens
+* Link clicks
+* Campaign performance
+
+Keep the existing functionality; this is mainly a UI/UX and presentation improvement.
+
+### 5. Fix the top navigation text
+
+The current text:
+**“AI reply agentready”**
+looks broken.
+
+Change it to something clean such as:
+**AI reply agent**
+or
+**AI reply agent — ready when you are**
+
+### 6. Waitlist form
+
+Make the CTA stronger and more founder-focused.
+
+Change:
+**Join the waitlist →**
+
+to:
+
+**Reserve My Founder Spot →**
+
+Keep:
+
+* Email required
+* Website optional
+* LinkedIn optional
+
+Under the form, show:
+**No password. No payment details. Unsubscribe anytime.**
+
+### 7. Explain why website/LinkedIn is requested
+
+Add a small explanation:
+
+“Website or LinkedIn is optional, but sharing it helps us verify qualifying founders and send more relevant founder updates.”
+
+Keep this concise.
+
+### 8. Clarify the relationship with VeilChat
+
+Because VeilChat is primarily known as a private messaging product, make the relationship with this email product clear without confusing users.
+
+For example, add a subtle label such as:
+
+**A new product from the VeilChat team**
+
+or, if appropriate for the final branding:
+
+**From the team behind VeilChat**
+
+Do not make it look like the email product is a messaging feature.
+
+### 9. Overall design
+
+Make the page feel like a polished modern startup launch page:
+
+* Better typography hierarchy
+* More whitespace
+* Clean feature cards
+* Strong but not excessive CTA emphasis
+* Excellent mobile responsiveness
+* Keep the existing dark/privacy-focused VeilChat visual identity
+* Avoid unnecessary animations
+* Make sure all buttons and form fields are clearly visible on mobile and desktop
+
+### Important
+
+Do not remove any existing waitlist functionality, database integration, founder qualification logic, or social links.
+
+This should be a **UI/UX + copy + clarity improvement**, not a rewrite of the backend.

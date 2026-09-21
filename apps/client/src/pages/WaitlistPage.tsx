@@ -86,7 +86,7 @@ export function WaitlistPage() {
         <div className="waitlist-scene-card waitlist-scene-card-one">
           <span className="waitlist-scene-card-dot" />
           AI reply agent
-          <strong>ready</strong>
+          <strong>ready when you are</strong>
         </div>
         <div className="waitlist-scene-card waitlist-scene-card-two">
           <span className="waitlist-scene-card-spark">+</span>
@@ -119,27 +119,38 @@ export function WaitlistPage() {
           <section className="waitlist-reveal waitlist-reveal-delay-1">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#68BA7F]/35 bg-[#E8FAEE]/85 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-[#2E6F40] shadow-[0_8px_30px_rgba(46,111,64,0.08)] backdrop-blur">
               <span className="size-1.5 rounded-full bg-[#2E6F40]" />
-              Founder's launch room · Launch very soon
+               A new product from the VeilChat team
             </div>
             <h1
-              className="mt-6 max-w-2xl text-5xl font-semibold leading-[0.94] tracking-[-0.055em] text-[#253D2C] sm:text-7xl"
+               className="mt-6 max-w-2xl text-5xl font-semibold leading-[0.96] tracking-[-0.055em] text-[#253D2C] sm:text-6xl"
               style={{ fontFamily: "'Fraunces', 'Inter', serif" }}
             >
-              Your domain.
+               Your professional email.
               <br />
-              Your professional inbox.
+               On your own domain.
               <br />
-              <span className="waitlist-price-shine">$1.</span>
+               <span className="waitlist-price-shine">Just $1/month.</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-[#3C5A47]">
-              A serious email address on your own custom domain, for just{" "}
-              <strong className="text-[#2E6F40]">$1</strong>. Join the founder
-              list and help shape the tools your next chapter needs. Qualifying
-              founders who share their website or LinkedIn can get{" "}
-              <strong className="text-[#2E6F40]">5 months free</strong>.
+               Get a professional custom-domain inbox for{" "}
+               <strong className="text-[#2E6F40]">$1/month</strong>, plus premium
+               templates, analytics, AI-powered email tools, and more.
             </p>
 
-            <div className="waitlist-3d-stage mt-8" aria-hidden="true">
+             <div className="waitlist-founder-perk mt-6">
+               <span className="text-xl" aria-hidden="true">🎁</span>
+               <div>
+                 <p className="text-sm font-bold text-[#253D2C]">
+                   Founder Perk — Qualifying founders get 5 months free
+                 </p>
+                 <p className="mt-1 text-xs leading-relaxed text-[#3C5A47]/70">
+                   Share your website or LinkedIn profile so we can verify your
+                   founder status.
+                 </p>
+               </div>
+             </div>
+
+             <div className="waitlist-3d-stage mt-7" aria-hidden="true">
               <div className="waitlist-3d-shadow" />
               <div className="waitlist-3d-ring waitlist-3d-ring-back" />
               <div className="waitlist-3d-ring waitlist-3d-ring-front" />
@@ -159,34 +170,26 @@ export function WaitlistPage() {
 
             <div className="waitlist-launch-note mt-6">
               <span className="waitlist-launch-note-pulse" />
-              <span>Built with founders. More launch benefits will be added before release.</span>
+               <span>Founder pricing is reserved for early launch members.</span>
             </div>
 
-            <div className="mt-8 grid gap-3 sm:grid-cols-2">
-              {[
-                ["$1 custom-domain email", "A professional inbox on your own domain."],
-                ["Premium templates", "Ready-to-send emails for launches and sales."],
-                ["Analytics", "Understand what gets opened and clicked."],
-                ["AI marketing emails", "Draft campaigns and outreach faster."],
-                ["AI reply agent", "Get help writing thoughtful email replies."],
-                ["Temporary emails", "Use safer aliases when you need them."],
-                ["Founder perk", "Qualifying founders get 5 months free on their domain."],
-              ].map(([title, detail]) => (
-                <div
-                  key={title}
-                  className="waitlist-feature-card rounded-2xl border border-[#253D2C]/10 bg-white/70 p-4 backdrop-blur"
-                >
-                  <div className="flex items-start gap-3">
-                    <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-[#E8FAEE] text-[#2E6F40]">
-                      ✓
-                    </span>
-                    <div>
-                      <h2 className="text-sm font-bold text-[#253D2C]">{title}</h2>
-                      <p className="mt-1 text-xs leading-relaxed text-[#3C5A47]/65">{detail}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+             <div className="mt-8 grid gap-3 sm:grid-cols-3">
+               <FeatureGroup
+                 title="Professional Email"
+                 items={[
+                   "Custom-domain inbox",
+                   "Premium templates",
+                   "Temporary email aliases",
+                 ]}
+               />
+               <FeatureGroup
+                 title="AI-Powered"
+                 items={["AI marketing emails", "AI reply agent"]}
+               />
+               <FeatureGroup
+                 title="Analytics"
+                 items={["Email opens", "Link clicks", "Campaign performance"]}
+               />
             </div>
           </section>
 
@@ -220,12 +223,16 @@ export function WaitlistPage() {
                   Get early access
                 </p>
                 <h2 className="mt-2 text-3xl font-semibold tracking-tight text-[#111B21]">
-                  Reserve your founder spot
+                   Reserve My Founder Spot
                 </h2>
                 <p className="mt-3 text-sm leading-relaxed text-[#253D2C]/60">
-                  Email is required. Website and LinkedIn are optional, but
-                  sharing them helps us send relevant founder feedback.
+                   Reserve the $1/month launch price and get five months free if
+                   you qualify as a founder.
                 </p>
+                 <p className="mt-2 text-xs leading-relaxed text-[#253D2C]/55">
+                   Website or LinkedIn is optional, but sharing it helps us verify
+                   qualifying founders and send more relevant founder updates.
+                 </p>
 
                 <form className="mt-7 space-y-4" onSubmit={(event) => void submit(event)}>
                   <Field label="Email address" required>
@@ -271,7 +278,7 @@ export function WaitlistPage() {
                     disabled={busy}
                     className="w-full rounded-full bg-[#2E6F40] px-6 py-3.5 text-sm font-bold text-white shadow-[0_14px_28px_-14px_rgba(46,111,64,0.7)] transition hover:bg-[#253D2C] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {busy ? "Saving your spot…" : "Join the waitlist →"}
+                     {busy ? "Saving your spot…" : "Reserve My Founder Spot →"}
                   </button>
                 </form>
 
@@ -714,6 +721,26 @@ export function WaitlistPage() {
           box-shadow: 0 0 0 0 rgba(212,123,41,0.35);
           animation: waitlist-pulse 2s infinite;
         }
+        .waitlist-founder-perk {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.75rem;
+          max-width: 32rem;
+          border: 1px solid rgba(212,123,41,0.24);
+          border-radius: 1rem;
+          background: rgba(255,248,235,0.86);
+          padding: 0.85rem 1rem;
+          box-shadow: 0 12px 28px rgba(212,123,41,0.08);
+        }
+        .waitlist-category-card {
+          min-height: 100%;
+          transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+        }
+        .waitlist-category-card:hover {
+          border-color: rgba(46,111,64,0.25);
+          box-shadow: 0 14px 28px rgba(37,61,44,0.08);
+          transform: translateY(-3px);
+        }
         .waitlist-feature-card {
           transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
         }
@@ -889,6 +916,7 @@ export function WaitlistPage() {
             animation: none;
           }
           .waitlist-feature-card,
+          .waitlist-category-card,
           .waitlist-form-card {
             transition: none;
           }
@@ -910,6 +938,28 @@ export function WaitlistPage() {
         }
       `}</style>
     </main>
+  );
+}
+
+function FeatureGroup({
+  title,
+  items,
+}: {
+  title: string;
+  items: string[];
+}) {
+  return (
+    <div className="waitlist-category-card rounded-2xl border border-[#253D2C]/10 bg-white/70 p-4 backdrop-blur">
+      <h2 className="text-sm font-bold text-[#253D2C]">{title}</h2>
+      <ul className="waitlist-category-list mt-3 space-y-2">
+        {items.map((item) => (
+          <li key={item} className="flex items-start gap-2 text-xs leading-relaxed text-[#3C5A47]/75">
+            <span className="mt-0.5 text-[#2E6F40]" aria-hidden="true">✓</span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
