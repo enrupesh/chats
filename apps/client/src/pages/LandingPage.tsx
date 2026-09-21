@@ -2486,6 +2486,63 @@ function Footer() {
                 hello@sendora.me
               </span>
             </a>
+            <div className="mt-7">
+              <div className="text-[11px] font-bold tracking-[0.18em] uppercase text-white/80">
+                Follow VeilChat
+              </div>
+              <div className="mt-3 flex items-center gap-2.5">
+                <SocialIcon label="VeilChat on X" href="https://x.com/mailforfounders">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817-5.963 6.817H1.684l7.73-8.835L1.258 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z" />
+                  </svg>
+                </SocialIcon>
+                <SocialIcon
+                  label="VeilChat on Instagram"
+                  href="https://www.instagram.com/entrepreneur.rupesh/"
+                >
+                  <svg
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="5" />
+                    <circle cx="12" cy="12" r="4.2" />
+                    <circle cx="17.4" cy="6.7" r="1" fill="currentColor" stroke="none" />
+                  </svg>
+                </SocialIcon>
+                <SocialIcon
+                  label="VeilChat profile"
+                  href="https://www.veilchat.me/discover/64c2bf97-4eac-4420-ad9d-5b9fe58df06a"
+                >
+                  <svg
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 2.8 19 5.6v5.2c0 4.5-2.9 8.1-7 10.4-4.1-2.3-7-5.9-7-10.4V5.6l7-2.8Z" />
+                    <path d="m8.6 12 2.2 2.2 4.7-4.7" />
+                  </svg>
+                </SocialIcon>
+              </div>
+            </div>
           </div>
 
           <FooterCol
