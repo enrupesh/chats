@@ -108,6 +108,20 @@ import { enableScreenSecurity, disableScreenSecurity } from "../lib/screenSecuri
 const POLL_MS = 3000;
 export const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_VOICE_MS = 2 * 60 * 1000;
+const OFFICIAL_CHAT_RESTRICTION_MESSAGE =
+  "VeilChat Team is the official support contact. You can send regular messages, photos, and voice notes here. Polls, scheduled messages, and disappearing or view-once messages aren't available in this chat.";
+
+function chatErrorMessage(error: unknown, isOfficialChat: boolean): string {
+  const raw = error instanceof Error ? error.message : "";
+  if (
+    isOfficialChat &&
+    /not connected|only message people you're connected/i.test(raw)
+  ) {
+    return OFFICIAL_CHAT_RESTRICTION_MESSAGE;
+  }
+  return raw || "Couldn't complete that action.";
+}
+
 export const TTL_OPTIONS: { label: string; seconds: number }[] = [
   { label: "Off", seconds: 0 },
   { label: "24 hours", seconds: 60 * 60 * 24 },
@@ -310,13 +324,17 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
   const handleChatPollVote = useCallback(
     async (pollId: string, choiceIdx: number) => {
       if (!identity || !peerId) return;
+      if (isOfficialChat) {
+        setError(OFFICIAL_CHAT_RESTRICTION_MESSAGE);
+        return;
+      }
       try {
         await sendChatPollVote(identity, peerId, pollId, choiceIdx);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Vote failed");
+        setError(chatErrorMessage(e, isOfficialChat));
       }
     },
-    [identity, peerId],
+    [identity, isOfficialChat, peerId],
   );
 
   /** Build a reply ref from a row the user just tapped "Reply" on. */
@@ -660,6 +678,13 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
   async function onSendText() {
     const text = draft.trim();
     if (!text) return;
+    if (
+      isOfficialChat &&
+      (ttlSeconds > 0 || seenTtlSeconds > 0 || oneShotViewOnce)
+    ) {
+      setError(OFFICIAL_CHAT_RESTRICTION_MESSAGE);
+      return;
+    }
     setSending(true);
     setError(null);
     try {
@@ -677,7 +702,7 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
       setOneShotViewOnce(false);
       sendActivity(false, "text");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't send.");
+      setError(chatErrorMessage(e, isOfficialChat));
     } finally {
       setSending(false);
     }
@@ -689,6 +714,9 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
   async function onScheduleMessage(text: string, scheduledFor: string) {
     if (!identity) {
       throw new Error("You need to unlock your account to schedule messages.");
+    }
+    if (isOfficialChat) {
+      throw new Error(OFFICIAL_CHAT_RESTRICTION_MESSAGE);
     }
     const { scheduleServerMessage } = await import("../lib/scheduledServer");
     const result = await scheduleServerMessage(
@@ -713,6 +741,16 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
   }
 
   async function onPickImage(file: File) {
+    if (
+      isOfficialChat &&
+      (ttlSeconds > 0 ||
+        seenTtlSeconds > 0 ||
+        viewOnceDefault ||
+        oneShotViewOnce)
+    ) {
+      setError(OFFICIAL_CHAT_RESTRICTION_MESSAGE);
+      return;
+    }
     setSending(true);
     setError(null);
     try {
@@ -761,7 +799,7 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
       setReplyTo(null);
       setOneShotViewOnce(false);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't send image.");
+      setError(chatErrorMessage(e, isOfficialChat));
     } finally {
       setPendingSend(null);
       const u = pendingSendUrlRef.current;
@@ -772,6 +810,10 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
   }
 
   async function onSendVoice(bytes: Uint8Array, mime: string, durationMs: number) {
+    if (isOfficialChat && (ttlSeconds > 0 || seenTtlSeconds > 0)) {
+      setError(OFFICIAL_CHAT_RESTRICTION_MESSAGE);
+      return;
+    }
     setSending(true);
     setPendingSend({ kind: "voice", durationMs });
     setError(null);
@@ -797,7 +839,7 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
         });
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't send voice note.");
+      setError(chatErrorMessage(e, isOfficialChat));
     } finally {
       setPendingSend(null);
       setSending(false);
@@ -1191,7 +1233,15 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
 
       {error && (
         <div className="px-3 pb-2">
-          <ErrorMessage>{error}</ErrorMessage>
+          <ErrorMessage
+            title={
+              error === OFFICIAL_CHAT_RESTRICTION_MESSAGE
+                ? "Official support chat"
+                : undefined
+            }
+          >
+            {error}
+          </ErrorMessage>
         </div>
       )}
 
@@ -1299,12 +1349,24 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
           onSendVoice={onSendVoice}
           viewOnceDefault={viewOnceDefault}
           oneShotViewOnce={oneShotViewOnce}
-          onToggleOneShotViewOnce={() => setOneShotViewOnce((v) => !v)}
+          onToggleOneShotViewOnce={() => {
+            if (isOfficialChat) {
+              setError(OFFICIAL_CHAT_RESTRICTION_MESSAGE);
+              return;
+            }
+            setOneShotViewOnce((v) => !v);
+          }}
           replyTo={replyTo}
           onClearReply={() => setReplyTo(null)}
           onSchedule={onScheduleMessage}
           onActivity={sendActivity}
-          onCreatePoll={() => setPollOpen(true)}
+          onCreatePoll={() => {
+            if (isOfficialChat) {
+              setError(OFFICIAL_CHAT_RESTRICTION_MESSAGE);
+              return;
+            }
+            setPollOpen(true);
+          }}
         />
       )}
 
