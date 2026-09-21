@@ -126,7 +126,7 @@ export function WaitlistPage() {
         </header>
 
         <div className="mx-auto mt-12 grid max-w-5xl gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-          <section className="waitlist-reveal waitlist-reveal-delay-1">
+          <section className="waitlist-reveal waitlist-reveal-delay-1 min-w-0">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#68BA7F]/35 bg-[#E8FAEE]/85 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-[#2E6F40] shadow-[0_8px_30px_rgba(46,111,64,0.08)] backdrop-blur">
               <span className="size-1.5 rounded-full bg-[#2E6F40]" />
                A new product from the VeilChat team
@@ -187,7 +187,7 @@ export function WaitlistPage() {
                <span>Founder pricing is reserved for early launch members.</span>
             </div>
 
-             <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              <div className="waitlist-feature-grid mt-8 grid min-w-0 gap-3 sm:grid-cols-3">
                <FeatureGroup
                  title="Professional Email"
                  items={[
@@ -206,8 +206,8 @@ export function WaitlistPage() {
                />
             </div>
 
-              <div className="waitlist-video-card mt-5 overflow-hidden rounded-[1.5rem] border border-white/80 bg-white/70 shadow-[0_18px_42px_rgba(37,61,44,0.1)] backdrop-blur">
-                <div className="flex items-center justify-between gap-4 px-4 py-3.5 sm:px-5">
+               <div className="waitlist-video-card mt-5 overflow-hidden rounded-[1.5rem] border border-white/80 bg-white/70 shadow-[0_18px_42px_rgba(37,61,44,0.1)] backdrop-blur">
+                 <div className="flex items-center justify-between gap-3 px-3.5 py-3 sm:px-4">
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#2E6F40]">
                       See the idea
@@ -220,12 +220,12 @@ export function WaitlistPage() {
                     href="https://www.youtube.com/@TryAloneFailAloneWinAlone"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="shrink-0 rounded-full border border-[#253D2C]/12 bg-white/75 px-3 py-2 text-xs font-bold text-[#2E6F40] transition hover:-translate-y-0.5 hover:bg-white"
+                   className="shrink-0 rounded-full border border-[#253D2C]/12 bg-white/75 px-2.5 py-1.5 text-[11px] font-bold text-[#2E6F40] transition hover:-translate-y-0.5 hover:bg-white"
                   >
                     YouTube ↗
                   </a>
                 </div>
-                <div className="waitlist-video-frame">
+                 <div className="waitlist-video-frame">
                   <iframe
                     src="https://www.youtube-nocookie.com/embed/lX0VAINKnAY?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1"
                     title="VeilChat founder launch video"
@@ -237,7 +237,7 @@ export function WaitlistPage() {
               </div>
           </section>
 
-          <section className="waitlist-reveal waitlist-reveal-delay-2 waitlist-form-card rounded-[2rem] border border-white/75 bg-white/90 p-6 shadow-[0_24px_70px_rgba(37,61,44,0.16)] backdrop-blur-xl sm:p-8">
+          <section className="waitlist-reveal waitlist-reveal-delay-2 waitlist-form-card min-w-0 rounded-[2rem] border border-white/75 bg-white/90 p-6 shadow-[0_24px_70px_rgba(37,61,44,0.16)] backdrop-blur-xl sm:p-8">
             {submitted ? (
               <div className="py-8 text-center">
                 <div className="mx-auto grid size-16 place-items-center rounded-full bg-[#E8FAEE] text-3xl text-[#2E6F40]">
@@ -331,30 +331,30 @@ export function WaitlistPage() {
                 </p>
               </>
             )}
-            <div className="mt-8 border-t border-[#253D2C]/10 pt-6">
+             <div className="mt-8 border-t border-[#253D2C]/10 pt-6">
               <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#2E6F40]">
                 Follow the launch
               </p>
-              <div className="mt-2 grid gap-3 sm:grid-cols-2">
+               <div className="waitlist-social-grid mt-2 grid grid-cols-2 gap-2">
                 <a
                   href="https://x.com/mailforfounders"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Follow Mail for Founders on X"
-                  className="group flex items-center gap-3 rounded-2xl border border-[#253D2C] bg-[#253D2C] px-4 py-3.5 text-[#FCF5EB] shadow-[0_14px_30px_-18px_rgba(37,61,44,0.9)] transition hover:-translate-y-0.5 hover:bg-[#2E6F40]"
+                   className="waitlist-social-card group flex min-w-0 items-center gap-2 rounded-xl border border-[#253D2C] bg-[#253D2C] px-2.5 py-2.5 text-[#FCF5EB] shadow-[0_10px_22px_-16px_rgba(37,61,44,0.9)] transition hover:-translate-y-0.5 hover:bg-[#2E6F40]"
                 >
-                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white/10 text-lg font-semibold">
+                   <span className="grid size-8 shrink-0 place-items-center rounded-full bg-white/10 text-base font-semibold">
                     𝕏
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#BFE8C8]">
+                     <span className="block truncate text-[8px] font-bold uppercase tracking-[0.08em] text-[#BFE8C8]">
                       Official launch updates
                     </span>
-                    <span className="mt-0.5 block truncate text-sm font-bold">
+                     <span className="mt-0.5 block truncate text-[11px] font-bold">
                       @mailforfounders
                     </span>
                   </span>
-                  <span className="text-lg transition-transform group-hover:translate-x-0.5">
+                   <span className="text-base transition-transform group-hover:translate-x-0.5">
                     ↗
                   </span>
                 </a>
@@ -363,20 +363,20 @@ export function WaitlistPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Follow Mail for Founders on Instagram"
-                  className="group flex items-center gap-3 rounded-2xl border border-[#253D2C]/10 bg-white/70 px-4 py-3.5 text-[#253D2C] backdrop-blur transition hover:-translate-y-0.5 hover:bg-white"
+                   className="waitlist-social-card group flex min-w-0 items-center gap-2 rounded-xl border border-[#253D2C]/10 bg-white/70 px-2.5 py-2.5 text-[#253D2C] backdrop-blur transition hover:-translate-y-0.5 hover:bg-white"
                 >
-                  <span className="grid size-10 shrink-0 place-items-center rounded-full border border-[#253D2C]/15 text-sm font-bold">
+                   <span className="grid size-8 shrink-0 place-items-center rounded-full border border-[#253D2C]/15 text-xs font-bold">
                     IG
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#3C5A47]/60">
+                     <span className="block truncate text-[8px] font-bold uppercase tracking-[0.08em] text-[#3C5A47]/60">
                       Official Instagram
                     </span>
-                    <span className="mt-0.5 block truncate text-sm font-bold">
+                     <span className="mt-0.5 block truncate text-[11px] font-bold">
                       @mailforfounders
                     </span>
                   </span>
-                  <span className="text-lg text-[#2E6F40] transition-transform group-hover:translate-x-0.5">
+                   <span className="text-base text-[#2E6F40] transition-transform group-hover:translate-x-0.5">
                     ↗
                   </span>
                 </a>
@@ -385,22 +385,22 @@ export function WaitlistPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Open the official VeilChat profile"
-                  className="group flex items-center gap-3 rounded-2xl border border-[#68BA7F]/30 bg-[#E8FAEE]/80 px-4 py-3.5 text-[#253D2C] backdrop-blur transition hover:-translate-y-0.5 hover:bg-[#E8FAEE]"
+                   className="waitlist-social-card group flex min-w-0 items-center gap-2 rounded-xl border border-[#68BA7F]/30 bg-[#E8FAEE]/80 px-2.5 py-2.5 text-[#253D2C] backdrop-blur transition hover:-translate-y-0.5 hover:bg-[#E8FAEE]"
                 >
                   <img
                     src={waitlistOfferArt}
                     alt=""
-                    className="size-10 shrink-0 rounded-full object-cover"
+                     className="size-8 shrink-0 rounded-full object-cover"
                   />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#2E6F40]">
+                     <span className="block truncate text-[8px] font-bold uppercase tracking-[0.08em] text-[#2E6F40]">
                       Official VeilChat profile
                     </span>
-                    <span className="mt-0.5 block truncate text-sm font-bold">
+                     <span className="mt-0.5 block truncate text-[11px] font-bold">
                       Meet VeilChat
                     </span>
                   </span>
-                  <span className="text-lg text-[#2E6F40] transition-transform group-hover:translate-x-0.5">
+                   <span className="text-base text-[#2E6F40] transition-transform group-hover:translate-x-0.5">
                     ↗
                   </span>
                 </a>
@@ -409,20 +409,20 @@ export function WaitlistPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Open the Try Alone Fail Alone Win Alone YouTube channel"
-                  className="group flex items-center gap-3 rounded-2xl border border-[#FF0000]/15 bg-[#FFF7F5] px-4 py-3.5 text-[#253D2C] backdrop-blur transition hover:-translate-y-0.5 hover:bg-white"
+                   className="waitlist-social-card group flex min-w-0 items-center gap-2 rounded-xl border border-[#FF0000]/15 bg-[#FFF7F5] px-2.5 py-2.5 text-[#253D2C] backdrop-blur transition hover:-translate-y-0.5 hover:bg-white"
                 >
-                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#FF0000] text-sm text-white shadow-[0_8px_18px_rgba(255,0,0,0.18)]">
+                   <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#FF0000] text-xs text-white shadow-[0_8px_18px_rgba(255,0,0,0.18)]">
                     ▶
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#D00000]/65">
+                     <span className="block truncate text-[8px] font-bold uppercase tracking-[0.08em] text-[#D00000]/65">
                       Behind the build
                     </span>
-                    <span className="mt-0.5 block truncate text-sm font-bold">
+                     <span className="mt-0.5 block truncate text-[11px] font-bold">
                       Try Alone · Fail Alone · Win Alone
                     </span>
                   </span>
-                  <span className="text-lg text-[#D00000] transition-transform group-hover:translate-x-0.5">
+                   <span className="text-base text-[#D00000] transition-transform group-hover:translate-x-0.5">
                     ↗
                   </span>
                 </a>
@@ -809,8 +809,11 @@ export function WaitlistPage() {
           transform: translateY(-3px);
         }
         .waitlist-video-frame {
-          aspect-ratio: 16 / 9;
+          width: min(100%, 12rem);
+          aspect-ratio: 9 / 16;
+          margin-inline: auto;
           overflow: hidden;
+          border-radius: 0.9rem;
           background: #253D2C;
         }
         .waitlist-video-frame iframe {
@@ -819,10 +822,20 @@ export function WaitlistPage() {
           height: 100%;
           border: 0;
         }
+        .waitlist-social-card {
+          min-height: 3.25rem;
+        }
         .waitlist-category-card {
+           width: 100%;
+           min-width: 0;
+           box-sizing: border-box;
           min-height: 100%;
           transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
         }
+         .waitlist-category-list,
+         .waitlist-category-list li {
+           min-width: 0;
+         }
         .waitlist-category-card:hover {
           border-color: rgba(46,111,64,0.25);
           box-shadow: 0 14px 28px rgba(37,61,44,0.08);
@@ -906,6 +919,20 @@ export function WaitlistPage() {
           to { transform: rotateX(67deg) rotateZ(22deg) rotate(0deg); }
         }
         @media (max-width: 700px) {
+          .waitlist-shell {
+            overflow-x: clip;
+          }
+          .waitlist-feature-grid,
+          .waitlist-feature-grid > * {
+            width: 100%;
+            min-width: 0;
+          }
+          .waitlist-video-frame {
+            width: min(100%, 10.5rem);
+          }
+          .waitlist-category-list li {
+            overflow-wrap: anywhere;
+          }
           .waitlist-scene-grid {
             right: -42vw;
             bottom: -12vh;
