@@ -36,7 +36,6 @@ export function LandingPage() {
         variant="landing"
         className="mt-20 pt-2 sm:mt-20 sm:pt-3"
       />
-      <WaitlistAnnouncement />
       <AndroidDownloadBanner />
       {/* Wrap the page content in a `<main>` landmark so screen readers
           and Lighthouse can identify the primary content region. */}
@@ -252,34 +251,6 @@ function AndroidDownloadBanner() {
         </button>
       </div>
     </div>
-  );
-}
-
-function WaitlistAnnouncement() {
-  return (
-    <section
-      aria-label="Product launch waitlist"
-      className="mx-auto mt-4 max-w-7xl px-5 sm:px-8"
-    >
-      <div className="flex flex-col gap-4 rounded-2xl border border-[#2E6F40]/15 bg-[#E8FAEE] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#2E6F40]">
-            New product launch · 2 February 2027
-          </p>
-          <p className="mt-1 text-sm leading-relaxed text-[#253D2C]">
-            Professional email on your domain for $1, plus free early access to
-            premium templates, analytics, and AI email tools. Founders may
-            qualify for 5 months free.
-          </p>
-        </div>
-        <Link
-          to="/waitlist"
-          className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#2E6F40] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#253D2C]"
-        >
-          Join the waitlist →
-        </Link>
-      </div>
-    </section>
   );
 }
 
@@ -527,10 +498,10 @@ function Hero() {
               conversations stay between you and the people you talk to.
             </p>
 
-            <div className="mt-9 flex flex-col sm:flex-row gap-3 sm:items-center">
+            <div className="mt-9 grid w-full gap-3 sm:flex sm:items-center">
               <Link
                 to="/welcome"
-                className="group relative inline-flex items-center justify-center gap-2.5 bg-gradient-to-b from-[#3A8550] to-[#2E6F40] hover:from-[#2E6F40] hover:to-[#253D2C] text-white font-semibold text-[16px] px-7 py-4 rounded-full shadow-[0_18px_36px_-14px_rgba(46,111,64,0.55),inset_0_1px_0_rgba(255,255,255,0.22)] hover:shadow-[0_22px_44px_-14px_rgba(46,111,64,0.65),inset_0_1px_0_rgba(255,255,255,0.25)] transition-all"
+                className="group relative inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-gradient-to-b from-[#3A8550] to-[#2E6F40] px-7 py-4 text-[16px] font-semibold text-white shadow-[0_18px_36px_-14px_rgba(46,111,64,0.55),inset_0_1px_0_rgba(255,255,255,0.22)] transition-all hover:from-[#2E6F40] hover:to-[#253D2C] hover:shadow-[0_22px_44px_-14px_rgba(46,111,64,0.65),inset_0_1px_0_rgba(255,255,255,0.25)] sm:w-auto"
               >
                 Start chatting
                 <span className="grid place-items-center w-6 h-6 rounded-full bg-white/15 group-hover:bg-white/25 transition-colors">
@@ -542,14 +513,15 @@ function Hero() {
               </Link>
               <Link
                 to="/waitlist"
-                className="group inline-flex items-center justify-center gap-2.5 bg-[#E8FAEE] hover:bg-[#CFFFDC] border border-[#2E6F40]/15 text-[#2E6F40] font-semibold text-[16px] px-7 py-4 rounded-full transition-all"
+                className="waitlist-hero-cta group relative inline-flex w-full items-center justify-center gap-2.5 rounded-full border border-[#2E6F40]/20 bg-[#E8FAEE] px-7 py-4 text-[16px] font-semibold text-[#2E6F40] transition-all hover:bg-[#CFFFDC] sm:w-auto"
               >
+                <span className="waitlist-hero-cta-badge">Early access</span>
                 Join the $1 email waitlist
                 <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
               </Link>
               <a
                 href="#how"
-                className="group inline-flex items-center justify-center gap-2.5 bg-white/70 hover:bg-white border border-[#253D2C]/12 hover:border-[#2E6F40]/35 text-[#253D2C] hover:text-[#2E6F40] font-semibold text-[16px] px-7 py-4 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_2px_8px_-4px_rgba(17,27,33,0.08)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,1),0_12px_28px_-12px_rgba(46,111,64,0.3)] backdrop-blur-sm transition-all"
+                className="group inline-flex w-full items-center justify-center gap-2.5 rounded-full border border-[#253D2C]/12 bg-white/70 px-7 py-4 text-[16px] font-semibold text-[#253D2C] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_2px_8px_-4px_rgba(17,27,33,0.08)] backdrop-blur-sm transition-all hover:border-[#2E6F40]/35 hover:bg-white hover:text-[#2E6F40] hover:shadow-[inset_0_1px_0_rgba(255,255,255,1),0_12px_28px_-12px_rgba(46,111,64,0.3)] sm:w-auto"
               >
                 See how it works
                 <span className="grid place-items-center w-6 h-6 rounded-full bg-[#CFFFDC] text-[#2E6F40] group-hover:bg-[#2E6F40] group-hover:text-white transition-colors">
