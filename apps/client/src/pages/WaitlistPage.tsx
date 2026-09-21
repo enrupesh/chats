@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "../components/Layout";
 import { getApiBaseUrl } from "../lib/apiBase";
@@ -19,7 +19,6 @@ const initialForm: WaitlistForm = {
 type WaitlistResponse = {
   joined?: boolean;
   alreadyJoined?: boolean;
-  count?: number;
   error?: string;
 };
 
@@ -32,24 +31,9 @@ export function WaitlistPage() {
   });
 
   const [form, setForm] = useState<WaitlistForm>(initialForm);
-  const [count, setCount] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState<WaitlistResponse | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    void fetch(`${getApiBaseUrl()}/waitlist/count`, { cache: "no-store" })
-      .then(async (response) => {
-        if (!response.ok) return;
-        const payload = (await response.json()) as { count?: number };
-        if (active && typeof payload.count === "number") setCount(payload.count);
-      })
-      .catch(() => undefined);
-    return () => {
-      active = false;
-    };
-  }, []);
 
   function update<K extends keyof WaitlistForm>(key: K, value: WaitlistForm[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -74,7 +58,6 @@ export function WaitlistPage() {
         throw new Error(payload?.error || "We couldn't save your spot. Please try again.");
       }
       setSubmitted(payload ?? { joined: true });
-      if (typeof payload?.count === "number") setCount(payload.count);
       setForm(initialForm);
     } catch (submissionError) {
       setError(
@@ -223,11 +206,6 @@ export function WaitlistPage() {
                   We saved your interest. We’ll share launch updates and early
                   access details by email.
                 </p>
-                {(submitted.count ?? count ?? 0) > 0 && (
-                  <p className="mt-6 text-sm font-semibold text-[#2E6F40]">
-                    {submitted.count ?? count} people are waiting with you.
-                  </p>
-                )}
                 <button
                   type="button"
                   onClick={() => setSubmitted(null)}
@@ -300,11 +278,6 @@ export function WaitlistPage() {
                 <p className="mt-4 text-center text-xs leading-relaxed text-[#253D2C]/45">
                   No password. No payment details. Unsubscribe anytime.
                 </p>
-                {count !== null && count > 0 && (
-                  <p className="mt-6 text-center text-sm font-semibold text-[#2E6F40]">
-                    {count} early members have joined
-                  </p>
-                )}
               </>
             )}
           </section>

@@ -2438,6 +2438,27 @@ function Footer() {
   return (
     <footer style={{ backgroundColor: "#111B21", color: "#FCF5EB" }}>
       <div className="mx-auto max-w-7xl px-5 sm:px-8 py-16">
+        <Link
+          to="/waitlist"
+          className="mb-12 block rounded-2xl border border-[#68BA7F]/25 bg-[#68BA7F]/10 p-5 sm:p-6 transition-colors hover:border-[#68BA7F]/45 hover:bg-[#68BA7F]/15"
+        >
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#9BD4A8]">
+                Founder launch room
+              </div>
+              <div className="mt-1 text-[19px] font-semibold tracking-tight text-white">
+                $1 custom-domain email is launching soon.
+              </div>
+              <div className="mt-1 text-[13.5px] text-[#FCF5EB]/70">
+                Join the waitlist for launch updates and founder access.
+              </div>
+            </div>
+            <span className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#68BA7F] px-4 py-2.5 text-[13px] font-bold text-[#111B21]">
+              Join the waitlist →
+            </span>
+          </div>
+        </Link>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
           <div>
             <a href="#top" className="flex items-center gap-2.5">

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useDocumentMeta, SEO_SITE_URL } from "../lib/useDocumentMeta";
+import { WaitlistPromoCard } from "../components/WaitlistPromo";
 
 type Post = {
   href: string;
@@ -179,6 +180,10 @@ export function BlogIndexPage() {
           <span aria-hidden>·</span>
           <span>Updated {new Date().getFullYear()}</span>
         </div>
+      </section>
+
+      <section className="max-w-[820px] mx-auto px-5 sm:px-8 mt-10">
+        <WaitlistPromoCard />
       </section>
 
       {/* Posts list */}

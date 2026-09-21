@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState, type ReactNode } from "react";
+import { WaitlistPromoCard } from "./WaitlistPromo";
 
 export type BlogSource = {
   n: number;
@@ -215,13 +216,23 @@ export function BlogLayout({
               Try VeilChat — free, 30 seconds
             </Link>
             <Link
-              to="/"
+              to="/waitlist"
               className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 text-white font-medium px-5 py-3 rounded-full border border-white/15"
+            >
+              Join the launch waitlist
+            </Link>
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 text-white/75 hover:text-white font-medium px-2 py-3"
             >
               ← Back to home
             </Link>
           </div>
         </div>
+      </section>
+
+      <section className="max-w-[820px] mx-auto px-5 sm:px-8 pb-12">
+        <WaitlistPromoCard />
       </section>
 
       {/* Related reading */}

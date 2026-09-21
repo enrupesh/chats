@@ -308,6 +308,15 @@ export function GroupListPane({
         )}
       </div>
       <PaneFooter to="/chats" label="Direct chats" icon={<ChatIcon />} />
+      <div className="px-3 pb-3">
+        <Link
+          to="/waitlist"
+          className="flex items-center gap-2 rounded-lg px-3 py-2 text-[12px] font-semibold text-wa-green hover:bg-wa-green/10 transition-colors"
+        >
+          <span aria-hidden>✦</span>
+          <span className="truncate">Join the email launch waitlist</span>
+        </Link>
+      </div>
     </aside>
   );
 }

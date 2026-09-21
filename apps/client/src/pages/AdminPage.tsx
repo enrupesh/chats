@@ -582,10 +582,6 @@ function WaitlistContent({
 }: {
   waitlist: ReturnType<typeof useWaitlist>;
 }) {
-  const linkedCount = waitlist.data?.entries.filter(
-    (entry) => entry.websiteUrl || entry.linkedinUrl,
-  ).length;
-
   return (
     <div style={{ minHeight: "calc(100vh - 60px)", backgroundColor: "#FCF5EB" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 24px 80px" }}>
@@ -600,19 +596,6 @@ function WaitlistContent({
             Founders and early users interested in $1 custom-domain email,
             premium templates, analytics, and AI email tools.
           </p>
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 12, marginBottom: 20 }}>
-          <div style={{ background: "#253D2C", color: "#FCF5EB", borderRadius: 16, padding: 20 }}>
-            <div style={{ color: "rgba(252,245,235,0.65)", fontSize: 11, marginBottom: 8 }}>Total signups</div>
-            <strong style={{ display: "block", fontSize: 30, letterSpacing: "-0.04em" }}>{waitlist.data?.total ?? "—"}</strong>
-            <span style={{ display: "block", marginTop: 5, color: "rgba(252,245,235,0.58)", fontSize: 11 }}>All launch waitlist entries</span>
-          </div>
-          <div style={{ background: "white", border: "1px solid rgba(37,61,44,0.1)", borderRadius: 16, padding: 20 }}>
-            <div style={{ color: "rgba(37,61,44,0.48)", fontSize: 11, marginBottom: 8 }}>Founder links shared</div>
-            <strong style={{ display: "block", color: "#111B21", fontSize: 30, letterSpacing: "-0.04em" }}>{linkedCount ?? "—"}</strong>
-            <span style={{ display: "block", marginTop: 5, color: "rgba(37,61,44,0.45)", fontSize: 11 }}>Website or LinkedIn included</span>
-          </div>
         </div>
 
         <section style={{ background: "white", border: "1px solid rgba(37,61,44,0.1)", borderRadius: 18, overflow: "hidden" }}>
@@ -641,7 +624,7 @@ function WaitlistContent({
             <div style={{ padding: 28, color: "#A33A2B", fontSize: 13 }}>Could not load the waitlist.</div>
           ) : waitlist.filtered.length === 0 ? (
             <div style={{ padding: 32, color: "rgba(37,61,44,0.45)", fontSize: 13 }}>
-              {waitlist.search ? "No entries match this search." : "No one has joined yet."}
+              {waitlist.search ? "No entries match this search." : "No waitlist requests yet."}
             </div>
           ) : (
             <div style={{ overflowX: "auto" }}>
@@ -833,7 +816,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
           <div style={{ display: "flex", alignItems: "center", gap: 2, backgroundColor: activeTab === "status" ? "rgba(255,255,255,0.06)" : "rgba(37,61,44,0.07)", borderRadius: 10, padding: 3 }}>
             <button style={tabStyle("overview")} onClick={() => setActiveTab("overview")}>Overview</button>
             <button style={tabStyle("waitlist")} onClick={() => setActiveTab("waitlist")}>
-              Waitlist{waitlist.data ? ` (${waitlist.data.total})` : ""}
+              Waitlist
             </button>
             <button style={tabStyle("status")}   onClick={() => setActiveTab("status")}>System Status</button>
           </div>
