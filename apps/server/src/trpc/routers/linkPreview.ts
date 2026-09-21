@@ -31,6 +31,10 @@ const ALLOWED_ICON_MIME = new Set([
 
 const cache = new Map<string, { at: number; data: LinkPreview }>();
 const CACHE_TTL_MS = 10 * 60 * 1000;
+const WAITLIST_IMAGE_URL = "https://www.veilchat.me/waitlist-og.jpg";
+const WAITLIST_TITLE = "VeilChat for founders — professional email for $1";
+const WAITLIST_DESCRIPTION =
+  "Get a professional email address on your own custom domain for just $1. Join the VeilChat founder waitlist for early access and five months free.";
 
 function isPrivateHost(host: string): boolean {
   // Reject obvious local / RFC1918 / loopback / link-local before we
@@ -175,6 +179,29 @@ async function fetchPreview(rawUrl: string): Promise<LinkPreview> {
   }
   if (isPrivateHost(url.hostname)) {
     throw new TRPCError({ code: "BAD_REQUEST", message: "Host not allowed." });
+  }
+
+  // The SPA's static index.html contains the main VeilChat OG card. Keep
+  // that preview unchanged for the root site and every other route, while
+  // giving only the founder waitlist its own share card.
+  const isWaitlist =
+    (url.hostname === "www.veilchat.me" || url.hostname === "veilchat.me") &&
+    url.pathname === "/waitlist";
+  if (isWaitlist) {
+    const [imageDataUrl, iconDataUrl] = await Promise.all([
+      fetchInlineImage(WAITLIST_IMAGE_URL, MAX_IMAGE_BYTES, ALLOWED_IMAGE_MIME),
+      fetchInlineImage("https://www.veilchat.me/favicon.svg", MAX_ICON_BYTES, ALLOWED_ICON_MIME),
+    ]);
+    return {
+      url: rawUrl,
+      resolvedUrl: url.toString(),
+      title: WAITLIST_TITLE,
+      description: WAITLIST_DESCRIPTION,
+      siteName: "VeilChat",
+      imageUrl: WAITLIST_IMAGE_URL,
+      imageDataUrl,
+      iconDataUrl,
+    };
   }
 
   const ctrl = new AbortController();

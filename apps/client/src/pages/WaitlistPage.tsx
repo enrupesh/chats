@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Logo } from "../components/Layout";
+import waitlistOfferArt from "../assets/waitlist-offer-art.png";
 import { getApiBaseUrl } from "../lib/apiBase";
 import { useDocumentMeta } from "../lib/useDocumentMeta";
 
@@ -28,6 +28,8 @@ export function WaitlistPage() {
     description:
       "Get a professional email address on your own custom domain for just $1. Join the VeilChat founder waitlist for early access and five months free.",
     canonical: "https://www.veilchat.me/waitlist",
+    ogImage: "https://www.veilchat.me/waitlist-og.jpg",
+    ogType: "website",
   });
 
   const [form, setForm] = useState<WaitlistForm>(initialForm);
@@ -81,7 +83,11 @@ export function WaitlistPage() {
         <div className="waitlist-scene-ring waitlist-scene-ring-one" />
         <div className="waitlist-scene-ring waitlist-scene-ring-two" />
         <div className="waitlist-scene-core">
-          <span className="waitlist-scene-core-letter">V</span>
+          <img
+            src={waitlistOfferArt}
+            alt=""
+            className="h-full w-full rounded-[34%] object-cover"
+          />
         </div>
         <div className="waitlist-scene-card waitlist-scene-card-one">
           <span className="waitlist-scene-card-dot" />
@@ -100,7 +106,11 @@ export function WaitlistPage() {
       <div className="relative mx-auto max-w-6xl px-5 py-6 sm:px-8 sm:py-10">
         <header className="waitlist-reveal flex items-center justify-between gap-4">
           <Link to="/" aria-label="Back to VeilChat home">
-            <Logo />
+            <img
+              src={waitlistOfferArt}
+              alt="VeilChat"
+              className="size-16 rounded-[22%] object-cover shadow-[0_4px_14px_rgba(0,0,0,0.18)]"
+            />
           </Link>
           <div className="flex items-center gap-3">
             <span className="hidden text-xs font-bold uppercase tracking-[0.18em] text-[#253D2C]/45 sm:inline">
@@ -162,7 +172,11 @@ export function WaitlistPage() {
                   <span className="waitlist-mail-line" />
                 </div>
                 <div className="waitlist-3d-mail-side" />
-                <div className="waitlist-3d-mail-mark">V</div>
+                <img
+                  src={waitlistOfferArt}
+                  alt=""
+                  className="waitlist-3d-mail-mark"
+                />
               </div>
               <span className="waitlist-float-label waitlist-float-label-one">yourname@yourdomain</span>
               <span className="waitlist-float-label waitlist-float-label-two">private by design</span>
@@ -343,9 +357,11 @@ export function WaitlistPage() {
                   aria-label="Open the official VeilChat profile"
                   className="group flex items-center gap-3 rounded-2xl border border-[#68BA7F]/30 bg-[#E8FAEE]/80 px-4 py-3.5 text-[#253D2C] backdrop-blur transition hover:-translate-y-0.5 hover:bg-[#E8FAEE]"
                 >
-                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#2E6F40] text-sm font-bold text-white">
-                    V
-                  </span>
+                  <img
+                    src={waitlistOfferArt}
+                    alt=""
+                    className="size-10 shrink-0 rounded-full object-cover"
+                  />
                   <span className="min-w-0 flex-1">
                     <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#2E6F40]">
                       Official VeilChat profile
@@ -654,10 +670,10 @@ export function WaitlistPage() {
           position: absolute;
           right: 2.25rem;
           bottom: 1.15rem;
-          color: #2E6F40;
-          font-family: Georgia, serif;
-          font-size: 2.4rem;
-          font-weight: 700;
+          width: 2.4rem;
+          height: 2.4rem;
+          border-radius: 0.45rem;
+          object-fit: cover;
           transform: translateZ(1.7rem);
         }
         .waitlist-mail-dot {
