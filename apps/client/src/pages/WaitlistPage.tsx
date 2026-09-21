@@ -136,7 +136,7 @@ export function WaitlistPage() {
           <section className="waitlist-reveal waitlist-reveal-delay-1">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#68BA7F]/35 bg-[#E8FAEE]/85 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-[#2E6F40] shadow-[0_8px_30px_rgba(46,111,64,0.08)] backdrop-blur">
               <span className="size-1.5 rounded-full bg-[#2E6F40]" />
-              Founder's launch room · 02.02.27
+              Founder's launch room · Launch very soon
             </div>
             <h1
               className="mt-6 max-w-2xl text-5xl font-semibold leading-[0.94] tracking-[-0.055em] text-[#253D2C] sm:text-7xl"
