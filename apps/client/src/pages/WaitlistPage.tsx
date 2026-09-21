@@ -359,10 +359,10 @@ export function WaitlistPage() {
                   </span>
                 </a>
                 <a
-                  href="https://www.instagram.com/entrepreneur.rupesh/"
+                  href="https://www.instagram.com/mailforfounders/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Follow Rupesh on Instagram"
+                  aria-label="Follow Mail for Founders on Instagram"
                   className="group flex items-center gap-3 rounded-2xl border border-[#253D2C]/10 bg-white/70 px-4 py-3.5 text-[#253D2C] backdrop-blur transition hover:-translate-y-0.5 hover:bg-white"
                 >
                   <span className="grid size-10 shrink-0 place-items-center rounded-full border border-[#253D2C]/15 text-sm font-bold">
@@ -370,10 +370,10 @@ export function WaitlistPage() {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#3C5A47]/60">
-                      Behind the build
+                      Official Instagram
                     </span>
                     <span className="mt-0.5 block truncate text-sm font-bold">
-                      @entrepreneur.rupesh
+                      @mailforfounders
                     </span>
                   </span>
                   <span className="text-lg text-[#2E6F40] transition-transform group-hover:translate-x-0.5">
