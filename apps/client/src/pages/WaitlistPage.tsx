@@ -110,14 +110,16 @@ export function WaitlistPage() {
             </p>
 
             <h1 className="vc-headline">
-              Make your name
+              Your professional email.
               <br />
-              <span>look like yours.</span>
+              On your own domain.
+              <br />
+              <span>Just $1/month.</span>
             </h1>
 
             <p className="vc-deck">
-              Professional email on your own domain, with the quiet tools that help
-              you look ready before the room gets busy.
+              Get a professional custom-domain inbox for $1/month, plus premium
+              templates, analytics, AI-powered email tools, and more.
             </p>
 
             <div className="vc-price-line">
@@ -283,7 +285,7 @@ export function WaitlistPage() {
                   <SocialLink
                     href="https://x.com/mailforfounders"
                     label="Follow Mail for Founders on X"
-                    mark="X"
+                    icon="x"
                     title="@mailforfounders"
                     kind="dark"
                     testId="link-social-x"
@@ -291,7 +293,7 @@ export function WaitlistPage() {
                   <SocialLink
                     href="https://www.instagram.com/mailforfounders/"
                     label="Follow Mail for Founders on Instagram"
-                    mark="IG"
+                    icon="instagram"
                     title="@mailforfounders"
                     kind="light"
                     testId="link-social-instagram"
@@ -299,7 +301,7 @@ export function WaitlistPage() {
                   <SocialLink
                     href="https://www.veilchat.me/discover/64c2bf97-4eac-4420-ad9d-5b9fe58df06a"
                     label="Open the official VeilChat profile"
-                    mark="V"
+                    icon="veilchat"
                     title="Meet VeilChat"
                     kind="sage"
                     testId="link-social-veilchat"
@@ -307,7 +309,7 @@ export function WaitlistPage() {
                   <SocialLink
                     href="https://www.youtube.com/@TryAloneFailAloneWinAlone"
                     label="Open the Try Alone Fail Alone Win Alone YouTube channel"
-                    mark="YT"
+                    icon="youtube"
                     title="Behind the build"
                     kind="clay"
                     testId="link-social-youtube"
@@ -407,14 +409,14 @@ function SuccessState({
 function SocialLink({
   href,
   label,
-  mark,
+  icon,
   title,
   kind,
   testId,
 }: {
   href: string;
   label: string;
-  mark: string;
+  icon: SocialIconName;
   title: string;
   kind: "dark" | "light" | "sage" | "clay";
   testId: string;
@@ -428,9 +430,48 @@ function SocialLink({
       className={`vc-social vc-social--${kind}`}
       data-testid={testId}
     >
-      <span className="vc-social__mark">{mark}</span>
+      <span className="vc-social__mark">
+        <SocialIcon name={icon} />
+      </span>
       <span className="vc-social__title">{title}</span>
       <span className="vc-social__arrow" aria-hidden="true">↗</span>
     </a>
+  );
+}
+
+type SocialIconName = "x" | "instagram" | "veilchat" | "youtube";
+
+function SocialIcon({ name }: { name: SocialIconName }) {
+  if (name === "x") {
+    return (
+      <svg viewBox="0 0 20 20" aria-hidden="true">
+        <path d="M5 4l10 12M15 4L5 16" />
+      </svg>
+    );
+  }
+
+  if (name === "instagram") {
+    return (
+      <svg viewBox="0 0 20 20" aria-hidden="true">
+        <rect x="3.5" y="3.5" width="13" height="13" rx="3" />
+        <circle cx="10" cy="10" r="3" />
+        <circle className="vc-social__icon-dot" cx="14.5" cy="5.5" r="0.8" />
+      </svg>
+    );
+  }
+
+  if (name === "youtube") {
+    return (
+      <svg viewBox="0 0 20 20" aria-hidden="true">
+        <rect x="2.5" y="5.5" width="15" height="9" rx="3" />
+        <path className="vc-social__icon-play" d="M8.3 8l4.8 2-4.8 2z" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 20 20" aria-hidden="true">
+      <path d="M4 5.5l6 10 6-10" />
+    </svg>
   );
 }

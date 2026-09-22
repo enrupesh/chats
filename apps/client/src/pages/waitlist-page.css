@@ -218,11 +218,11 @@
 }
 
 .vc-headline {
-  max-width: 720px;
+  max-width: 680px;
   margin: 24px 0 0;
   color: var(--vc-ink);
   font-family: var(--vc-display);
-  font-size: clamp(56px, 7vw, 94px);
+  font-size: clamp(52px, 6.3vw, 82px);
   font-weight: 600;
   letter-spacing: -0.073em;
   line-height: 0.91;
@@ -779,9 +779,22 @@
   place-items: center;
   border: 1px solid currentColor;
   border-radius: 50%;
-  font-family: var(--vc-mono);
-  font-size: 8px;
-  font-weight: 700;
+}
+
+.vc-social__mark svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.45;
+}
+
+.vc-social__icon-dot,
+.vc-social__icon-play {
+  fill: currentColor;
+  stroke: none;
 }
 
 .vc-social__title {
@@ -1054,7 +1067,7 @@
 
   .vc-headline {
     max-width: 650px;
-    font-size: clamp(58px, 11vw, 92px);
+    font-size: clamp(54px, 10vw, 78px);
   }
 
   .vc-object {
@@ -1090,7 +1103,7 @@
 
   .vc-headline {
     margin-top: 21px;
-    font-size: clamp(50px, 14vw, 72px);
+    font-size: clamp(44px, 12.5vw, 64px);
   }
 
   .vc-deck {
