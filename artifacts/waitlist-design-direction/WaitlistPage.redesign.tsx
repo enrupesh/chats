@@ -1,8 +1,8 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import waitlistOfferArt from "../assets/waitlist-offer-art.png";
-import { getApiBaseUrl } from "../lib/apiBase";
-import { useDocumentMeta } from "../lib/useDocumentMeta";
+import waitlistOfferArt from "../../apps/client/src/assets/waitlist-offer-art.png";
+import { getApiBaseUrl } from "../../apps/client/src/lib/apiBase";
+import { useDocumentMeta } from "../../apps/client/src/lib/useDocumentMeta";
 import "./waitlist-page.css";
 
 type WaitlistForm = {
