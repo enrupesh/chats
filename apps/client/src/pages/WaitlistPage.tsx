@@ -37,6 +37,7 @@ export function WaitlistPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState<WaitlistResponse | null>(null);
+  const [showFounderDetails, setShowFounderDetails] = useState(false);
 
   function update<K extends keyof WaitlistForm>(key: K, value: WaitlistForm[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -65,6 +66,7 @@ export function WaitlistPage() {
 
       setSubmitted(payload ?? { joined: true });
       setForm(initialForm);
+      setShowFounderDetails(false);
     } catch (submissionError) {
       setError(
         submissionError instanceof Error
@@ -132,6 +134,7 @@ export function WaitlistPage() {
             </div>
 
             <ProductObject />
+            <ProductPreview />
 
             <div className="vc-edition-rail" aria-label="What is included">
               <div className="vc-edition-rail__intro">
@@ -206,8 +209,18 @@ export function WaitlistPage() {
                   <div className="vc-founder-note">
                     <span className="vc-founder-note__mark" aria-hidden="true">+</span>
                     <div>
-                      <strong>Founder perk included</strong>
-                      <span>Share a website or LinkedIn profile if you would like us to verify it.</span>
+                      <strong>Founder details are optional</strong>
+                      <span>Share a website or LinkedIn profile if you would like us to verify your early access.</span>
+                      <button
+                        type="button"
+                        className="vc-founder-note__toggle"
+                        aria-expanded={showFounderDetails}
+                        aria-controls="vc-founder-details"
+                        onClick={() => setShowFounderDetails((visible) => !visible)}
+                      >
+                        {showFounderDetails ? "Hide optional details" : "Add optional details"}
+                        <span aria-hidden="true">{showFounderDetails ? "−" : "+"}</span>
+                      </button>
                     </div>
                   </div>
 
@@ -225,28 +238,32 @@ export function WaitlistPage() {
                         data-testid="input-email"
                       />
                     </Field>
-                    <Field label="Your website" optional>
-                      <input
-                        type="url"
-                        value={form.websiteUrl}
-                        onChange={(event) => update("websiteUrl", event.target.value)}
-                        maxLength={500}
-                        placeholder="https://yourwebsite.com"
-                        className="vc-input"
-                        data-testid="input-website"
-                      />
-                    </Field>
-                    <Field label="LinkedIn profile" optional>
-                      <input
-                        type="url"
-                        value={form.linkedinUrl}
-                        onChange={(event) => update("linkedinUrl", event.target.value)}
-                        maxLength={500}
-                        placeholder="https://linkedin.com/in/your-name"
-                        className="vc-input"
-                        data-testid="input-linkedin"
-                      />
-                    </Field>
+                    {showFounderDetails ? (
+                      <div className="vc-optional-fields" id="vc-founder-details">
+                        <Field label="Your website" optional>
+                          <input
+                            type="url"
+                            value={form.websiteUrl}
+                            onChange={(event) => update("websiteUrl", event.target.value)}
+                            maxLength={500}
+                            placeholder="https://yourwebsite.com"
+                            className="vc-input"
+                            data-testid="input-website"
+                          />
+                        </Field>
+                        <Field label="LinkedIn profile" optional>
+                          <input
+                            type="url"
+                            value={form.linkedinUrl}
+                            onChange={(event) => update("linkedinUrl", event.target.value)}
+                            maxLength={500}
+                            placeholder="https://linkedin.com/in/your-name"
+                            className="vc-input"
+                            data-testid="input-linkedin"
+                          />
+                        </Field>
+                      </div>
+                    ) : null}
 
                     {error ? (
                       <p className="vc-error" role="alert" data-testid="status-waitlist-error">
@@ -356,6 +373,45 @@ function ProductObject() {
   );
 }
 
+function ProductPreview() {
+  return (
+    <section className="vc-product-preview" aria-label="VeilChat product preview">
+      <div className="vc-product-preview__intro">
+        <span className="vc-mono">Inside the inbox</span>
+        <strong>Everything serious email needs.</strong>
+        <span>One calm workspace for messages, templates, and useful signal.</span>
+      </div>
+      <div className="vc-product-preview__window">
+        <div className="vc-product-preview__window-top">
+          <span>inbox@yourdomain.com</span>
+          <span className="vc-product-preview__status"><i /> Live</span>
+        </div>
+        <div className="vc-product-preview__message vc-product-preview__message--active">
+          <span className="vc-product-preview__avatar">A</span>
+          <span>
+            <strong>Welcome to your new domain</strong>
+            <small>VeilChat team · Just now</small>
+          </span>
+          <b>09:41</b>
+        </div>
+        <div className="vc-product-preview__message">
+          <span className="vc-product-preview__avatar vc-product-preview__avatar--copper">M</span>
+          <span>
+            <strong>Your launch checklist</strong>
+            <small>Mail for founders · Yesterday</small>
+          </span>
+          <b>08:12</b>
+        </div>
+        <div className="vc-product-preview__metrics">
+          <span><b>12</b> templates</span>
+          <span><b>42%</b> open rate</span>
+          <span><b>AI</b> ready</span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Field({
   children,
   label,
@@ -386,6 +442,36 @@ function SuccessState({
   submitted: WaitlistResponse;
   onReset: () => void;
 }) {
+  const [shareLabel, setShareLabel] = useState("Share founder access");
+
+  async function shareWaitlist() {
+    const shareUrl = `${window.location.origin}/waitlist`;
+    const shareData = {
+      title: "VeilChat founder access",
+      text: "Professional email on your own domain for $1/month.",
+      url: shareUrl,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        setShareLabel("Thanks for sharing");
+        return;
+      } catch (shareError) {
+        if (shareError instanceof DOMException && shareError.name === "AbortError") {
+          return;
+        }
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setShareLabel("Link copied");
+    } catch {
+      setShareLabel("Copy the waitlist link from your browser");
+    }
+  }
+
   return (
     <div className="vc-success" data-testid="status-waitlist-success">
       <div className="vc-success__stamp" aria-hidden="true">
@@ -399,6 +485,15 @@ function SuccessState({
         Your interest is saved. We’ll share launch updates and early access details
         by email.
       </p>
+      <button
+        type="button"
+        className="vc-share-button"
+        onClick={() => void shareWaitlist()}
+        data-testid="button-share-waitlist"
+      >
+        {shareLabel}
+        <span aria-hidden="true">↗</span>
+      </button>
       <button type="button" className="vc-secondary-button" onClick={onReset} data-testid="button-add-email">
         Add another email
       </button>
