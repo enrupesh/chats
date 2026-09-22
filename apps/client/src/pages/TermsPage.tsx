@@ -676,23 +676,23 @@ function WhoWeAreSection() {
         For all questions about these Terms, write to us at{" "}
         <a
           className="text-[#2E6F40] underline decoration-dotted underline-offset-4 hover:no-underline"
-          href="mailto:legal@veil.app"
+          href="mailto:legal@contact.veilchat.me"
         >
-          legal@veil.app
+          legal@contact.veilchat.me
         </a>
         . For privacy questions, use{" "}
         <a
           className="text-[#2E6F40] underline decoration-dotted underline-offset-4 hover:no-underline"
-          href="mailto:privacy@veil.app"
+          href="mailto:privacy@contact.veilchat.me"
         >
-          privacy@veil.app
+          privacy@contact.veilchat.me
         </a>
         ; for security disclosures, use{" "}
         <a
           className="text-[#2E6F40] underline decoration-dotted underline-offset-4 hover:no-underline"
-          href="mailto:security@veil.app"
+          href="mailto:security@contact.veilchat.me"
         >
-          security@veil.app
+          security@contact.veilchat.me
         </a>
         .
       </P>
@@ -834,9 +834,9 @@ function AccountSection() {
           Notify us promptly at{" "}
           <a
             className="text-[#2E6F40] underline decoration-dotted underline-offset-4 hover:no-underline"
-            href="mailto:security@veil.app"
+            href="mailto:security@contact.veilchat.me"
           >
-            security@veil.app
+            security@contact.veilchat.me
           </a>{" "}
           if you suspect that your account has been accessed
           without your authorisation, or that your Recovery Phrase
@@ -1143,9 +1143,9 @@ function AcceptableUseSection() {
           Report findings privately to{" "}
           <a
             className="text-[#2E6F40] underline decoration-dotted underline-offset-4 hover:no-underline"
-            href="mailto:security@veil.app"
+            href="mailto:security@contact.veilchat.me"
           >
-            security@veil.app
+            security@contact.veilchat.me
           </a>{" "}
           and give us a reasonable opportunity to remediate before
           disclosing publicly.
@@ -1588,9 +1588,9 @@ function DisputesSection() {
         ask that you contact us first at{" "}
         <a
           className="text-[#2E6F40] underline decoration-dotted underline-offset-4 hover:no-underline"
-          href="mailto:legal@veil.app"
+          href="mailto:legal@contact.veilchat.me"
         >
-          legal@veil.app
+          legal@contact.veilchat.me
         </a>{" "}
         and give us thirty (30) days to attempt to resolve the
         complaint informally before bringing any formal proceeding.
@@ -1786,9 +1786,9 @@ function GeneralSection() {
           VeilChat website. Notices to us must be sent to{" "}
           <a
             className="text-[#2E6F40] underline decoration-dotted underline-offset-4 hover:no-underline"
-            href="mailto:legal@veil.app"
+          href="mailto:legal@contact.veilchat.me"
           >
-            legal@veil.app
+          legal@contact.veilchat.me
           </a>{" "}
           and are effective on receipt.
         </li>
@@ -1817,23 +1817,23 @@ function ContactSection() {
         Questions about these Terms? Write to{" "}
         <a
           className="text-[#2E6F40] underline decoration-dotted underline-offset-4 hover:no-underline"
-          href="mailto:legal@veil.app"
+          href="mailto:legal@contact.veilchat.me"
         >
-          legal@veil.app
+          legal@contact.veilchat.me
         </a>
         . Privacy questions go to{" "}
         <a
           className="text-[#2E6F40] underline decoration-dotted underline-offset-4 hover:no-underline"
-          href="mailto:privacy@veil.app"
+          href="mailto:privacy@contact.veilchat.me"
         >
-          privacy@veil.app
+          privacy@contact.veilchat.me
         </a>{" "}
         and security disclosures to{" "}
         <a
           className="text-[#2E6F40] underline decoration-dotted underline-offset-4 hover:no-underline"
-          href="mailto:security@veil.app"
+          href="mailto:security@contact.veilchat.me"
         >
-          security@veil.app
+          security@contact.veilchat.me
         </a>
         . We read every message and reply personally.
       </P>

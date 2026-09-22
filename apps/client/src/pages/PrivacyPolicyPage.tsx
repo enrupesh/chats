@@ -628,7 +628,7 @@ function WhoWeAreSection() {
         For all questions about this Privacy Policy, requests to
         exercise your rights, or notices that you believe we are not
         complying with applicable data-protection law, you can
-        contact us at <a className="text-[#2E6F40] underline decoration-dotted underline-offset-4 hover:no-underline" href="mailto:privacy@veil.app">privacy@veil.app</a>.
+        contact us at <a className="text-[#2E6F40] underline decoration-dotted underline-offset-4 hover:no-underline" href="mailto:privacy@contact.veilchat.me">privacy@contact.veilchat.me</a>.
         Press, security researchers, and law-enforcement agencies are
         directed to the dedicated channels listed in §7.2 and §20
         respectively.
@@ -958,7 +958,7 @@ function WhatWeCollectSection() {
 
       <H3 id="support-data" num="3.7">Support &amp; in-app feedback</H3>
       <P>
-        If you write to us at <code>support@veil.app</code>, fill in
+        If you write to us at <code>support@contact.veilchat.me</code>, fill in
         an in-app feedback form, or report another user for abuse,
         we will receive whatever you choose to send us — typically
         a description of the problem, your username, and any logs or
@@ -1692,7 +1692,7 @@ function RightsSection() {
       <P>
         For rights that cannot be exercised through the product, or
         for any question about how a request was handled, write to
-        <a className="text-[#2E6F40] underline decoration-dotted underline-offset-4 hover:no-underline" href="mailto:privacy@veil.app"> privacy@veil.app</a>.
+        <a className="text-[#2E6F40] underline decoration-dotted underline-offset-4 hover:no-underline" href="mailto:privacy@contact.veilchat.me"> privacy@contact.veilchat.me</a>.
         We aim to respond within 30 days, in line with the most
         protective applicable deadline. We may ask you to confirm
         information that proves the request comes from you, but we
@@ -1723,7 +1723,7 @@ function ChildrenSection() {
       </P>
       <P>
         If you believe a child has provided personal data to us,
-        please write to <a className="text-[#2E6F40] underline decoration-dotted underline-offset-4 hover:no-underline" href="mailto:privacy@veil.app">privacy@veil.app</a>{" "}
+        please write to <a className="text-[#2E6F40] underline decoration-dotted underline-offset-4 hover:no-underline" href="mailto:privacy@contact.veilchat.me">privacy@contact.veilchat.me</a>{" "}
         and we will investigate promptly.
       </P>
     </>
@@ -1768,7 +1768,7 @@ function SecuritySection() {
         <li>
           Periodic third-party security assessments and a
           public-facing responsible-disclosure programme reachable
-          at <code>security@veil.app</code>.
+          at <code>security@contact.veilchat.me</code>.
         </li>
         <li>
           Principle of least privilege for all engineering access

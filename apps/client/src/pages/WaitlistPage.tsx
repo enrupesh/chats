@@ -293,6 +293,8 @@ export function WaitlistPage() {
                   <p className="vc-privacy-note">
                     No password. No payment details. Unsubscribe anytime.
                   </p>
+
+                   <ContactCard />
                 </>
               )}
 
@@ -409,6 +411,33 @@ function ProductPreview() {
         </div>
       </div>
     </section>
+  );
+}
+
+function ContactCard() {
+  return (
+    <aside className="vc-contact-card" aria-label="Contact VeilChat">
+      <span className="vc-contact-card__glow" aria-hidden="true" />
+      <span className="vc-contact-card__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M3.5 6.75A2.25 2.25 0 0 1 5.75 4.5h12.5a2.25 2.25 0 0 1 2.25 2.25v10.5a2.25 2.25 0 0 1-2.25 2.25H5.75a2.25 2.25 0 0 1-2.25-2.25V6.75Z" />
+          <path d="m4.25 6.25 7.02 5.35a1.2 1.2 0 0 0 1.46 0l7.02-5.35" />
+        </svg>
+      </span>
+      <div className="vc-contact-card__copy">
+        <span className="vc-mono">Questions, ideas, or access?</span>
+        <strong>Talk to the VeilChat team.</strong>
+        <span className="vc-contact-card__hint">We read every note.</span>
+      </div>
+      <a
+        className="vc-contact-card__email"
+        href="mailto:waitlist@contact.veilchat.me"
+        aria-label="Email VeilChat at waitlist@contact.veilchat.me"
+      >
+        <span>waitlist@contact.veilchat.me</span>
+        <span className="vc-contact-card__arrow" aria-hidden="true">↗</span>
+      </a>
+    </aside>
   );
 }
 

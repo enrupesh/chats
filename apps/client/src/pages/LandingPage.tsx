@@ -2473,7 +2473,7 @@ function Footer() {
               their conversations are no one else's business.
             </p>
             <a
-              href="mailto:hello@sendora.me"
+              href="mailto:hello@contact.veilchat.me"
               className="mt-5 inline-flex items-center gap-2.5 px-3.5 py-2 rounded-full text-[13px] font-medium text-[#FCF5EB] bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-colors"
               aria-label="Email VeilChat support"
             >
@@ -2483,7 +2483,7 @@ function Footer() {
               </svg>
               <span>
                 <span className="text-[#FCF5EB]/75 mr-1.5">Support:</span>
-                hello@sendora.me
+                hello@contact.veilchat.me
               </span>
             </a>
             <div className="mt-7">
@@ -2574,7 +2574,7 @@ function Footer() {
               { label: "Open source", to: "/open-source" },
               { label: "Privacy Policy", to: "/privacy-policy" },
               { label: "Terms & Conditions", to: "/terms" },
-              { label: "Contact support", href: "mailto:hello@sendora.me" },
+              { label: "Contact support", href: "mailto:hello@contact.veilchat.me" },
             ]}
           />
         </div>
