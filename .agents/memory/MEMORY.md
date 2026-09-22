@@ -5,3 +5,4 @@
 - [Workspace dependency materialization](workspace-dependency-materialization.md) — a locked workspace dependency may still need a filtered pnpm install before Vite/typechecks can resolve it.
 - [Vercel route-specific OG metadata](vercel-route-og.md) — SPA catch-all rewrites serve root metadata; use a built route HTML entry plus an exact rewrite for share previews.
 - [X preview cache invalidation](x-preview-cache.md) — live route metadata can be correct while X shows an older root card; disable route caching and version the image URL.
+- [Temporary inbox quota tombstones](temp-inbox-quota-tombstones.md) — enforce rolling issuance limits after deletion with only an HMAC quota hash, never raw owner or message data.

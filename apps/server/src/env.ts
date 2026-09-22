@@ -31,6 +31,10 @@ export const env = {
 
   RESEND_API_KEY: str(process.env.RESEND_API_KEY),
   RESEND_FROM: str(process.env.RESEND_FROM) ?? "Veil <onboarding@resend.dev>",
+  RESEND_WEBHOOK_SECRET: str(process.env.RESEND_WEBHOOK_SECRET),
+  TEMP_MAIL_DOMAIN: str(process.env.TEMP_MAIL_DOMAIN) ?? "temp.veilchat.me",
+  TEMP_MAIL_TTL_HOURS: num(process.env.TEMP_MAIL_TTL_HOURS, 24),
+  TURNSTILE_SECRET_KEY: str(process.env.TURNSTILE_SECRET_KEY),
 
   FIREBASE_PROJECT_ID: str(process.env.FIREBASE_PROJECT_ID),
   FIREBASE_CLIENT_EMAIL: str(process.env.FIREBASE_CLIENT_EMAIL),

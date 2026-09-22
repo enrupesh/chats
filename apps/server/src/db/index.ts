@@ -157,6 +157,77 @@ async function ensureSchema(sql: ReturnType<typeof postgres>) {
   await sql.unsafe(
     `CREATE INDEX IF NOT EXISTS "product_waitlist_created_at_idx" ON "product_waitlist" ("created_at")`,
   );
+
+  // Temporary receive-only inboxes. `temp_address_reservations` is a
+  // permanent tombstone table by design: inbox rows and messages expire, but
+  // an address that was ever issued must never be assigned again.
+  await sql.unsafe(`
+    CREATE TABLE IF NOT EXISTS "temp_inbox_users" (
+      "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+      "firebase_uid" text NOT NULL,
+      "created_at" timestamptz NOT NULL DEFAULT NOW()
+    )
+  `);
+  await sql.unsafe(
+    `CREATE UNIQUE INDEX IF NOT EXISTS "temp_inbox_users_firebase_uid_idx" ON "temp_inbox_users" ("firebase_uid")`,
+  );
+  await sql.unsafe(`
+    CREATE TABLE IF NOT EXISTS "temp_address_reservations" (
+      "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+      "address" text NOT NULL,
+      "issued_by_hash" text NOT NULL,
+      "reserved_at" timestamptz NOT NULL DEFAULT NOW()
+    )
+  `);
+  await sql.unsafe(
+    `ALTER TABLE "temp_address_reservations" ADD COLUMN IF NOT EXISTS "issued_by_hash" text`,
+  );
+  await sql.unsafe(
+    `CREATE UNIQUE INDEX IF NOT EXISTS "temp_address_reservations_address_idx" ON "temp_address_reservations" ("address")`,
+  );
+  await sql.unsafe(
+    `CREATE INDEX IF NOT EXISTS "temp_address_reservations_quota_idx" ON "temp_address_reservations" ("issued_by_hash", "reserved_at")`,
+  );
+  await sql.unsafe(`
+    CREATE TABLE IF NOT EXISTS "temp_inboxes" (
+      "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+      "user_id" uuid NOT NULL REFERENCES "temp_inbox_users"("id") ON DELETE CASCADE,
+      "address" text NOT NULL,
+      "created_at" timestamptz NOT NULL DEFAULT NOW(),
+      "expires_at" timestamptz NOT NULL
+    )
+  `);
+  await sql.unsafe(
+    `CREATE UNIQUE INDEX IF NOT EXISTS "temp_inboxes_address_idx" ON "temp_inboxes" ("address")`,
+  );
+  await sql.unsafe(
+    `CREATE INDEX IF NOT EXISTS "temp_inboxes_user_idx" ON "temp_inboxes" ("user_id", "created_at")`,
+  );
+  await sql.unsafe(
+    `CREATE INDEX IF NOT EXISTS "temp_inboxes_expiry_idx" ON "temp_inboxes" ("expires_at")`,
+  );
+  await sql.unsafe(`
+    CREATE TABLE IF NOT EXISTS "temp_inbox_messages" (
+      "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+      "inbox_id" uuid NOT NULL REFERENCES "temp_inboxes"("id") ON DELETE CASCADE,
+      "resend_email_id" text NOT NULL,
+      "from_address" text NOT NULL,
+      "subject" text NOT NULL,
+      "text_body" text,
+      "html_body" text,
+      "headers" jsonb,
+      "received_at" timestamptz NOT NULL DEFAULT NOW(),
+      "otp_code" text,
+      "attachment_count" integer NOT NULL DEFAULT 0,
+      "created_at" timestamptz NOT NULL DEFAULT NOW()
+    )
+  `);
+  await sql.unsafe(
+    `CREATE UNIQUE INDEX IF NOT EXISTS "temp_inbox_messages_resend_id_idx" ON "temp_inbox_messages" ("resend_email_id")`,
+  );
+  await sql.unsafe(
+    `CREATE INDEX IF NOT EXISTS "temp_inbox_messages_inbox_idx" ON "temp_inbox_messages" ("inbox_id", "received_at")`,
+  );
 }
 
 /**

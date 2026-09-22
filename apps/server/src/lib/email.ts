@@ -10,6 +10,11 @@ function getClient(): Resend | null {
   return _resend;
 }
 
+/** Shared Resend client for inbound receiving and outbound mail helpers. */
+export function getResendClient(): Resend | null {
+  return getClient();
+}
+
 export interface SendOtpEmailResult {
   delivered: boolean;
   /** Set in dev when no provider is configured and we logged the code. */

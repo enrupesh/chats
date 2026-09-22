@@ -1,10 +1,14 @@
 import { initializeApp, type FirebaseApp } from "firebase/app";
 import {
   getAuth,
+  GoogleAuthProvider,
   RecaptchaVerifier,
+  signInWithPopup,
   signInWithPhoneNumber,
+  signOut,
   type Auth,
   type ConfirmationResult,
+  type UserCredential,
 } from "firebase/auth";
 
 const FIREBASE_CONFIG = {
@@ -60,4 +64,15 @@ export async function sendPhoneOtp(
     phoneNumber,
     recaptchaVerifier,
   );
+}
+
+/** Sign in to a product surface with the Google provider only. */
+export async function signInWithGoogle(): Promise<UserCredential> {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" });
+  return signInWithPopup(getFirebaseAuth(), provider);
+}
+
+export async function signOutFirebase(): Promise<void> {
+  await signOut(getFirebaseAuth());
 }

@@ -98,6 +98,9 @@ export function WaitlistPage() {
 
           <div className="vc-nav__right">
             <span className="vc-nav__location">veilchat.me / waitlist</span>
+              <Link to="/temporary-inbox" className="vc-text-link" data-testid="link-temporary-inbox">
+                Try temporary inbox <span aria-hidden="true" className="vc-arrow">↗</span>
+              </Link>
             <Link to="/" className="vc-text-link" data-testid="link-back-home">
               Back to VeilChat <span aria-hidden="true" className="vc-arrow">↗</span>
             </Link>

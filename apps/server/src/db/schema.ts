@@ -978,3 +978,105 @@ export type InviteRow = typeof invites.$inferSelect;
 export type ConnectionRequestRow = typeof connectionRequests.$inferSelect;
 export type ConnectionRow = typeof connections.$inferSelect;
 export type MessageRow = typeof messages.$inferSelect;
+
+/* ─────────── temporary receive-only inboxes ─────────── */
+/**
+ * These tables intentionally do not use the main VeilChat `users` table.
+ * Temporary inbox access is a separate Google/Firebase-authenticated product
+ * surface and must not create a messaging identity or session.
+ */
+export const tempInboxUsers = pgTable(
+  "temp_inbox_users",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    firebaseUid: text("firebase_uid").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    firebaseUidIdx: uniqueIndex("temp_inbox_users_firebase_uid_idx").on(
+      t.firebaseUid,
+    ),
+  }),
+);
+
+/**
+ * Permanent address tombstones. Rows in this table are never deleted: once
+ * an address has been issued, it can never be assigned to another person.
+ */
+export const tempAddressReservations = pgTable(
+  "temp_address_reservations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    address: text("address").notNull(),
+    /** HMAC of the Firebase UID, used only to enforce rolling issuance limits. */
+    issuedByHash: text("issued_by_hash").notNull(),
+    reservedAt: timestamp("reserved_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    addressIdx: uniqueIndex("temp_address_reservations_address_idx").on(
+      t.address,
+    ),
+  }),
+);
+
+export const tempInboxes = pgTable(
+  "temp_inboxes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => tempInboxUsers.id, { onDelete: "cascade" }),
+    address: text("address").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  },
+  (t) => ({
+    addressIdx: uniqueIndex("temp_inboxes_address_idx").on(t.address),
+    userIdx: index("temp_inboxes_user_idx").on(t.userId, t.createdAt),
+    expiryIdx: index("temp_inboxes_expiry_idx").on(t.expiresAt),
+  }),
+);
+
+export const tempInboxMessages = pgTable(
+  "temp_inbox_messages",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    inboxId: uuid("inbox_id")
+      .notNull()
+      .references(() => tempInboxes.id, { onDelete: "cascade" }),
+    resendEmailId: text("resend_email_id").notNull(),
+    fromAddress: text("from_address").notNull(),
+    subject: text("subject").notNull(),
+    textBody: text("text_body"),
+    /** Sanitized, display-safe HTML only; raw provider HTML is never stored. */
+    htmlBody: text("html_body"),
+    headers: jsonb("headers"),
+    receivedAt: timestamp("received_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    otpCode: text("otp_code"),
+    attachmentCount: integer("attachment_count").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    resendIdIdx: uniqueIndex("temp_inbox_messages_resend_id_idx").on(
+      t.resendEmailId,
+    ),
+    inboxIdx: index("temp_inbox_messages_inbox_idx").on(
+      t.inboxId,
+      t.receivedAt,
+    ),
+  }),
+);
+
+export type TempInboxUserRow = typeof tempInboxUsers.$inferSelect;
+export type TempInboxRow = typeof tempInboxes.$inferSelect;
+export type TempInboxMessageRow = typeof tempInboxMessages.$inferSelect;

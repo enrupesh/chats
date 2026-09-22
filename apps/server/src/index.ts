@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import cookie from "@fastify/cookie";
+import type { FastifyRequest } from "fastify";
 import { fastifyTRPCPlugin } from "@trpc/server/adapters/fastify";
 import type { FastifyTRPCPluginOptions } from "@trpc/server/adapters/fastify";
 import { env, isDev, missingAuthConfig } from "./env.js";
@@ -23,6 +24,7 @@ import {
 } from "./lib/loginRisk.js";
 import { ensureCorsPolicy } from "./lib/r2.js";
 import { registerMediaUploadRoute, registerMediaDownloadRoute } from "./lib/mediaUploadRoute.js";
+import { registerTempInboxRoutes, startTempInboxSweeper } from "./lib/tempInbox.js";
 
 const app = Fastify({
   trustProxy: true,
@@ -54,6 +56,23 @@ const app = Fastify({
         },
       },
 });
+
+// Keep the exact JSON bytes available for Resend/Svix webhook signature
+// verification while preserving the parsed body for every existing route.
+app.removeContentTypeParser("application/json");
+app.addContentTypeParser(
+  "application/json",
+  { parseAs: "string" },
+  (request, body, done) => {
+    const rawBody = String(body);
+    (request as FastifyRequest & { rawBody?: string }).rawBody = rawBody;
+    try {
+      done(null, JSON.parse(rawBody || "{}"));
+    } catch {
+      done(new Error("Invalid JSON body"));
+    }
+  },
+);
 
 /**
  * Match an origin against an allow-list entry.
@@ -129,6 +148,7 @@ await registerWebSocketRoutes(app);
 // Registered before tRPC so these routes take priority.
 await registerMediaUploadRoute(app);
 await registerMediaDownloadRoute(app);
+registerTempInboxRoutes(app);
 
 app.get("/health", async (): Promise<HealthResponse> => {
   return {
@@ -965,6 +985,7 @@ initPush(app.log);
 startMediaSweeper(app.log);
 startMessageSweeper(app.log);
 startScheduledSweeper(app.log);
+startTempInboxSweeper(app.log);
 
 // Apply CORS policy to the R2 bucket so browsers can PUT directly via
 // presigned URLs. Idempotent — safe to call on every cold start.
