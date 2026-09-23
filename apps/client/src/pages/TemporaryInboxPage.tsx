@@ -338,7 +338,7 @@ export function TemporaryInboxPage() {
               <div className="temp-inbox__quota">
                 <span className="temp-inbox__card-label">Rolling allowance</span>
                 <strong>{inboxes.length} / 2 active addresses</strong>
-                <small>Old messages disappear with their inbox after 24 hours.</small>
+                 <small>Only the newest email is kept; the inbox expires after 24 hours.</small>
               </div>
               <div className="temp-inbox__create">
                 {turnstileSiteKey ? <div ref={turnstileHostRef} className="temp-inbox__turnstile" /> : (
@@ -385,7 +385,7 @@ export function TemporaryInboxPage() {
                     </div>
                     <div className="temp-inbox__message-list">
                       {loadingMessages && messages.length === 0 ? <div className="temp-inbox__message-empty">Checking for new mail…</div> : messages.length === 0 ? (
-                        <div className="temp-inbox__message-empty"><span>⌁</span><strong>Waiting for incoming mail</strong><small>Use the address on another site. New messages appear here automatically.</small></div>
+                         <div className="temp-inbox__message-empty"><span>⌁</span><strong>Waiting for incoming mail</strong><small>Use the address on another site. The newest email appears here automatically.</small></div>
                       ) : messages.map((message) => <MessageCard key={message.id} message={message} copied={copied} onCopy={copyValue} />)}
                     </div>
                   </>

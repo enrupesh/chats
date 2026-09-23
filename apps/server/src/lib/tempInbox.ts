@@ -1,5 +1,5 @@
 import type { FastifyBaseLogger, FastifyInstance } from "fastify";
-import { and, count, desc, eq, gt, gte, lt, sql } from "drizzle-orm";
+import { and, count, desc, eq, gt, gte, lt, ne, sql } from "drizzle-orm";
 import { createHmac, randomBytes } from "node:crypto";
 import { env, isDev } from "../env.js";
 import { getDb, schema } from "../db/index.js";
@@ -364,23 +364,45 @@ async function handleReceivedEmail(
   const textBody = email.text?.slice(0, MAX_BODY_CHARS) ?? null;
   const htmlBody = sanitizeEmailHtml(email.html);
   const otpCode = detectOtp(email.subject ?? "", textBody ?? stripHtml(email.html ?? ""));
-  await db
-    .insert(schema.tempInboxMessages)
-    .values({
-      inboxId: inbox.id,
-      resendEmailId: email.id,
-      fromAddress: email.from.slice(0, 500),
-      subject: (email.subject || "(no subject)").slice(0, 500),
-      textBody,
-      htmlBody,
-      headers: email.headers,
-      receivedAt: new Date(email.created_at),
-      otpCode,
-      attachmentCount: email.attachments?.length ?? 0,
-    })
-    .onConflictDoNothing({
-      target: schema.tempInboxMessages.resendEmailId,
-    });
+  await db.transaction(async (tx) => {
+    // Serialize replacement for this address so concurrent webhook deliveries
+    // cannot leave multiple active messages behind.
+    await tx.execute(
+      sql`SELECT id FROM "temp_inboxes" WHERE id = ${inbox.id} FOR UPDATE`,
+    );
+    const inserted = await tx
+      .insert(schema.tempInboxMessages)
+      .values({
+        inboxId: inbox.id,
+        resendEmailId: email.id,
+        fromAddress: email.from.slice(0, 500),
+        subject: (email.subject || "(no subject)").slice(0, 500),
+        textBody,
+        htmlBody,
+        headers: email.headers,
+        receivedAt: new Date(email.created_at),
+        otpCode,
+        attachmentCount: email.attachments?.length ?? 0,
+      })
+      .onConflictDoNothing({
+        target: schema.tempInboxMessages.resendEmailId,
+      })
+      .returning({ id: schema.tempInboxMessages.id });
+
+    // Keep only the newest successfully inserted email. Duplicate webhook
+    // deliveries do not enter this branch, so they cannot remove the current
+    // message.
+    if (inserted[0]) {
+      await tx
+        .delete(schema.tempInboxMessages)
+        .where(
+          and(
+            eq(schema.tempInboxMessages.inboxId, inbox.id),
+            ne(schema.tempInboxMessages.id, inserted[0].id),
+          ),
+        );
+    }
+  });
 }
 
 export function registerTempInboxRoutes(app: FastifyInstance): void {
