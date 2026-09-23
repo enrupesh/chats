@@ -111,10 +111,12 @@ export function TemporaryInboxPage() {
   const [turnstileToken, setTurnstileToken] = useState<string | undefined>();
   const [busy, setBusy] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [manualRefreshing, setManualRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const turnstileHostRef = useRef<HTMLDivElement | null>(null);
   const widgetIdRef = useRef<string | null>(null);
+  const refreshInFlightRef = useRef(false);
 
   useEffect(() => {
     if (!isFirebaseConfigured()) return;
@@ -147,6 +149,8 @@ export function TemporaryInboxPage() {
       setMessages([]);
       return;
     }
+    if (refreshInFlightRef.current) return;
+    refreshInFlightRef.current = true;
     setLoadingMessages(true);
     try {
       const idToken = await user.getIdToken();
@@ -155,6 +159,7 @@ export function TemporaryInboxPage() {
       setError(messageOf(loadError));
     } finally {
       setLoadingMessages(false);
+      refreshInFlightRef.current = false;
     }
   }, [selectedInbox, user]);
 
@@ -251,6 +256,17 @@ export function TemporaryInboxPage() {
       setError(messageOf(deleteError));
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function handleManualRefresh() {
+    if (!user || !selectedInbox || manualRefreshing) return;
+    setError(null);
+    setManualRefreshing(true);
+    try {
+      await refreshMessages();
+    } finally {
+      setManualRefreshing(false);
     }
   }
 
@@ -379,6 +395,17 @@ export function TemporaryInboxPage() {
                     <div className="temp-inbox__message-heading">
                       <div><span className="temp-inbox__card-label">Live receive-only view</span><strong>{selectedInbox.address}</strong></div>
                       <div className="temp-inbox__message-actions">
+                        <button
+                          type="button"
+                          className={`temp-inbox__refresh-button ${manualRefreshing ? "is-refreshing" : ""}`}
+                          onClick={() => void handleManualRefresh()}
+                          disabled={manualRefreshing || loadingMessages}
+                          aria-label="Refresh incoming mail"
+                          title="Refresh incoming mail"
+                        >
+                          <span className="temp-inbox__refresh-icon" aria-hidden="true">↻</span>
+                          <span>{manualRefreshing ? "Refreshing…" : "Refresh mail"}</span>
+                        </button>
                         <button type="button" onClick={() => void copyValue(selectedInbox.address, selectedInbox.id)}>{copied === selectedInbox.id ? "Copied" : "Copy address"}</button>
                         <button type="button" className="is-danger" onClick={() => void handleDelete(selectedInbox)}>Delete</button>
                       </div>

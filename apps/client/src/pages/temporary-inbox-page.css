@@ -106,7 +106,11 @@
 .temp-inbox__message-heading strong { overflow: hidden; font: 12px var(--ti-mono); text-overflow: ellipsis; white-space: nowrap; }
 .temp-inbox__message-actions { display: flex; gap: 7px; }
 .temp-inbox__message-actions button, .temp-inbox__otp button { padding: 8px 10px; border: 1px solid var(--ti-line); border-radius: 8px; color: var(--ti-ink); background: transparent; font: 10px var(--ti-body); cursor: pointer; }
-.temp-inbox__message-actions button:hover, .temp-inbox__otp button:hover { border-color: var(--ti-copper); color: var(--ti-copper); }
+.temp-inbox__message-actions button:hover:not(:disabled), .temp-inbox__otp button:hover { border-color: var(--ti-copper); color: var(--ti-copper); }
+.temp-inbox__message-actions button:disabled { cursor: wait; opacity: .58; }
+.temp-inbox__refresh-button { display: inline-flex; align-items: center; gap: 6px; }
+.temp-inbox__refresh-icon { display: inline-block; font-size: 16px; line-height: .75; }
+.temp-inbox__refresh-button.is-refreshing .temp-inbox__refresh-icon { animation: temp-inbox-spin .8s linear infinite; }
 .temp-inbox__message-actions button.is-danger { color: #9d4938; }
 .temp-inbox__message-list { display: grid; gap: 12px; padding-top: 13px; }
 .temp-inbox__message-empty { display: grid; min-height: 250px; place-items: center; align-content: center; gap: 8px; color: var(--ti-soft); text-align: center; }
@@ -153,4 +157,8 @@
   .temp-inbox__otp { align-items: flex-start; flex-direction: column; }
   .temp-inbox__otp button { width: 100%; }
   .temp-inbox__footer { display: grid; gap: 7px; line-height: 1.5; }
+}
+@keyframes temp-inbox-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .temp-inbox__refresh-button.is-refreshing .temp-inbox__refresh-icon { animation: none; }
 }
