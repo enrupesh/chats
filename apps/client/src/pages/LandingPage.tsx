@@ -2548,6 +2548,20 @@ function Footer() {
                   </svg>
                 </SocialIcon>
                 <SocialIcon
+                  label="Join the VeilChat community on Discord"
+                  href="https://discord.gg/bSSFpmtsMb"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M19.6 5.2a18.2 18.2 0 0 0-4.5-1.4l-.6 1.2a16.4 16.4 0 0 0-5 0l-.6-1.2a18.2 18.2 0 0 0-4.5 1.4C1.6 9.3.8 13.3 1.2 17.3a18.2 18.2 0 0 0 5.5 2.8l1.2-1.9-1.8-.9.5-.4c3.5 1.6 7.4 1.6 10.8 0l.5.4-1.8.9 1.2 1.9a18.2 18.2 0 0 0 5.5-2.8c.5-4.6-.8-8.5-3.2-12.1ZM8.8 14.5c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.6.8 1.6 1.8-.7 1.8-1.6 1.8Zm6.4 0c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.6.8 1.6 1.8-.7 1.8-1.6 1.8Z" />
+                  </svg>
+                </SocialIcon>
+                <SocialIcon
                   label="VeilChat profile"
                   href="https://www.veilchat.me/discover/64c2bf97-4eac-4420-ad9d-5b9fe58df06a"
                 >
