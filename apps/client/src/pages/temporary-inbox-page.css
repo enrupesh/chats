@@ -867,16 +867,25 @@
 }
 
 .tm-message-body {
-  max-width: 650px;
+  max-width: none;
   color: #3d433d;
   font-size: 13px;
   line-height: 1.7;
   overflow-wrap: anywhere;
 }
 
-.tm-message-body p {
+.tm-message-body > p {
+  max-width: 650px;
   margin: 0;
   white-space: pre-line;
+}
+
+.tm-email-frame {
+  width: 100%;
+  min-height: 520px;
+  display: block;
+  border: 0;
+  background: #fff;
 }
 
 .tm-message-body .is-muted {

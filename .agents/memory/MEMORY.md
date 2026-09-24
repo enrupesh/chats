@@ -8,3 +8,4 @@
 - [Temporary inbox quota tombstones](temp-inbox-quota-tombstones.md) — enforce rolling issuance limits after deletion with only an HMAC quota hash, never raw owner or message data.
 - [Temporary inbox latest message](temp-inbox-latest-message.md) — keep only the newest received email per active inbox; duplicate webhooks must remain idempotent.
 - [Mockup sandbox bootstrap](mockup-sandbox-bootstrap.md) — a newly created mockup artifact may need its local dependencies installed before its preview workflow can start.
+- [Temporary email HTML rendering](temporary-email-html-rendering.md) — prefer sanitized sender HTML in a sandboxed iframe so email buttons and links retain their design without affecting app UI.

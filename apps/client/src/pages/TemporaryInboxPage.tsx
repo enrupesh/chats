@@ -99,6 +99,11 @@ function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : "Something went wrong. Please try again.";
 }
 
+function emailDocument(html: string): string {
+  if (/<html\b/i.test(html)) return html;
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>html,body{margin:0;padding:0;background:#fff;color:#202124;font-family:Arial,sans-serif;overflow-wrap:anywhere}img{max-width:100%;height:auto}table{max-width:100%}</style></head><body>${html}</body></html>`;
+}
+
 export function TemporaryInboxPage() {
   useNoindex("Temporary Mail · Private verification inbox");
   const location = useLocation();
@@ -487,7 +492,18 @@ function MessageCard({
         </div>
       ) : null}
       <div className="tm-message-body">
-        {message.textBody ? <p>{message.textBody}</p> : message.htmlBody ? <div dangerouslySetInnerHTML={{ __html: message.htmlBody }} /> : <p className="is-muted">This message has no displayable body.</p>}
+        {message.htmlBody ? (
+          <iframe
+            className="tm-email-frame"
+            title={`Email from ${message.fromAddress}`}
+            sandbox="allow-popups allow-popups-to-escape-sandbox"
+            srcDoc={emailDocument(message.htmlBody)}
+          />
+        ) : message.textBody ? (
+          <p>{message.textBody}</p>
+        ) : (
+          <p className="is-muted">This message has no displayable body.</p>
+        )}
       </div>
     </article>
   );

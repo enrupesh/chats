@@ -98,18 +98,103 @@ function stripHtml(value: string): string {
     .trim();
 }
 
+function sanitizeEmailUrl(
+  value: string,
+  kind: "href" | "src",
+): string | null {
+  const normalized = value
+    .replace(/[\u0000-\u001f\u007f]/g, "")
+    .trim();
+  if (!normalized) return null;
+  if (kind === "href" && /^#/.test(normalized)) return normalized;
+  if (/^(?:https?:|mailto:|tel:)/i.test(normalized)) return normalized;
+  if (
+    kind === "src" &&
+    /^(?:data:image\/(?:gif|jpe?g|png|webp|avif);|\/\/)/i.test(normalized)
+  ) {
+    return normalized;
+  }
+  return null;
+}
+
+function sanitizeEmailCss(value: string): string {
+  return value
+    .replace(/@import\b[^;]+;?/gi, "")
+    .replace(/\b(?:expression|behavior|-moz-binding)\s*:/gi, "")
+    .replace(/\b(?:javascript|vbscript)\s*:/gi, "")
+    .replace(
+      /url\s*\(\s*(['"]?)(?!https?:|data:image\/|\/\/)[^)]*\1\s*\)/gi,
+      "",
+    );
+}
+
+function sanitizeEmailAttributes(value: string): string {
+  const withoutActiveAttributes = value
+    .replace(
+      /\s+(?:on[a-z0-9_-]+|srcdoc|action|formaction)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi,
+      "",
+    )
+    .replace(
+      /\s+(href|src)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi,
+      (
+        _match: string,
+        attribute: "href" | "src",
+        doubleQuoted: string | undefined,
+        singleQuoted: string | undefined,
+        bare: string | undefined,
+      ) => {
+        const raw = doubleQuoted ?? singleQuoted ?? bare ?? "";
+        const safe = sanitizeEmailUrl(raw, attribute);
+        return safe
+          ? ` ${attribute}="${safe
+              .replace(/&/g, "&amp;")
+              .replace(/"/g, "&quot;")}"`
+          : "";
+      },
+    );
+
+  return withoutActiveAttributes.replace(
+    /\s+style\s*=\s*(?:"([^"]*)"|'([^']*)')/gi,
+    (
+      _match: string,
+      doubleQuoted: string | undefined,
+      singleQuoted: string | undefined,
+    ) => {
+      const raw = doubleQuoted ?? singleQuoted ?? "";
+      return ` style="${sanitizeEmailCss(raw)
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")}"`;
+    },
+  );
+}
+
 /**
- * Keep only display-safe markup. Email HTML is untrusted even when it came
- * from a legitimate sender, so scripts, active attributes, URLs, and remote
- * media are removed before persistence.
+ * Keep display-safe email markup while preserving the sender's visual design.
+ * The client renders this inside a sandboxed iframe, so scripts/forms are
+ * blocked there as a second boundary. Links, inline styles, and email CSS are
+ * retained after protocol and active-content filtering.
  */
 function sanitizeEmailHtml(value: string | null | undefined): string | null {
   if (!value) return null;
   const safe = value
     .replace(/<!--[\s\S]*?-->/g, " ")
-    .replace(/<\s*(script|style|iframe|object|embed|form|svg|math)[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, " ")
-    .replace(/<\s*(meta|link|base)[^>]*>/gi, " ")
-    .replace(/\s+(?:on[a-z]+|style|src|href)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(
+      /<\s*(script|iframe|object|embed|form|svg|math|video|audio|source|base|meta|link)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi,
+      " ",
+    )
+    .replace(
+      /<\s*\/?\s*(script|iframe|object|embed|form|svg|math|video|audio|source|base|meta|link)\b[^>]*>/gi,
+      " ",
+    )
+    .replace(/<([a-z][a-z0-9:-]*)\b([^>]*)>/gi, (_match, tag: string, attributes: string) => {
+      return `<${tag}${sanitizeEmailAttributes(attributes)}>`;
+    })
+    .replace(/<a\b([^>]*)>/gi, (_match, attributes: string) => {
+      const withoutNavigationOverrides = attributes
+        .replace(/\s+target\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+        .replace(/\s+rel\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "");
+      return `<a${withoutNavigationOverrides} target="_blank" rel="noopener noreferrer">`;
+    })
     .slice(0, MAX_BODY_CHARS);
   return safe.trim() || null;
 }
