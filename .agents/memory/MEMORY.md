@@ -7,3 +7,4 @@
 - [X preview cache invalidation](x-preview-cache.md) — live route metadata can be correct while X shows an older root card; disable route caching and version the image URL.
 - [Temporary inbox quota tombstones](temp-inbox-quota-tombstones.md) — enforce rolling issuance limits after deletion with only an HMAC quota hash, never raw owner or message data.
 - [Temporary inbox latest message](temp-inbox-latest-message.md) — keep only the newest received email per active inbox; duplicate webhooks must remain idempotent.
+- [Mockup sandbox bootstrap](mockup-sandbox-bootstrap.md) — a newly created mockup artifact may need its local dependencies installed before its preview workflow can start.

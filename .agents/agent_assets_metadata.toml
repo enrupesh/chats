@@ -11,21 +11,25 @@ id = "z1caNzbDL_yn5I72ECE_c"
 uri = "file://attached_assets/recovery-kit-preview/veil-recovery-kit-sample.pdf"
 type = "pdf"
 title = "Sample Veil Recovery Kit (PDF)"
+logical_id = "d1d67675-03aa-4a73-9493-371441524e5e"
 
 [[outputs]]
 id = "38krUzUxvGSEtMuLSZsDn"
 uri = "file://attached_assets/recovery-kit-preview/veil-recovery-kit-preview.png"
 type = "image"
 title = "Recovery Kit page preview"
+logical_id = "ff3484a3-96ca-4b0d-b86d-fe8544e00996"
 
 [[outputs]]
 id = "K0KDVkD-wMnqSQbze45dD"
 uri = "file://apps/client/public/og-image.png"
 type = "image"
 title = "VeilChat — Social share preview (1200×630)"
+logical_id = "57470e92-0ea7-4e44-b4c9-3cee3856e180"
 
 [[outputs]]
 id = "V9Ejn4PnmU6AQDwnloCVl"
 uri = "file://veilchat-keyword-map.md"
 type = "text"
 title = "VeilChat — Keyword Map (220 phrases)"
+logical_id = "6d9adaae-b9fe-4f76-901a-a06b222f015c"

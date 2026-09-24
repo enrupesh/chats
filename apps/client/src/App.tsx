@@ -208,6 +208,7 @@ export function App() {
                 <Route path="/donate" element={<DonatePage />} />
                 <Route path="/waitlist" element={<WaitlistPage />} />
                 <Route path="/temporary-inbox" element={<TemporaryInboxPage />} />
+                <Route path="/temporary-inbox/dashboard" element={<TemporaryInboxPage />} />
                 <Route path="/connections" element={<ConnectionsPage />} />
                 <Route path="/discover" element={<DiscoverPage />} />
                 <Route path="/discover/:userId" element={<DiscoverProfilePage />} />

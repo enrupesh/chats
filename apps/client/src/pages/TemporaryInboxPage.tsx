@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   getFirebaseAuth,
   isFirebaseConfigured,
@@ -101,7 +101,10 @@ function messageOf(error: unknown): string {
 }
 
 export function TemporaryInboxPage() {
-  useNoindex("Temporary inbox · VeilChat");
+  useNoindex("Temporary Mail · Private verification inbox");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isDashboardRoute = location.pathname.endsWith("/dashboard");
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(!isFirebaseConfigured());
   const [inboxes, setInboxes] = useState<TempInbox[]>([]);
@@ -117,6 +120,15 @@ export function TemporaryInboxPage() {
   const turnstileHostRef = useRef<HTMLDivElement | null>(null);
   const widgetIdRef = useRef<string | null>(null);
   const refreshInFlightRef = useRef(false);
+
+  useEffect(() => {
+    if (!authReady) return;
+    if (user && !isDashboardRoute) {
+      navigate("/temporary-inbox/dashboard", { replace: true });
+    } else if (!user && isDashboardRoute) {
+      navigate("/temporary-inbox", { replace: true });
+    }
+  }, [authReady, isDashboardRoute, navigate, user]);
 
   useEffect(() => {
     if (!isFirebaseConfigured()) return;
@@ -280,154 +292,192 @@ export function TemporaryInboxPage() {
     }
   }
 
+  if (!isDashboardRoute) {
+    return (
+      <main className="tm-page">
+        <header className="tm-topbar">
+          <Link className="tm-brand" to="/temporary-inbox" aria-label="Temporary Mail home">
+            <span className="tm-brand-mark" aria-hidden="true">@</span>
+            <span>temporary mail</span>
+          </Link>
+          <span className="tm-topbar-note">Receive only · auto-deletes in 24h</span>
+        </header>
+
+        <div className="tm-landing-main">
+          <section className="tm-hero">
+            <div>
+              <p className="tm-kicker"><span className="tm-kicker-dot" aria-hidden="true" />Private verification inbox</p>
+              <h1>A temporary inbox for one important email.</h1>
+              <p className="tm-hero-copy">
+                Get a private address, use it for a verification code, and leave.
+                No sending. No permanent mailbox history.
+              </p>
+              {error ? <p className="tm-error" role="alert">{error}</p> : null}
+              {!authReady ? (
+                <p className="tm-auth-status">Checking your Google session…</p>
+              ) : !isFirebaseConfigured() ? (
+                <p className="tm-error" role="alert">Google sign-in is not configured yet.</p>
+              ) : (
+                <button className="tm-google-button" type="button" onClick={() => void handleGoogleSignIn()} disabled={busy}>
+                  <GoogleIcon />
+                  <span>{busy ? "Opening Google…" : "Continue with Google"}</span>
+                  <b aria-hidden="true">↗</b>
+                </button>
+              )}
+              <p className="tm-fine-print">Google sign-in keeps your inbox private. We never see your Google password.</p>
+            </div>
+
+            <div className="tm-preview-window" aria-label="Example temporary mailbox">
+              <div className="tm-preview-window-top">
+                <small>Mailbox preview</small>
+                <span className="tm-window-dots" aria-hidden="true"><span /><span /><span /></span>
+              </div>
+              <div className="tm-preview-address">
+                <span className="tm-preview-label">Your address</span>
+                <strong>maple-8q3r@temp.mail</strong>
+              </div>
+              <div className="tm-preview-message">
+                <div className="tm-preview-message-head">
+                  <span className="tm-sender-dot" aria-hidden="true">S</span>
+                  <div><strong>security@linear.app</strong><small>Just now</small></div>
+                </div>
+                <h3>Your Linear verification code</h3>
+                <div className="tm-preview-code"><span>Verification code</span><strong>482 193</strong></div>
+              </div>
+            </div>
+          </section>
+
+          <section className="tm-trust-strip" aria-label="How temporary mail works">
+            <div className="tm-trust-item"><strong>Private by default</strong><span>Only you can open your inbox.</span></div>
+            <div className="tm-trust-item"><strong>One address at a time</strong><span>Made for the code you need now.</span></div>
+            <div className="tm-trust-item"><strong>Gone after 24 hours</strong><span>Address and message are deleted.</span></div>
+          </section>
+        </div>
+
+        <footer className="tm-landing-footer"><span>Temporary Mail</span><span>Receive only. Never reused.</span></footer>
+      </main>
+    );
+  }
+
+  if (!authReady || !user) {
+    return (
+      <main className="tm-page">
+        <header className="tm-topbar">
+          <Link className="tm-brand" to="/temporary-inbox" aria-label="Temporary Mail home">
+            <span className="tm-brand-mark" aria-hidden="true">@</span>
+            <span>temporary mail</span>
+          </Link>
+          <span className="tm-topbar-note">Private dashboard</span>
+        </header>
+        <section className="tm-dashboard-main">
+          <div className="tm-mailbox tm-waiting-state tm-waiting-state--signed-out">
+            <div><div className="tm-waiting-icon" aria-hidden="true">@</div><h2>Opening your mailbox…</h2><p>We are checking your Google session.</p></div>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   return (
-    <main className="temp-inbox">
-      <div className="temp-inbox__grain" aria-hidden="true" />
-      <header className="temp-inbox__nav">
-        <Link className="temp-inbox__brand" to="/">
-          <span className="temp-inbox__brand-mark" aria-hidden="true">V</span>
-          <span>
-            <strong>VeilChat</strong>
-            <small>temporary inbox</small>
-          </span>
+    <main className="tm-page">
+      <header className="tm-topbar">
+        <Link className="tm-brand" to="/temporary-inbox" aria-label="Temporary Mail home">
+          <span className="tm-brand-mark" aria-hidden="true">@</span>
+          <span>temporary mail</span>
         </Link>
-        <nav className="temp-inbox__links" aria-label="Temporary inbox navigation">
-          <Link to="/waitlist">Founder access</Link>
-          {user ? (
-            <button type="button" onClick={() => void signOutFirebase()}>
-              Sign out
-            </button>
-          ) : null}
-        </nav>
+        <div className="tm-account">
+          <span className="tm-avatar" aria-hidden="true">{(user.email ?? "G").slice(0, 2).toUpperCase()}</span>
+          <span>{user.email ?? "Google account"}</span>
+          <button className="tm-signout" type="button" onClick={() => void signOutFirebase()}>Sign out</button>
+        </div>
       </header>
 
-      <section className="temp-inbox__hero">
-        <div>
-          <p className="temp-inbox__eyebrow"><i /> RECEIVE ONLY / 24 HOURS</p>
-          <h1>A quiet address for the code you need.</h1>
-          <p className="temp-inbox__intro">
-            Create a disposable inbox on <strong>temp.veilchat.me</strong>, use it on
-            another site, and copy the verification code here. No sending, replying,
-            forwarding, or permanent mailbox history.
-          </p>
+      <section className="tm-dashboard-main" aria-label="Temporary inbox dashboard">
+        <div className="tm-dashboard-heading">
+          <div><h1>Inbox</h1><p>One address. The latest email only.</p></div>
+          <span className="tm-dashboard-note">Receive-only mailbox</span>
         </div>
-        <div className="temp-inbox__promise">
-          <span>01</span><strong>Google-only access</strong><small>Your inboxes stay tied to your account.</small>
-          <span>02</span><strong>Two addresses</strong><small>A rolling 24-hour limit keeps the service useful.</small>
-          <span>03</span><strong>Automatic deletion</strong><small>Messages and inboxes expire after 24 hours.</small>
-        </div>
-      </section>
 
-      <section className="temp-inbox__workspace" aria-label="Temporary inbox dashboard">
-        {!authReady ? (
-          <div className="temp-inbox__card temp-inbox__loading">Checking your Google session…</div>
-        ) : !isFirebaseConfigured() ? (
-          <div className="temp-inbox__card temp-inbox__notice">
-            <span className="temp-inbox__card-label">Setup needed</span>
-            <h2>Google access is not configured yet.</h2>
-            <p>Set the Firebase client configuration and enable the Google provider to open a temporary inbox.</p>
+        <div className="tm-create-row">
+          <div>
+            <span className="tm-preview-label">Your allowance</span>
+            <strong>{inboxes.length} / 2 active addresses</strong>
+            <p>New mail replaces the previous message. Addresses expire after 24 hours.</p>
           </div>
-        ) : !user ? (
-          <div className="temp-inbox__card temp-inbox__signin">
-            <div className="temp-inbox__card-label">Private dashboard</div>
-            <h2>Sign in before you receive.</h2>
-            <p>Google is the only sign-in method for this product. Your VeilChat messenger account stays separate.</p>
-            {error ? <p className="temp-inbox__error" role="alert">{error}</p> : null}
-            <button className="temp-inbox__google" type="button" onClick={() => void handleGoogleSignIn()} disabled={busy}>
-              <GoogleIcon />
-              <span>{busy ? "Opening Google…" : "Continue with Google"}</span>
-              <b>↗</b>
+          <div className="tm-create-controls">
+            {turnstileSiteKey ? <div ref={turnstileHostRef} className="tm-turnstile" /> : (
+              <small className="tm-turnstile-missing">Turnstile site key is not configured.</small>
+            )}
+            <button className="tm-dark-button" type="button" onClick={() => void handleCreate()} disabled={busy || (turnstileRequired && !turnstileToken)}>
+              {busy ? "Creating…" : "Create temporary address"} <span aria-hidden="true">+</span>
             </button>
-            <p className="temp-inbox__fineprint">No password is created here. We never receive your Google password.</p>
           </div>
-        ) : (
-          <div className="temp-inbox__dashboard">
-            <div className="temp-inbox__dashboard-top">
-              <div>
-                <span className="temp-inbox__card-label">Your temporary space</span>
-                <h2>What are you waiting for?</h2>
-              </div>
-              <span className="temp-inbox__identity">{user.email ?? "Google account"}</span>
+        </div>
+
+        {error ? <p className="tm-error" role="alert">{error}</p> : null}
+
+        <div className="tm-address-picker" aria-label="Temporary addresses">
+          <div className="tm-address-picker-heading"><span>Your addresses</span><span>{inboxes.length} active</span></div>
+          {inboxes.length === 0 ? (
+            <p className="tm-address-picker-empty">Create an address to start receiving mail.</p>
+          ) : inboxes.map((inbox) => (
+            <button type="button" key={inbox.id} className={`tm-address-option ${selectedId === inbox.id ? "is-selected" : ""}`} onClick={() => setSelectedId(inbox.id)}>
+              <span className="tm-address-option-mark" aria-hidden="true">@</span>
+              <span><strong>{inbox.address}</strong><small>Expires in {formatRemaining(inbox.expiresAt, now)}</small></span>
+              <span className="tm-address-option-arrow" aria-hidden="true">→</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="tm-mailbox">
+          {!selectedInbox ? (
+            <div className="tm-waiting-state">
+              <div><div className="tm-waiting-icon" aria-hidden="true">@</div><h2>Waiting for a temporary address</h2><p>Create an address above, then use it wherever you need a verification email.</p></div>
             </div>
-
-            <div className="temp-inbox__control-row">
-              <div className="temp-inbox__quota">
-                <span className="temp-inbox__card-label">Rolling allowance</span>
-                <strong>{inboxes.length} / 2 active addresses</strong>
-                 <small>Only the newest email is kept; the inbox expires after 24 hours.</small>
-              </div>
-              <div className="temp-inbox__create">
-                {turnstileSiteKey ? <div ref={turnstileHostRef} className="temp-inbox__turnstile" /> : (
-                  <small className="temp-inbox__turnstile-missing">Turnstile site key is not configured.</small>
-                )}
-                <button type="button" className="temp-inbox__create-button" onClick={() => void handleCreate()} disabled={busy || (turnstileRequired && !turnstileToken)}>
-                  {busy ? "Working…" : "Create temporary inbox"} <span>+</span>
-                </button>
-              </div>
-            </div>
-
-            {error ? <p className="temp-inbox__error" role="alert">{error}</p> : null}
-
-            <div className="temp-inbox__columns">
-              <div className="temp-inbox__inboxes">
-                <div className="temp-inbox__section-heading"><span>Issued addresses</span><small>{inboxes.length ? "Select an inbox" : "None yet"}</small></div>
-                {inboxes.length === 0 ? (
-                  <div className="temp-inbox__empty"><span>+</span><p>Your first temporary address will appear here.</p></div>
-                ) : inboxes.map((inbox) => (
-                  <button
-                    type="button"
-                    key={inbox.id}
-                    className={`temp-inbox__inbox-row ${selectedId === inbox.id ? "is-selected" : ""}`}
-                    onClick={() => setSelectedId(inbox.id)}
-                  >
-                    <span className="temp-inbox__inbox-icon" aria-hidden="true">@</span>
-                    <span className="temp-inbox__inbox-copy"><strong>{inbox.address}</strong><small>Expires in {formatRemaining(inbox.expiresAt, now)}</small></span>
-                    <span className="temp-inbox__inbox-arrow" aria-hidden="true">→</span>
-                  </button>
-                ))}
+          ) : (
+            <>
+              <div className="tm-address-bar">
+                <div className="tm-address-content">
+                  <span className="tm-preview-label">Your temporary address</span>
+                  <strong className="tm-address">{selectedInbox.address}</strong>
+                  <span className="tm-address-status">Private · expires in {formatRemaining(selectedInbox.expiresAt, now)}</span>
+                </div>
+                <div className="tm-address-actions">
+                  <button className="tm-plain-button" type="button" onClick={() => void copyValue(selectedInbox.address, selectedInbox.id)}>{copied === selectedInbox.id ? "Copied" : "Copy address"}</button>
+                  <button className="tm-danger-button" type="button" onClick={() => void handleDelete(selectedInbox)}>Delete</button>
+                </div>
               </div>
 
-              <div className="temp-inbox__messages">
-                {!selectedInbox ? (
-                  <div className="temp-inbox__empty temp-inbox__empty--messages"><span>✦</span><p>Select an address to view incoming mail.</p></div>
-                ) : (
-                  <>
-                    <div className="temp-inbox__message-heading">
-                      <div><span className="temp-inbox__card-label">Live receive-only view</span><strong>{selectedInbox.address}</strong></div>
-                      <div className="temp-inbox__message-actions">
-                        <button
-                          type="button"
-                          className={`temp-inbox__refresh-button ${manualRefreshing ? "is-refreshing" : ""}`}
-                          onClick={() => void handleManualRefresh()}
-                          disabled={manualRefreshing || loadingMessages}
-                          aria-label="Refresh incoming mail"
-                          title="Refresh incoming mail"
-                        >
-                          <span className="temp-inbox__refresh-icon" aria-hidden="true">↻</span>
-                          <span>{manualRefreshing ? "Refreshing…" : "Refresh mail"}</span>
-                        </button>
-                        <button type="button" onClick={() => void copyValue(selectedInbox.address, selectedInbox.id)}>{copied === selectedInbox.id ? "Copied" : "Copy address"}</button>
-                        <button type="button" className="is-danger" onClick={() => void handleDelete(selectedInbox)}>Delete</button>
-                      </div>
+              <div className="tm-mailbox-body">
+                <aside className="tm-sidebar" aria-label="Inbox message list">
+                  <div className="tm-sidebar-heading"><span>Latest email</span><span>{messages.length} message{messages.length === 1 ? "" : "s"}</span></div>
+                  {messages.length ? messages.map((message) => (
+                    <div className="tm-mail-row" key={message.id}>
+                      <span className="tm-mail-row-avatar" aria-hidden="true">{message.fromAddress.slice(0, 1).toUpperCase()}</span>
+                      <div className="tm-mail-row-copy"><strong>{message.fromAddress}</strong><span>{message.subject}</span><small>{formatDate(message.receivedAt)}</small></div>
                     </div>
-                    <div className="temp-inbox__message-list">
-                      {loadingMessages && messages.length === 0 ? <div className="temp-inbox__message-empty">Checking for new mail…</div> : messages.length === 0 ? (
-                         <div className="temp-inbox__message-empty"><span>⌁</span><strong>Waiting for incoming mail</strong><small>Use the address on another site. The newest email appears here automatically.</small></div>
-                      ) : messages.map((message) => <MessageCard key={message.id} message={message} copied={copied} onCopy={copyValue} />)}
-                    </div>
-                  </>
-                )}
+                  )) : <div className="tm-sidebar-empty"><strong>No email yet</strong>Use this address on another site. The newest email will appear here.</div>}
+                  {messages.length ? <div className="tm-sidebar-empty"><strong>No older messages</strong>New mail replaces this one. This inbox never builds a history.</div> : null}
+                </aside>
+
+                <section className="tm-message-pane" aria-label="Received email">
+                  <div className="tm-message-pane-heading">
+                    <div><span className="tm-preview-label">Received email</span><h2>{messages[0]?.subject ?? "Waiting for incoming mail"}</h2></div>
+                    <button className="tm-plain-button" type="button" onClick={() => void handleManualRefresh()} disabled={manualRefreshing || loadingMessages}>
+                      <span className={manualRefreshing ? "tm-spin" : ""} aria-hidden="true">↻</span>{manualRefreshing ? "Checking…" : "Refresh mail"}
+                    </button>
+                  </div>
+                  {loadingMessages && messages.length === 0 ? <div className="tm-message-empty">Checking for new mail…</div> : messages.length === 0 ? (
+                    <div className="tm-message-empty"><strong>Waiting for incoming mail</strong><span>Use the address on another site. The newest email appears here automatically.</span></div>
+                  ) : messages.map((message) => <MessageCard key={message.id} message={message} copied={copied} onCopy={copyValue} />)}
+                </section>
               </div>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </div>
+
+        <div className="tm-dashboard-footer"><span>Messages delete automatically after 24 hours.</span><span>Temporary Mail · private by default</span></div>
       </section>
-
-      <footer className="temp-inbox__footer">
-        <span>VEILCHAT / TEMPORARY MAIL</span>
-        <span>Receive only. Delete automatically. Never reused.</span>
-        <span>© {new Date().getFullYear()} VeilChat</span>
-      </footer>
     </main>
   );
 }
@@ -442,20 +492,19 @@ function MessageCard({
   onCopy: (value: string, key: string) => Promise<void>;
 }) {
   return (
-    <article className="temp-inbox__message-card">
-      <div className="temp-inbox__message-meta">
-        <span className="temp-inbox__sender-badge">{message.fromAddress.slice(0, 1).toUpperCase()}</span>
-        <div><strong>{message.fromAddress}</strong><small>{formatDate(message.receivedAt)}</small></div>
-        {message.attachmentCount ? <span className="temp-inbox__attachments">{message.attachmentCount} attachment{message.attachmentCount === 1 ? "" : "s"}</span> : null}
+    <article className="tm-message-card">
+      <div className="tm-message-meta">
+        <span className="tm-sender-avatar" aria-hidden="true">{message.fromAddress.slice(0, 1).toUpperCase()}</span>
+        <div><strong>{message.fromAddress}</strong><small>to temporary address · {formatDate(message.receivedAt)}</small></div>
       </div>
-      <h3>{message.subject}</h3>
+      {message.attachmentCount ? <p className="tm-message-attachment">{message.attachmentCount} attachment{message.attachmentCount === 1 ? "" : "s"}</p> : null}
       {message.otpCode ? (
-        <div className="temp-inbox__otp">
-          <div><span>Possible verification code</span><strong>{message.otpCode}</strong></div>
-          <button type="button" onClick={() => void onCopy(message.otpCode!, `otp:${message.id}`)}>{copied === `otp:${message.id}` ? "Copied" : "Copy code"} <span>↗</span></button>
+        <div className="tm-otp-box">
+          <div><span>Verification code</span><strong className="tm-otp-code">{message.otpCode}</strong></div>
+          <button className="tm-otp-copy" type="button" onClick={() => void onCopy(message.otpCode!, `otp:${message.id}`)}>{copied === `otp:${message.id}` ? "Copied" : "Copy code"}</button>
         </div>
       ) : null}
-      <div className="temp-inbox__body">
+      <div className="tm-message-body">
         {message.textBody ? <p>{message.textBody}</p> : message.htmlBody ? <div dangerouslySetInnerHTML={{ __html: message.htmlBody }} /> : <p className="is-muted">This message has no displayable body.</p>}
       </div>
     </article>
@@ -463,5 +512,5 @@ function MessageCard({
 }
 
 function GoogleIcon() {
-  return <span className="temp-inbox__google-icon" aria-hidden="true">G</span>;
+  return <span className="tm-google-icon" aria-hidden="true">G</span>;
 }
