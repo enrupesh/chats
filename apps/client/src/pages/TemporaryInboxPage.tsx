@@ -105,11 +105,12 @@ function emailDocument(html: string): string {
 }
 
 const TEMPORARY_ADDRESS_PACKS = [
-  { quantity: 10, price: 19, name: "Starter", note: "For occasional verification" },
-  { quantity: 25, price: 39, name: "Regular", note: "For weekly use" },
-  { quantity: 50, price: 69, name: "Power", note: "For frequent verification" },
-  { quantity: 100, price: 99, name: "Heavy", note: "For a busy month" },
-  { quantity: 250, price: 199, name: "Scale", note: "For teams and testing" },
+  { quantity: 50, price: 1.99, name: "Power", note: "For frequent verification" },
+  { quantity: 100, price: 2.99, name: "Heavy", note: "For a busy month" },
+  { quantity: 150, price: 3.99, name: "Pro", note: "For regular testing" },
+  { quantity: 200, price: 4.99, name: "Scale", note: "For a busy workflow" },
+  { quantity: 250, price: 5.99, name: "Plus", note: "For heavier use" },
+  { quantity: 300, price: 6.99, name: "Max", note: "For teams and testing" },
 ] as const;
 
 function packForQuantity(
@@ -139,7 +140,7 @@ export function TemporaryInboxPage() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [isPackDrawerOpen, setIsPackDrawerOpen] = useState(false);
-  const [packQuantity, setPackQuantity] = useState(25);
+  const [packQuantity, setPackQuantity] = useState(100);
   const [packEmail, setPackEmail] = useState("");
   const [packReviewReady, setPackReviewReady] = useState(false);
   const turnstileHostRef = useRef<HTMLDivElement | null>(null);
@@ -530,7 +531,7 @@ export function TemporaryInboxPage() {
               setPackReviewReady(false);
             }}
             onQuantityChange={(value) => {
-              setPackQuantity(Math.min(250, Math.max(5, value)));
+              setPackQuantity(Math.min(300, Math.max(50, value)));
               setPackReviewReady(false);
             }}
             onReview={reviewPack}
@@ -574,21 +575,21 @@ function TemporaryAddressDrawer({
         </div>
 
         <div className="tm-drawer-copy">
-          <p>Choose how many temporary addresses you expect to use this month. Each address still expires automatically after 24 hours.</p>
-          <div className="tm-drawer-note"><span aria-hidden="true">✓</span><span>No permanent mailbox. No card details collected here.</span></div>
+          <p>Choose a monthly pack and get the complete bundle upfront in one go. All addresses are available immediately — use them whenever you need during the month.</p>
+          <div className="tm-drawer-note"><span aria-hidden="true">✓</span><span>One monthly payment · your full pack is delivered immediately.</span></div>
         </div>
 
         <form className="tm-pack-form" onSubmit={onReview}>
           <div className="tm-pack-field">
             <div className="tm-pack-field-heading">
-              <label htmlFor="tm-pack-quantity">Addresses per month</label>
+                <label htmlFor="tm-pack-quantity">Addresses in your monthly pack</label>
               <div className="tm-pack-quantity-input">
                 <input
                   id="tm-pack-quantity"
                   type="number"
-                  min="5"
-                  max="250"
-                  step="5"
+                  min="50"
+                  max="300"
+                  step="50"
                   value={quantity}
                   onChange={(event) => onQuantityChange(Number(event.target.value) || 5)}
                 />
@@ -598,14 +599,14 @@ function TemporaryAddressDrawer({
             <input
               className="tm-pack-range"
               type="range"
-              min="5"
-              max="250"
-              step="5"
+              min="50"
+              max="300"
+              step="50"
               value={quantity}
               onChange={(event) => onQuantityChange(Number(event.target.value))}
               aria-label="Addresses per month"
             />
-            <div className="tm-pack-range-labels"><span>5</span><span>250</span></div>
+            <div className="tm-pack-range-labels"><span>50</span><span>300</span></div>
           </div>
 
           <div className="tm-pack-presets" aria-label="Monthly address packs">
@@ -617,7 +618,7 @@ function TemporaryAddressDrawer({
                 onClick={() => onQuantityChange(preset.quantity)}
               >
                 <span><strong>{preset.quantity}</strong> addresses</span>
-                <b>₹{preset.price}<small>/mo</small></b>
+                <b>${preset.price.toFixed(2)}<small>/mo</small></b>
               </button>
             ))}
           </div>
@@ -636,18 +637,18 @@ function TemporaryAddressDrawer({
 
           <div className="tm-pack-total">
             <div><span>Estimated monthly total</span><small>{pack.name} · {pack.note}</small></div>
-            <strong>₹{pack.price}<small>/month</small></strong>
+            <strong>${pack.price.toFixed(2)}<small>/month</small></strong>
           </div>
 
           {reviewReady ? (
             <div className="tm-pack-success" role="status">
               <strong>Your plan is ready.</strong>
-              <span>Checkout will be connected after the payment provider is selected. Your quote is ₹{pack.price}/month for {quantity} addresses.</span>
+              <span>Checkout will be connected after the payment provider is selected. Your quote is ${pack.price.toFixed(2)}/month for {quantity} addresses delivered upfront.</span>
             </div>
           ) : null}
 
           <button className="tm-pack-submit" type="submit">
-            Review ₹{pack.price}/month plan <span aria-hidden="true">→</span>
+            Review ${pack.price.toFixed(2)}/month plan <span aria-hidden="true">→</span>
           </button>
           <p className="tm-pack-legal">Price preview only. No payment is taken in this step.</p>
         </form>
