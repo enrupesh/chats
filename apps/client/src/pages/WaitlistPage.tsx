@@ -380,6 +380,21 @@ export function WaitlistPage() {
                 loading="lazy"
               />
             </a>
+            <a
+              className="vc-footer__badge vc-footer__badge--product-hunt"
+              href="https://www.producthunt.com/products/rofessional-email-for-1-month?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-professional-email-for-1-month"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="View Professional email for $1/month on Product Hunt"
+            >
+              <img
+                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1259410&amp;theme=light&amp;t=1790238280549"
+                alt="Professional email for $1/month - Your professional email. On your own domain. Just $1/month. | Product Hunt"
+                width={250}
+                height={54}
+                loading="lazy"
+              />
+            </a>
           </div>
         </footer>
       </div>

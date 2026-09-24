@@ -1399,7 +1399,10 @@
 .vc-footer__badge-row {
   display: flex;
   flex: 0 0 100%;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
+  gap: 12px;
   padding-top: 2px;
 }
 
@@ -1423,6 +1426,10 @@
   display: block;
   width: min(220px, 100%);
   height: auto;
+}
+
+.vc-footer__badge--product-hunt img {
+  width: min(250px, 100%);
 }
 
 .vc-footer span:nth-child(2) {
