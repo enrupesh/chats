@@ -1166,6 +1166,22 @@
   white-space: nowrap;
 }
 
+.vc-social__copy {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.vc-social__detail {
+  overflow: hidden;
+  color: inherit;
+  font-size: 9px;
+  line-height: 1.35;
+  opacity: 0.78;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .vc-social__arrow {
   justify-self: end;
   font-size: 14px;
@@ -1191,6 +1207,34 @@
 .vc-social--clay {
   color: var(--vc-ink);
   background: var(--vc-copper-pale);
+}
+
+.vc-social--discord {
+  grid-column: 1 / -1;
+  min-height: 62px;
+  padding: 9px 12px;
+  border-color: rgba(88, 101, 242, 0.6);
+  color: #fff;
+  background: linear-gradient(105deg, #4752c4, #5865f2 58%, #7884ff);
+  box-shadow: 0 8px 22px rgba(49, 58, 157, 0.2);
+}
+
+.vc-social--discord .vc-social__mark {
+  width: 32px;
+  height: 32px;
+}
+
+.vc-social--discord .vc-social__title {
+  font-size: 12px;
+}
+
+.vc-social--discord .vc-social__detail {
+  font-size: 10px;
+}
+
+.vc-social--discord:hover {
+  border-color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 11px 26px rgba(49, 58, 157, 0.28);
 }
 
 .vc-pass-wrap__caption {
@@ -1352,6 +1396,28 @@
 
 .vc-footer span:nth-child(2) {
   color: var(--vc-moss);
+}
+
+.vc-footer__discord {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #4752c4;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+.vc-footer__discord:hover {
+  color: #26349e;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.vc-footer__discord:focus-visible,
+.vc-social--discord:focus-visible {
+  outline: 3px solid #efab54;
+  outline-offset: 3px;
 }
 
 .vc-enter {

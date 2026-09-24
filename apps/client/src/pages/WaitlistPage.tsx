@@ -336,6 +336,15 @@ export function WaitlistPage() {
                     kind="clay"
                     testId="link-social-youtube"
                   />
+                  <SocialLink
+                    href="https://discord.gg/bSSFpmtsMb"
+                    label="Join the VeilChat community on Discord"
+                    icon="discord"
+                    title="Join the VeilChat community"
+                    detail="Meet the team, ask questions, and follow the launch."
+                    kind="discord"
+                    testId="link-social-discord"
+                  />
                 </div>
               </div>
             </div>
@@ -346,6 +355,14 @@ export function WaitlistPage() {
         <footer className="vc-footer">
           <span>VEILCHAT / FOUNDER EDITION</span>
           <span>Private by design. Useful by default.</span>
+          <a
+            className="vc-footer__discord"
+            href="https://discord.gg/bSSFpmtsMb"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Join us on Discord <span aria-hidden="true">↗</span>
+          </a>
           <span>© {new Date().getFullYear()} VeilChat</span>
         </footer>
       </div>
@@ -538,6 +555,7 @@ function SocialLink({
   label,
   icon,
   title,
+  detail,
   kind,
   testId,
 }: {
@@ -545,7 +563,8 @@ function SocialLink({
   label: string;
   icon: SocialIconName;
   title: string;
-  kind: "dark" | "light" | "sage" | "clay";
+  detail?: string;
+  kind: "dark" | "light" | "sage" | "clay" | "discord";
   testId: string;
 }) {
   return (
@@ -560,13 +579,16 @@ function SocialLink({
       <span className="vc-social__mark">
         <SocialIcon name={icon} />
       </span>
-      <span className="vc-social__title">{title}</span>
+      <span className="vc-social__copy">
+        <span className="vc-social__title">{title}</span>
+        {detail && <span className="vc-social__detail">{detail}</span>}
+      </span>
       <span className="vc-social__arrow" aria-hidden="true">↗</span>
     </a>
   );
 }
 
-type SocialIconName = "x" | "instagram" | "veilchat" | "youtube";
+type SocialIconName = "x" | "instagram" | "veilchat" | "youtube" | "discord";
 
 function SocialIcon({ name }: { name: SocialIconName }) {
   if (name === "x") {
@@ -592,6 +614,16 @@ function SocialIcon({ name }: { name: SocialIconName }) {
       <svg viewBox="0 0 20 20" aria-hidden="true">
         <rect x="2.5" y="5.5" width="15" height="9" rx="3" />
         <path className="vc-social__icon-play" d="M8.3 8l4.8 2-4.8 2z" />
+      </svg>
+    );
+  }
+
+  if (name === "discord") {
+    return (
+      <svg viewBox="0 0 20 20" aria-hidden="true">
+        <path d="M5.1 5.6a12.8 12.8 0 0 1 3.1-1l.4.8a9.4 9.4 0 0 1 2.8 0l.4-.8a12.8 12.8 0 0 1 3.1 1c1.3 1.9 1.8 3.9 1.6 6a12 12 0 0 1-3.8 1.9l-.8-1.2m-3.2 0-.8 1.2a12 12 0 0 1-3.8-1.9c-.2-2.1.3-4.1 1.6-6Z" />
+        <circle cx="7.6" cy="9.2" r=".8" />
+        <circle cx="12.4" cy="9.2" r=".8" />
       </svg>
     );
   }
