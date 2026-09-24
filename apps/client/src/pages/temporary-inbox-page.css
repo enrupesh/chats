@@ -1250,6 +1250,16 @@
   font-size: 12px;
 }
 
+.tm-pack-error {
+  margin: -7px 0 0;
+  padding: 10px 12px;
+  border: 1px solid #ebd1cf;
+  border-radius: 6px;
+  background: #fffafa;
+  color: #925654;
+  font-size: 11px;
+}
+
 .tm-pack-submit {
   min-height: 46px;
   padding: 0 16px;
@@ -1264,6 +1274,12 @@
   font-size: 12px;
   font-weight: 750;
   transition: background 140ms ease, transform 140ms ease;
+}
+
+.tm-pack-submit:disabled {
+  cursor: wait;
+  opacity: 0.62;
+  transform: none;
 }
 
 .tm-pack-submit:hover {

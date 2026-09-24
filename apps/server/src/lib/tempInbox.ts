@@ -9,6 +9,15 @@ import { rateLimit } from "./rateLimit.js";
 
 const ADDRESS_ALPHABET = "abcdefghijkmnopqrstuvwxyz23456789";
 const MAX_BODY_CHARS = 500_000;
+const TEMPORARY_ADDRESS_PACKS = [
+  { quantity: 50, priceCents: 199, name: "Power" },
+  { quantity: 100, priceCents: 299, name: "Heavy" },
+  { quantity: 150, priceCents: 399, name: "Pro" },
+  { quantity: 200, priceCents: 499, name: "Scale" },
+  { quantity: 250, priceCents: 599, name: "Plus" },
+  { quantity: 300, priceCents: 699, name: "Max" },
+] as const;
+const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type TempInboxRequest = {
   headers: Record<string, string | string[] | undefined>;
@@ -532,6 +541,61 @@ export function registerTempInboxRoutes(app: FastifyInstance): void {
       }
     },
   );
+
+  app.post<{
+    Body: { email?: string; quantity?: number };
+  }>("/temporary-inbox/pack-requests", async (req, reply) => {
+    const uid = await firebaseUid(req as unknown as TempInboxRequest, reply);
+    if (!uid) return;
+
+    const email = req.body?.email?.trim().toLowerCase();
+    const quantity = req.body?.quantity;
+    const pack = TEMPORARY_ADDRESS_PACKS.find((candidate) => candidate.quantity === quantity);
+    if (!email || email.length > 254 || !validEmail.test(email)) {
+      return reply.status(400).send({ error: "Enter a valid email address." });
+    }
+    if (!pack) {
+      return reply.status(400).send({ error: "Choose one of the available address packs." });
+    }
+
+    try {
+      const db = getDb();
+      const [created] = await db
+        .insert(schema.tempInboxPackRequests)
+        .values({
+          firebaseUid: uid,
+          email,
+          quantity: pack.quantity,
+          packName: pack.name,
+          amountCents: pack.priceCents,
+          currency: "USD",
+          deliveryMode: "upfront",
+          source: "temporary-inbox-dashboard",
+          status: "new",
+        })
+        .returning({
+          id: schema.tempInboxPackRequests.id,
+          createdAt: schema.tempInboxPackRequests.createdAt,
+        });
+      if (!created) {
+        return reply.status(500).send({ error: "Your request could not be saved." });
+      }
+      return reply.status(201).send({
+        request: {
+          id: created.id,
+          createdAt: created.createdAt,
+          quantity: pack.quantity,
+          packName: pack.name,
+          amountCents: pack.priceCents,
+          currency: "USD",
+          deliveryMode: "upfront",
+        },
+      });
+    } catch (error) {
+      app.log.error({ error }, "Temporary address pack request failed");
+      return reply.status(500).send({ error: "Your request could not be saved. Please try again." });
+    }
+  });
 
   app.get<{ Params: { inboxId: string } }>(
     "/temporary-inbox/:inboxId/messages",

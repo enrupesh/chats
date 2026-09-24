@@ -962,6 +962,30 @@ export const productWaitlist = pgTable(
 
 export type DonationRequestRow = typeof donationRequests.$inferSelect;
 export type ProductWaitlistRow = typeof productWaitlist.$inferSelect;
+export const tempInboxPackRequests = pgTable(
+  "temp_inbox_pack_requests",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    firebaseUid: text("firebase_uid").notNull(),
+    email: text("email").notNull(),
+    quantity: integer("quantity").notNull(),
+    packName: text("pack_name").notNull(),
+    amountCents: integer("amount_cents").notNull(),
+    currency: text("currency").notNull().default("USD"),
+    deliveryMode: text("delivery_mode").notNull().default("upfront"),
+    source: text("source").notNull().default("temporary-inbox-dashboard"),
+    status: text("status").notNull().default("new"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    createdAtIdx: index("temp_inbox_pack_requests_created_at_idx").on(t.createdAt),
+    emailIdx: index("temp_inbox_pack_requests_email_idx").on(t.email),
+  }),
+);
+
+export type TempInboxPackRequestRow = typeof tempInboxPackRequests.$inferSelect;
 export type SecurityAlertRow = typeof securityAlerts.$inferSelect;
 
 export type ScheduledMessageRow = typeof scheduledMessages.$inferSelect;

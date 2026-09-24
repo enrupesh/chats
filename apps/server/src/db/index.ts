@@ -228,6 +228,27 @@ async function ensureSchema(sql: ReturnType<typeof postgres>) {
   await sql.unsafe(
     `CREATE INDEX IF NOT EXISTS "temp_inbox_messages_inbox_idx" ON "temp_inbox_messages" ("inbox_id", "received_at")`,
   );
+  await sql.unsafe(`
+    CREATE TABLE IF NOT EXISTS "temp_inbox_pack_requests" (
+      "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+      "firebase_uid" text NOT NULL,
+      "email" text NOT NULL,
+      "quantity" integer NOT NULL,
+      "pack_name" text NOT NULL,
+      "amount_cents" integer NOT NULL,
+      "currency" text NOT NULL DEFAULT 'USD',
+      "delivery_mode" text NOT NULL DEFAULT 'upfront',
+      "source" text NOT NULL DEFAULT 'temporary-inbox-dashboard',
+      "status" text NOT NULL DEFAULT 'new',
+      "created_at" timestamptz NOT NULL DEFAULT NOW()
+    )
+  `);
+  await sql.unsafe(
+    `CREATE INDEX IF NOT EXISTS "temp_inbox_pack_requests_created_at_idx" ON "temp_inbox_pack_requests" ("created_at")`,
+  );
+  await sql.unsafe(
+    `CREATE INDEX IF NOT EXISTS "temp_inbox_pack_requests_email_idx" ON "temp_inbox_pack_requests" ("email")`,
+  );
 }
 
 /**

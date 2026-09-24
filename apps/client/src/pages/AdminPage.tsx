@@ -449,6 +449,64 @@ function useWaitlist() {
   return { data, loading, error, search, setSearch, filtered, refetch };
 }
 
+interface TemporaryInboxPackRequest {
+  id: string;
+  firebaseUid: string;
+  email: string;
+  quantity: number;
+  packName: string;
+  amountCents: number;
+  currency: string;
+  deliveryMode: string;
+  source: string;
+  status: string;
+  createdAt: string;
+}
+
+function useTemporaryInboxPackRequests() {
+  const [data, setData] = useState<{ total: number; entries: TemporaryInboxPackRequest[] } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const refetch = useCallback(async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/admin/temporary-inbox-pack-requests`, {
+        cache: "no-store",
+        headers: { "x-admin-token": ADMIN_TOKEN },
+      });
+      if (!response.ok) throw new Error("temporary inbox requests unavailable");
+      const json = (await response.json()) as {
+        total?: number;
+        entries?: TemporaryInboxPackRequest[];
+      };
+      setData({ total: json.total ?? 0, entries: json.entries ?? [] });
+      setError(false);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refetch();
+    const timer = setInterval(() => void refetch(), 15_000);
+    return () => clearInterval(timer);
+  }, [refetch]);
+
+  const query = search.trim().toLowerCase();
+  const filtered = data?.entries.filter((entry) =>
+    !query ||
+    entry.email.toLowerCase().includes(query) ||
+    entry.packName.toLowerCase().includes(query) ||
+    entry.status.toLowerCase().includes(query) ||
+    String(entry.quantity).includes(query),
+  ) ?? [];
+
+  return { data, loading, error, search, setSearch, filtered, refetch };
+}
+
 function formatLabel(value: string | null | undefined): string {
   if (!value) return "Not available";
   if (/^[A-Z]{2}$/.test(value)) {
@@ -660,6 +718,102 @@ function WaitlistContent({
   );
 }
 
+function TemporaryInboxRequestsContent({
+  requests,
+}: {
+  requests: ReturnType<typeof useTemporaryInboxPackRequests>;
+}) {
+  return (
+    <div style={{ minHeight: "calc(100vh - 60px)", backgroundColor: "#FCF5EB" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 24px 80px" }}>
+        <div style={{ marginBottom: 28 }}>
+          <p style={{ margin: "0 0 6px", color: "#2E6F40", fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase" }}>
+            Temporary Mail
+          </p>
+          <h1 style={{ fontSize: "clamp(26px, 3vw, 38px)", fontWeight: 800, color: "#111B21", letterSpacing: "-0.03em", margin: "0 0 8px" }}>
+            Monthly pack requests
+          </h1>
+          <p style={{ fontSize: 14, color: "rgba(37,61,44,0.58)", margin: 0, maxWidth: 660 }}>
+            Every submitted dashboard request is saved here with the contact email,
+            selected quantity, server-calculated price, delivery preference, and request status.
+          </p>
+        </div>
+
+        <section style={{ background: "white", border: "1px solid rgba(37,61,44,0.1)", borderRadius: 18, overflow: "hidden" }}>
+          <div style={{ padding: "16px 18px", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12, borderBottom: "1px solid rgba(37,61,44,0.08)" }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: 15, color: "#111B21" }}>
+                {requests.data?.total ?? 0} request{requests.data?.total === 1 ? "" : "s"}
+              </h2>
+              <p style={{ margin: "4px 0 0", color: "rgba(37,61,44,0.45)", fontSize: 11 }}>Refreshes automatically every 15 seconds.</p>
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input
+                value={requests.search}
+                onChange={(event) => requests.setSearch(event.target.value)}
+                placeholder="Search email, pack, or status"
+                aria-label="Search temporary mail requests"
+                style={{ width: "min(280px, 58vw)", border: "1px solid rgba(37,61,44,0.16)", borderRadius: 9, padding: "9px 11px", fontSize: 12, outline: "none" }}
+              />
+              <button type="button" onClick={() => void requests.refetch()} style={{ border: "1px solid rgba(37,61,44,0.15)", borderRadius: 9, background: "#FCF5EB", color: "#253D2C", padding: "0 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                Refresh
+              </button>
+            </div>
+          </div>
+
+          {requests.loading ? (
+            <div style={{ padding: 28, color: "rgba(37,61,44,0.45)", fontSize: 13 }}>Loading requests…</div>
+          ) : requests.error ? (
+            <div style={{ padding: 28, color: "#A33A2B", fontSize: 13 }}>Could not load temporary mail requests.</div>
+          ) : requests.filtered.length === 0 ? (
+            <div style={{ padding: 32, color: "rgba(37,61,44,0.45)", fontSize: 13 }}>
+              {requests.search ? "No requests match this search." : "No temporary mail requests yet."}
+            </div>
+          ) : (
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 980 }}>
+                <thead>
+                  <tr style={{ background: "#F8FAF8", color: "rgba(37,61,44,0.5)", fontSize: 10.5, textAlign: "left", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                    <th style={{ padding: "11px 18px", fontWeight: 800 }}>Contact email</th>
+                    <th style={{ padding: "11px 12px", fontWeight: 800 }}>Pack</th>
+                    <th style={{ padding: "11px 12px", fontWeight: 800 }}>Price</th>
+                    <th style={{ padding: "11px 12px", fontWeight: 800 }}>Delivery</th>
+                    <th style={{ padding: "11px 12px", fontWeight: 800 }}>Status</th>
+                    <th style={{ padding: "11px 18px 11px 12px", fontWeight: 800 }}>Submitted</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {requests.filtered.map((entry) => (
+                    <tr key={entry.id} style={{ borderTop: "1px solid rgba(37,61,44,0.07)", fontSize: 12 }}>
+                      <td style={{ padding: "14px 18px", color: "#253D2C", fontWeight: 700 }}>
+                        <span style={{ display: "block" }}>{entry.email}</span>
+                        <span style={{ display: "block", color: "rgba(37,61,44,0.4)", fontSize: 10, fontWeight: 500, marginTop: 3 }}>{entry.source}</span>
+                      </td>
+                      <td style={{ padding: "14px 12px", color: "#253D2C", whiteSpace: "nowrap" }}>
+                        {entry.quantity} addresses · {entry.packName}
+                      </td>
+                      <td style={{ padding: "14px 12px", color: "#2E6F40", fontWeight: 800, whiteSpace: "nowrap" }}>
+                        {entry.currency} {(entry.amountCents / 100).toFixed(2)}
+                      </td>
+                      <td style={{ padding: "14px 12px", color: "rgba(37,61,44,0.62)", whiteSpace: "nowrap" }}>
+                        {entry.deliveryMode === "upfront" ? "Full pack upfront" : entry.deliveryMode}
+                      </td>
+                      <td style={{ padding: "14px 12px", color: "#2E6F40", fontWeight: 700, textTransform: "capitalize" }}>
+                        {entry.status}
+                      </td>
+                      <td style={{ padding: "14px 18px 14px 12px", color: "rgba(37,61,44,0.5)", whiteSpace: "nowrap" }}>{formatDate(entry.createdAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </div>
+    </div>
+  );
+}
+
 function UserAnalytics({ user, onClose }: { user: RegisteredUser; onClose: () => void }) {
   const name = user.username || user.displayName || user.randomId || user.id.slice(0, 8);
   return (
@@ -764,8 +918,9 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
   const team = useTeamInbox();
   const donations = useDonations();
   const waitlist = useWaitlist();
+  const temporaryInboxRequests = useTemporaryInboxPackRequests();
   const [tick, setTick] = useState(0);
-  const [activeTab, setActiveTab] = useState<"overview" | "waitlist" | "status">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "waitlist" | "temporaryInbox" | "status">("overview");
   const [selectedUser, setSelectedUser] = useState<RegisteredUser | null>(null);
 
   // Force re-render key on count change for number animation
@@ -775,7 +930,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
   const barMax = Math.max(peak, 1);
   const lastUpdated = history.at(-1)?.ts;
 
-  const tabStyle = (tab: "overview" | "waitlist" | "status"): React.CSSProperties => ({
+  const tabStyle = (tab: "overview" | "waitlist" | "temporaryInbox" | "status"): React.CSSProperties => ({
     fontSize: 13,
     fontWeight: 600,
     padding: "6px 16px",
@@ -818,6 +973,9 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
             <button style={tabStyle("waitlist")} onClick={() => setActiveTab("waitlist")}>
               Waitlist
             </button>
+            <button style={tabStyle("temporaryInbox")} onClick={() => setActiveTab("temporaryInbox")}>
+              Temp requests
+            </button>
             <button style={tabStyle("status")}   onClick={() => setActiveTab("status")}>System Status</button>
           </div>
 
@@ -836,6 +994,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
       {/* ── System Status tab ── */}
       {activeTab === "status" && <StatusContent />}
       {activeTab === "waitlist" && <WaitlistContent waitlist={waitlist} />}
+      {activeTab === "temporaryInbox" && <TemporaryInboxRequestsContent requests={temporaryInboxRequests} />}
 
       {/* ── Overview tab body ── */}
       {activeTab === "overview" && (

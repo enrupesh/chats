@@ -19,6 +19,16 @@ export type TempInboxMessage = {
   attachmentCount: number;
 };
 
+export type TempAddressPackRequest = {
+  id: string;
+  createdAt: string;
+  quantity: number;
+  packName: string;
+  amountCents: number;
+  currency: string;
+  deliveryMode: string;
+};
+
 async function request<T>(
   path: string,
   token: string,
@@ -67,6 +77,18 @@ export async function listTempInboxMessages(
     token,
   );
   return result.messages;
+}
+
+export async function submitTempAddressPackRequest(
+  token: string,
+  input: { email: string; quantity: number },
+): Promise<TempAddressPackRequest> {
+  const result = await request<{ request: TempAddressPackRequest }>(
+    "/temporary-inbox/pack-requests",
+    token,
+    { method: "POST", body: JSON.stringify(input) },
+  );
+  return result.request;
 }
 
 export async function deleteTempInbox(

@@ -620,6 +620,30 @@ app.get("/admin/waitlist", async (req, reply) => {
   return reply.send({ total: entries.length, entries });
 });
 
+app.get("/admin/temporary-inbox-pack-requests", async (req, reply) => {
+  if (req.headers["x-admin-token"] !== ADMIN_TOKEN) {
+    return reply.status(401).send({ error: "Unauthorized" });
+  }
+  const db = getDb();
+  const entries = await db
+    .select({
+      id: schema.tempInboxPackRequests.id,
+      firebaseUid: schema.tempInboxPackRequests.firebaseUid,
+      email: schema.tempInboxPackRequests.email,
+      quantity: schema.tempInboxPackRequests.quantity,
+      packName: schema.tempInboxPackRequests.packName,
+      amountCents: schema.tempInboxPackRequests.amountCents,
+      currency: schema.tempInboxPackRequests.currency,
+      deliveryMode: schema.tempInboxPackRequests.deliveryMode,
+      source: schema.tempInboxPackRequests.source,
+      status: schema.tempInboxPackRequests.status,
+      createdAt: schema.tempInboxPackRequests.createdAt,
+    })
+    .from(schema.tempInboxPackRequests)
+    .orderBy(desc(schema.tempInboxPackRequests.createdAt));
+  return reply.send({ total: entries.length, entries });
+});
+
 // ── Public donation interest ─────────────────────────────────────────────────
 // This intentionally collects only donation intent and contact details. A
 // payment gateway can be added later without exposing payment credentials to

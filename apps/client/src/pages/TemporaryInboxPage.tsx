@@ -12,6 +12,7 @@ import {
   createTempInbox,
   listTempInboxMessages,
   listTempInboxes,
+  submitTempAddressPackRequest,
 } from "../lib/tempInboxApi";
 import { useNoindex } from "../lib/useDocumentMeta";
 import {
@@ -143,6 +144,8 @@ export function TemporaryInboxPage() {
   const [packQuantity, setPackQuantity] = useState(100);
   const [packEmail, setPackEmail] = useState("");
   const [packReviewReady, setPackReviewReady] = useState(false);
+  const [packSubmitting, setPackSubmitting] = useState(false);
+  const [packSubmitError, setPackSubmitError] = useState<string | null>(null);
   const turnstileHostRef = useRef<HTMLDivElement | null>(null);
   const widgetIdRef = useRef<string | null>(null);
   const refreshInFlightRef = useRef(false);
@@ -323,12 +326,27 @@ export function TemporaryInboxPage() {
 
   function openPackDrawer() {
     setPackReviewReady(false);
+    setPackSubmitError(null);
     setIsPackDrawerOpen(true);
   }
 
-  function reviewPack(event: FormEvent<HTMLFormElement>) {
+  async function reviewPack(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setPackReviewReady(true);
+    if (!user || packSubmitting || packReviewReady) return;
+    setPackSubmitting(true);
+    setPackSubmitError(null);
+    try {
+      const idToken = await user.getIdToken();
+      await submitTempAddressPackRequest(idToken, {
+        email: packEmail,
+        quantity: packForQuantity(packQuantity).quantity,
+      });
+      setPackReviewReady(true);
+    } catch (submitError) {
+      setPackSubmitError(messageOf(submitError));
+    } finally {
+      setPackSubmitting(false);
+    }
   }
 
   if (!isDashboardRoute) {
@@ -525,14 +543,18 @@ export function TemporaryInboxPage() {
             email={packEmail}
             quantity={packQuantity}
             reviewReady={packReviewReady}
+            submitting={packSubmitting}
+            submitError={packSubmitError}
             onClose={() => setIsPackDrawerOpen(false)}
             onEmailChange={(value) => {
               setPackEmail(value);
               setPackReviewReady(false);
+              setPackSubmitError(null);
             }}
             onQuantityChange={(value) => {
               setPackQuantity(Math.min(300, Math.max(50, value)));
               setPackReviewReady(false);
+              setPackSubmitError(null);
             }}
             onReview={reviewPack}
           />
@@ -546,6 +568,8 @@ function TemporaryAddressDrawer({
   email,
   quantity,
   reviewReady,
+  submitting,
+  submitError,
   onClose,
   onEmailChange,
   onQuantityChange,
@@ -554,6 +578,8 @@ function TemporaryAddressDrawer({
   email: string;
   quantity: number;
   reviewReady: boolean;
+  submitting: boolean;
+  submitError: string | null;
   onClose: () => void;
   onEmailChange: (value: string) => void;
   onQuantityChange: (value: number) => void;
@@ -642,15 +668,17 @@ function TemporaryAddressDrawer({
 
           {reviewReady ? (
             <div className="tm-pack-success" role="status">
-              <strong>Your plan is ready.</strong>
-              <span>Checkout will be connected after the payment provider is selected. Your quote is ${pack.price.toFixed(2)}/month for {quantity} addresses delivered upfront.</span>
+              <strong>Your request has been sent.</strong>
+              <span>Our team will contact you within 24 hours at {email} about payment and send you a payment link. After payment, the complete {pack.quantity}-address temporary-email pack will be provided together on a new domain for you to use as you wish.</span>
             </div>
           ) : null}
+          {submitError ? <p className="tm-pack-error" role="alert">{submitError}</p> : null}
 
-          <button className="tm-pack-submit" type="submit">
-            Review ${pack.price.toFixed(2)}/month plan <span aria-hidden="true">→</span>
+          <button className="tm-pack-submit" type="submit" disabled={submitting || reviewReady}>
+            {submitting ? "Sending request…" : reviewReady ? "Request submitted" : `Submit $${pack.price.toFixed(2)}/month request`}
+            <span aria-hidden="true">{reviewReady ? "✓" : "→"}</span>
           </button>
-          <p className="tm-pack-legal">Price preview only. No payment is taken in this step.</p>
+          <p className="tm-pack-legal">No payment details are collected here. The team will send a payment link after contacting you.</p>
         </form>
       </aside>
     </div>
