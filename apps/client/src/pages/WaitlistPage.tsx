@@ -364,6 +364,23 @@ export function WaitlistPage() {
             Join us on Discord <span aria-hidden="true">↗</span>
           </a>
           <span>© {new Date().getFullYear()} VeilChat</span>
+          <div className="vc-footer__badge-row">
+            <a
+              className="vc-footer__badge"
+              href="https://www.scrolllaunch.com/products/mail-for-founders?ref=badge"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Featured on ScrollLaunch"
+            >
+              <img
+                src="https://www.scrolllaunch.com/api/badge/mail-for-founders"
+                alt="Featured on ScrollLaunch"
+                width={220}
+                height={48}
+                loading="lazy"
+              />
+            </a>
+          </div>
         </footer>
       </div>
     </main>
