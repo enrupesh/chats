@@ -7,7 +7,6 @@ import {
   signOutFirebase,
 } from "../lib/firebase";
 import {
-  deleteTempInbox,
   type TempInbox,
   type TempInboxMessage,
   createTempInbox,
@@ -255,22 +254,6 @@ export function TemporaryInboxPage() {
     }
   }
 
-  async function handleDelete(inbox: TempInbox) {
-    if (!user || !window.confirm(`Delete ${inbox.address}? This address can never be reused.`)) {
-      return;
-    }
-    setBusy(true);
-    setError(null);
-    try {
-      await deleteTempInbox(await user.getIdToken(), inbox.id);
-      await refreshInboxes();
-    } catch (deleteError) {
-      setError(messageOf(deleteError));
-    } finally {
-      setBusy(false);
-    }
-  }
-
   async function handleManualRefresh() {
     if (!user || !selectedInbox || manualRefreshing) return;
     setError(null);
@@ -402,7 +385,7 @@ export function TemporaryInboxPage() {
           <div>
             <span className="tm-preview-label">Your allowance</span>
             <strong>{inboxes.length} / 2 active addresses</strong>
-            <p>New mail replaces the previous message. Addresses expire after 24 hours.</p>
+            <p>Need another code? Ask the sender to send it again. Your latest email replaces the previous one automatically.</p>
           </div>
           <div className="tm-create-controls">
             {turnstileSiteKey ? <div ref={turnstileHostRef} className="tm-turnstile" /> : (
@@ -444,7 +427,6 @@ export function TemporaryInboxPage() {
                 </div>
                 <div className="tm-address-actions">
                   <button className="tm-plain-button" type="button" onClick={() => void copyValue(selectedInbox.address, selectedInbox.id)}>{copied === selectedInbox.id ? "Copied" : "Copy address"}</button>
-                  <button className="tm-danger-button" type="button" onClick={() => void handleDelete(selectedInbox)}>Delete</button>
                 </div>
               </div>
 
@@ -457,7 +439,7 @@ export function TemporaryInboxPage() {
                       <div className="tm-mail-row-copy"><strong>{message.fromAddress}</strong><span>{message.subject}</span><small>{formatDate(message.receivedAt)}</small></div>
                     </div>
                   )) : <div className="tm-sidebar-empty"><strong>No email yet</strong>Use this address on another site. The newest email will appear here.</div>}
-                  {messages.length ? <div className="tm-sidebar-empty"><strong>No older messages</strong>New mail replaces this one. This inbox never builds a history.</div> : null}
+                   {messages.length ? <div className="tm-sidebar-empty"><strong>Latest email only</strong>Ask for another code when you need one. The previous message is replaced automatically.</div> : null}
                 </aside>
 
                 <section className="tm-message-pane" aria-label="Received email">

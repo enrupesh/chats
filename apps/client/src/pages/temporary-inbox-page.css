@@ -134,7 +134,6 @@
 .tm-google-button,
 .tm-dark-button,
 .tm-plain-button,
-.tm-danger-button,
 .tm-otp-copy {
   display: inline-flex;
   align-items: center;
@@ -166,7 +165,7 @@
 .tm-google-button:disabled,
 .tm-dark-button:disabled,
 .tm-plain-button:disabled,
-.tm-danger-button:disabled {
+.tm-otp-copy:disabled {
   cursor: wait;
   opacity: 0.58;
 }
@@ -509,7 +508,6 @@
 
 .tm-dark-button,
 .tm-plain-button,
-.tm-danger-button,
 .tm-otp-copy {
   min-height: 34px;
   padding: 0 11px;
@@ -539,15 +537,6 @@
 .tm-otp-copy:hover:not(:disabled) {
   border-color: #afb7ae;
   background: var(--tm-wash);
-}
-
-.tm-danger-button {
-  border-color: #e6caca;
-  color: #9a4f4f;
-}
-
-.tm-danger-button:hover:not(:disabled) {
-  background: #fff8f7;
 }
 
 .tm-address-picker {
