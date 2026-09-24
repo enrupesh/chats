@@ -49,6 +49,7 @@ const InvitePage = lazy(() => import("./pages/InvitePage").then((m) => ({ defaul
 const DonatePage = lazy(() => import("./pages/DonatePage").then((m) => ({ default: m.DonatePage })));
 const WaitlistPage = lazy(() => import("./pages/WaitlistPage").then((m) => ({ default: m.WaitlistPage })));
 const TemporaryInboxPage = lazy(() => import("./pages/TemporaryInboxPage").then((m) => ({ default: m.TemporaryInboxPage })));
+const TemporaryInboxBlogPage = lazy(() => import("./pages/TemporaryInboxBlogPage").then((m) => ({ default: m.TemporaryInboxBlogPage })));
 const InviteRedeemPage = lazy(() => import("./pages/InviteRedeemPage").then((m) => ({ default: m.InviteRedeemPage })));
 const ConnectionsPage = lazy(() => import("./pages/ConnectionsPage").then((m) => ({ default: m.ConnectionsPage })));
 const DiscoverPage = lazy(() => import("./pages/DiscoverPage").then((m) => ({ default: m.DiscoverPage })));
@@ -222,6 +223,7 @@ export function App() {
                 <Route path="/promises" element={<PromisesPage />} />
                 <Route path="/encryption" element={<EncryptionPage />} />
                 <Route path="/blog" element={<BlogIndexPage />} />
+                <Route path="/blog/temporary-inbox" element={<TemporaryInboxBlogPage />} />
                 <Route path="/blog/whatsapp-privacy-truth" element={<WhatsappPrivacyPage />} />
                 <Route path="/blog/signal-vs-whatsapp" element={<SignalVsWhatsappPage />} />
                 <Route path="/blog/best-encrypted-messengers-2026" element={<BestEncryptedMessengersPage />} />

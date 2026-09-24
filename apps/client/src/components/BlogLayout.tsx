@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState, type ReactNode } from "react";
 import { WaitlistPromoCard } from "./WaitlistPromo";
+import { TemporaryInboxPromoCard } from "./TemporaryInboxPromo";
 
 export type BlogSource = {
   n: number;
@@ -233,6 +234,10 @@ export function BlogLayout({
 
       <section className="max-w-[820px] mx-auto px-5 sm:px-8 pb-12">
         <WaitlistPromoCard />
+      </section>
+
+      <section className="max-w-[820px] mx-auto px-5 sm:px-8 pb-12">
+        <TemporaryInboxPromoCard variant="marketing" />
       </section>
 
       {/* Related reading */}

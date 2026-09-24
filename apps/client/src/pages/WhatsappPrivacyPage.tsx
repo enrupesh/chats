@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { useDocumentMeta, SEO_SITE_URL } from "../lib/useDocumentMeta";
+import { TemporaryInboxPromoCard } from "../components/TemporaryInboxPromo";
 
 /**
  * Long-form, bilingual (English / हिन्दी), heavily-sourced
@@ -5415,6 +5416,12 @@ export function WhatsappPrivacyPage() {
           >
             {ctaBack}
           </Link>
+        </div>
+        <div className="mt-8">
+          <TemporaryInboxPromoCard
+            variant="marketing"
+            language={lang === "hi" ? "hi" : "en"}
+          />
         </div>
       </article>
 

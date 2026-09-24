@@ -6,6 +6,7 @@ import smilingWithPhone from "../assets/landing/smiling-with-phone.jpg";
 import { useDocumentMeta } from "../lib/useDocumentMeta";
 import { toPublicAbsoluteUrl } from "../lib/publicAppUrl";
 import { ProductUpdateBanner } from "../components/ProductUpdateBanner";
+import { TemporaryInboxPromoCard } from "../components/TemporaryInboxPromo";
 
 /**
  * Public marketing landing page.
@@ -42,6 +43,9 @@ export function LandingPage() {
       <main id="main">
         <Hero />
         <TrustBar />
+        <section className="mx-auto max-w-7xl px-5 sm:px-8 pb-8">
+          <TemporaryInboxPromoCard variant="marketing" />
+        </section>
         <Features />
         <Lifestyle />
         <HowItWorks />
@@ -2459,6 +2463,27 @@ function Footer() {
             </span>
           </div>
         </Link>
+        <Link
+          to="/temporary-inbox"
+          className="mb-12 block rounded-2xl border border-[#68BA7F]/25 bg-[#68BA7F]/10 p-5 sm:p-6 transition-colors hover:border-[#68BA7F]/45 hover:bg-[#68BA7F]/15"
+        >
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#9BD4A8]">
+                Private temporary inbox
+              </div>
+              <div className="mt-1 text-[19px] font-semibold tracking-tight text-white">
+                Get one verification email without giving away your real inbox.
+              </div>
+              <div className="mt-1 text-[13.5px] text-[#FCF5EB]/70">
+                Receive-only, private, and automatically cleared after 24 hours.
+              </div>
+            </div>
+            <span className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#68BA7F] px-4 py-2.5 text-[13px] font-bold text-[#111B21]">
+              Try temporary inbox →
+            </span>
+          </div>
+        </Link>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
           <div>
             <a href="#top" className="flex items-center gap-2.5">
@@ -2562,6 +2587,7 @@ function Footer() {
               { label: "Sign in", to: "/login" },
               { label: "Donate", to: "/donate" },
               { label: "Join launch waitlist", to: "/waitlist" },
+              { label: "Temporary inbox", to: "/temporary-inbox" },
               { label: "Install as PWA", href: "#install" },
             ]}
           />

@@ -10,6 +10,7 @@ import { fetchHealth } from "../api";
 import { isFirebaseConfigured } from "../lib/firebase";
 import { feedback } from "../lib/feedback";
 import { useNoindex } from "../lib/useDocumentMeta";
+import { TemporaryInboxPromoCard } from "../components/TemporaryInboxPromo";
 
 type ServerStatus =
   | { kind: "loading" }
@@ -99,6 +100,8 @@ export function WelcomePage() {
               </div>
             </div>
           </div>
+
+          <TemporaryInboxPromoCard compact className="mt-7 text-left" />
 
           {/* ── Returning user ── */}
           <Link

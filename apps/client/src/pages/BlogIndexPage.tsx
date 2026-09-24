@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useDocumentMeta, SEO_SITE_URL } from "../lib/useDocumentMeta";
 import { WaitlistPromoCard } from "../components/WaitlistPromo";
+import { TemporaryInboxPromoCard } from "../components/TemporaryInboxPromo";
 
 type Post = {
   href: string;
@@ -13,6 +14,16 @@ type Post = {
 };
 
 const POSTS: Post[] = [
+  {
+    href: "/blog/temporary-inbox",
+    title: "Temporary email inbox: private verification without a permanent mailbox",
+    description:
+      "A practical privacy-first guide to temporary email: how short-lived inboxes work, when to use one for verification codes, what they protect, and what they cannot protect.",
+    badge: "Privacy guide",
+    date: "2026-09-24",
+    dateLabel: "Sep 24, 2026",
+    readingMinutes: 10,
+  },
   {
     href: "/blog/how-to-choose-encrypted-messenger-2026",
     title: "How to choose an end-to-end encrypted messenger in 2026",
@@ -184,6 +195,10 @@ export function BlogIndexPage() {
 
       <section className="max-w-[820px] mx-auto px-5 sm:px-8 mt-10">
         <WaitlistPromoCard />
+      </section>
+
+      <section className="max-w-[820px] mx-auto px-5 sm:px-8 mt-5">
+        <TemporaryInboxPromoCard variant="marketing" />
       </section>
 
       {/* Posts list */}

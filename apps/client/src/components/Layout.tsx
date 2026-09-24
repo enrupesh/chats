@@ -2,6 +2,7 @@ import type { ReactNode, ButtonHTMLAttributes, CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { feedback } from "../lib/feedback";
 import { WaitlistMiniLink } from "./WaitlistPromo";
+import { TemporaryInboxMiniLink } from "./TemporaryInboxPromo";
 
 /* ─────────────────────────────────────────────────────────────
  * WhatsApp-style design primitives.
@@ -40,6 +41,7 @@ export function ScreenShell({
             <span />
           )}
           <div className="flex items-center gap-2">
+            <TemporaryInboxMiniLink className="mr-1 sm:mr-2" />
             <WaitlistMiniLink className="mr-1 sm:mr-2" />
             {phase && (
               <span className="text-xs uppercase tracking-wider text-text-oncolor/80">

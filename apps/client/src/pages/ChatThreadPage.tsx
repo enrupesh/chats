@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
 import { trpc } from "../lib/trpc";
 import { ChatTwoPaneShell } from "../components/ChatTwoPaneShell";
+import { TemporaryInboxPromoCard } from "../components/TemporaryInboxPromo";
 import { useAuthStore } from "../lib/store";
 import { useUnlockStore } from "../lib/unlockStore";
 import { toast } from "../lib/toast";
@@ -1149,6 +1150,7 @@ function ChatThreadInner({ peerId }: { peerId: string }) {
         />
           {isOfficialChat && <SupportFollowUps />}
           {isOfficialChat && <OfficialWelcomeMessage />}
+          {isOfficialChat && <OfficialTemporaryInboxMessage />}
         {!filteredMessages || filteredMessages.length === 0 ? (
           <EmptyState
             title={searchOpen && searchQuery ? "No matches" : "No messages yet"}
@@ -4460,6 +4462,20 @@ function OfficialWelcomeMessage() {
       <div className="mt-2 text-right text-[10px] text-text-muted">
         Official VeilChat message
       </div>
+    </div>
+  );
+}
+
+/**
+ * Permanent promotional UI for the Team thread. This is deliberately a
+ * client-rendered card, not a sent/stored chat message, so it cannot create a
+ * duplicate welcome message or change the existing Team history.
+ */
+function OfficialTemporaryInboxMessage() {
+  return (
+    <div className="self-start w-full max-w-md">
+      <TemporaryInboxPromoCard compact />
+      <div className="mt-1 text-[10px] text-text-muted">VeilChat Team · product tip</div>
     </div>
   );
 }

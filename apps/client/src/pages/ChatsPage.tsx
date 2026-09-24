@@ -35,6 +35,7 @@ import { useFocusState, focusReasonLabel } from "../lib/focusMode";
 import { useNoindex } from "../lib/useDocumentMeta";
 import { PullToRefresh } from "../components/PullToRefresh";
 import { ProductUpdateBanner } from "../components/ProductUpdateBanner";
+import { TemporaryInboxPromoCard } from "../components/TemporaryInboxPromo";
 
 export function ChatsPage() {
   useNoindex("Chats · VeilChat");
@@ -276,6 +277,10 @@ export function ChatsPage() {
       )}
 
       <ProductUpdateBanner variant="app" className="mx-3 my-3 sm:mx-4 lg:mx-auto" />
+      <TemporaryInboxPromoCard
+        compact
+        className="mx-3 mb-3 sm:mx-4 lg:mx-auto lg:max-w-3xl"
+      />
 
       {!identity && (
         <div className="p-4 w-full mx-auto lg:max-w-2xl">
