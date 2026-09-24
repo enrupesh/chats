@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   getFirebaseAuth,
@@ -104,6 +104,23 @@ function emailDocument(html: string): string {
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>html,body{margin:0;padding:0;background:#fff;color:#202124;font-family:Arial,sans-serif;overflow-wrap:anywhere}img{max-width:100%;height:auto}table{max-width:100%}</style></head><body>${html}</body></html>`;
 }
 
+const TEMPORARY_ADDRESS_PACKS = [
+  { quantity: 10, price: 19, name: "Starter", note: "For occasional verification" },
+  { quantity: 25, price: 39, name: "Regular", note: "For weekly use" },
+  { quantity: 50, price: 69, name: "Power", note: "For frequent verification" },
+  { quantity: 100, price: 99, name: "Heavy", note: "For a busy month" },
+  { quantity: 250, price: 199, name: "Scale", note: "For teams and testing" },
+] as const;
+
+function packForQuantity(
+  quantity: number,
+): (typeof TEMPORARY_ADDRESS_PACKS)[number] {
+  return (
+    TEMPORARY_ADDRESS_PACKS.find((pack) => quantity <= pack.quantity) ??
+    TEMPORARY_ADDRESS_PACKS[TEMPORARY_ADDRESS_PACKS.length - 1]!
+  );
+}
+
 export function TemporaryInboxPage() {
   useNoindex("Temporary Mail · Private verification inbox");
   const location = useLocation();
@@ -121,6 +138,10 @@ export function TemporaryInboxPage() {
   const [manualRefreshing, setManualRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  const [isPackDrawerOpen, setIsPackDrawerOpen] = useState(false);
+  const [packQuantity, setPackQuantity] = useState(25);
+  const [packEmail, setPackEmail] = useState("");
+  const [packReviewReady, setPackReviewReady] = useState(false);
   const turnstileHostRef = useRef<HTMLDivElement | null>(null);
   const widgetIdRef = useRef<string | null>(null);
   const refreshInFlightRef = useRef(false);
@@ -202,6 +223,25 @@ export function TemporaryInboxPage() {
   }, []);
 
   useEffect(() => {
+    if (!user?.email) return;
+    setPackEmail(user.email);
+  }, [user?.email]);
+
+  useEffect(() => {
+    if (!isPackDrawerOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsPackDrawerOpen(false);
+    };
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isPackDrawerOpen]);
+
+  useEffect(() => {
     if (!user || !turnstileSiteKey || !turnstileHostRef.current) return;
     let cancelled = false;
     void loadTurnstile()
@@ -278,6 +318,16 @@ export function TemporaryInboxPage() {
     } catch {
       setError("Copy is unavailable in this browser. Select the address manually.");
     }
+  }
+
+  function openPackDrawer() {
+    setPackReviewReady(false);
+    setIsPackDrawerOpen(true);
+  }
+
+  function reviewPack(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPackReviewReady(true);
   }
 
   if (!isDashboardRoute) {
@@ -391,6 +441,11 @@ export function TemporaryInboxPage() {
             <span className="tm-preview-label">Your allowance</span>
             <strong>{inboxes.length} / 2 active addresses</strong>
             <p>Need another code? Ask the sender to send it again. Your latest email replaces the previous one automatically.</p>
+            <button className="tm-upgrade-button" type="button" onClick={openPackDrawer}>
+              <span className="tm-upgrade-button-icon" aria-hidden="true">+</span>
+              <span><strong>Need more addresses?</strong><small>See monthly packs</small></span>
+              <span className="tm-upgrade-button-arrow" aria-hidden="true">→</span>
+            </button>
           </div>
           <div className="tm-create-controls">
             {turnstileSiteKey ? <div ref={turnstileHostRef} className="tm-turnstile" /> : (
@@ -464,8 +519,140 @@ export function TemporaryInboxPage() {
         </div>
 
         <div className="tm-dashboard-footer"><span>Messages delete automatically after 24 hours.</span><span>Temporary Mail · private by default</span></div>
+        {isPackDrawerOpen ? (
+          <TemporaryAddressDrawer
+            email={packEmail}
+            quantity={packQuantity}
+            reviewReady={packReviewReady}
+            onClose={() => setIsPackDrawerOpen(false)}
+            onEmailChange={(value) => {
+              setPackEmail(value);
+              setPackReviewReady(false);
+            }}
+            onQuantityChange={(value) => {
+              setPackQuantity(Math.min(250, Math.max(5, value)));
+              setPackReviewReady(false);
+            }}
+            onReview={reviewPack}
+          />
+        ) : null}
       </section>
     </main>
+  );
+}
+
+function TemporaryAddressDrawer({
+  email,
+  quantity,
+  reviewReady,
+  onClose,
+  onEmailChange,
+  onQuantityChange,
+  onReview,
+}: {
+  email: string;
+  quantity: number;
+  reviewReady: boolean;
+  onClose: () => void;
+  onEmailChange: (value: string) => void;
+  onQuantityChange: (value: number) => void;
+  onReview: (event: FormEvent<HTMLFormElement>) => void;
+}) {
+  const pack = packForQuantity(quantity);
+
+  return (
+    <div className="tm-drawer-layer" role="presentation" onMouseDown={(event) => {
+      if (event.target === event.currentTarget) onClose();
+    }}>
+      <aside className="tm-drawer" role="dialog" aria-modal="true" aria-labelledby="tm-drawer-title">
+        <div className="tm-drawer-header">
+          <div>
+            <span className="tm-preview-label">More capacity</span>
+            <h2 id="tm-drawer-title">Keep more addresses ready.</h2>
+          </div>
+          <button className="tm-drawer-close" type="button" onClick={onClose} aria-label="Close monthly packs">×</button>
+        </div>
+
+        <div className="tm-drawer-copy">
+          <p>Choose how many temporary addresses you expect to use this month. Each address still expires automatically after 24 hours.</p>
+          <div className="tm-drawer-note"><span aria-hidden="true">✓</span><span>No permanent mailbox. No card details collected here.</span></div>
+        </div>
+
+        <form className="tm-pack-form" onSubmit={onReview}>
+          <div className="tm-pack-field">
+            <div className="tm-pack-field-heading">
+              <label htmlFor="tm-pack-quantity">Addresses per month</label>
+              <div className="tm-pack-quantity-input">
+                <input
+                  id="tm-pack-quantity"
+                  type="number"
+                  min="5"
+                  max="250"
+                  step="5"
+                  value={quantity}
+                  onChange={(event) => onQuantityChange(Number(event.target.value) || 5)}
+                />
+                <span>addresses</span>
+              </div>
+            </div>
+            <input
+              className="tm-pack-range"
+              type="range"
+              min="5"
+              max="250"
+              step="5"
+              value={quantity}
+              onChange={(event) => onQuantityChange(Number(event.target.value))}
+              aria-label="Addresses per month"
+            />
+            <div className="tm-pack-range-labels"><span>5</span><span>250</span></div>
+          </div>
+
+          <div className="tm-pack-presets" aria-label="Monthly address packs">
+            {TEMPORARY_ADDRESS_PACKS.map((preset) => (
+              <button
+                key={preset.quantity}
+                className={`tm-pack-preset ${pack.quantity === preset.quantity ? "is-selected" : ""}`}
+                type="button"
+                onClick={() => onQuantityChange(preset.quantity)}
+              >
+                <span><strong>{preset.quantity}</strong> addresses</span>
+                <b>₹{preset.price}<small>/mo</small></b>
+              </button>
+            ))}
+          </div>
+
+          <label className="tm-pack-email">
+            <span>Where should we send checkout updates?</span>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(event) => onEmailChange(event.target.value)}
+              placeholder="you@example.com"
+              autoComplete="email"
+            />
+          </label>
+
+          <div className="tm-pack-total">
+            <div><span>Estimated monthly total</span><small>{pack.name} · {pack.note}</small></div>
+            <strong>₹{pack.price}<small>/month</small></strong>
+          </div>
+
+          {reviewReady ? (
+            <div className="tm-pack-success" role="status">
+              <strong>Your plan is ready.</strong>
+              <span>Checkout will be connected after the payment provider is selected. Your quote is ₹{pack.price}/month for {quantity} addresses.</span>
+            </div>
+          ) : null}
+
+          <button className="tm-pack-submit" type="submit">
+            Review ₹{pack.price}/month plan <span aria-hidden="true">→</span>
+          </button>
+          <p className="tm-pack-legal">Price preview only. No payment is taken in this step.</p>
+        </form>
+      </aside>
+    </div>
   );
 }
 
