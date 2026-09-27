@@ -25,7 +25,6 @@ import { useAppRefreshLoop } from "./lib/appRefresh";
 import { NativeIntro } from "./components/NativeIntro";
 import { isAndroid } from "./lib/capacitor";
 import { usePresence } from "./lib/usePresence";
-import { OnboardingSurveyModal } from "./components/OnboardingSurveyModal";
 import { Analytics } from "@vercel/analytics/react";
 
 // All non-landing routes are code-split. Each chunk only downloads when
@@ -248,7 +247,6 @@ export function App() {
             <PushPermissionPrompt />
             <DailyVerificationGate />
             <ToastViewport />
-            <OnboardingSurveyModal />
             <Analytics />
           </div>
           {/* Privacy screen overlay — sits outside .veil-app-wrapper so it
