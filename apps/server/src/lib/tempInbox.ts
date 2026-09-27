@@ -272,20 +272,10 @@ function serializeMessage(row: typeof schema.tempInboxMessages.$inferSelect) {
 async function createInbox(
   uid: string,
   ip: string,
-  turnstileToken: unknown,
 ): Promise<
   | { ok: true; inbox: ReturnType<typeof serializeInbox>; quotaResetAt: string | null }
   | { ok: false; status: number; error: string }
 > {
-  const captchaOk = await validateTurnstile(turnstileToken, ip);
-  if (!captchaOk) {
-    return {
-      ok: false,
-      status: 400,
-      error: "Complete the Cloudflare check before creating an inbox.",
-    };
-  }
-
   const limiter = rateLimit({
     key: `temp-inbox:create:${ip}`,
     limit: 8,
@@ -312,23 +302,37 @@ async function createInbox(
         .onConflictDoNothing({
           target: schema.tempInboxUsers.firebaseUid,
         })
-        .returning({ id: schema.tempInboxUsers.id });
-      const userId =
-        insertedUser[0]?.id ??
+        .returning({
+          id: schema.tempInboxUsers.id,
+          botVerifiedAt: schema.tempInboxUsers.botVerifiedAt,
+        });
+      const user =
+        insertedUser[0] ??
         (
           await tx
-            .select({ id: schema.tempInboxUsers.id })
+            .select({
+              id: schema.tempInboxUsers.id,
+              botVerifiedAt: schema.tempInboxUsers.botVerifiedAt,
+            })
             .from(schema.tempInboxUsers)
             .where(eq(schema.tempInboxUsers.firebaseUid, uid))
             .limit(1)
-        )[0]?.id;
-      if (!userId) {
+        )[0];
+      if (!user) {
         return {
           ok: false as const,
           status: 500,
           error: "Could not prepare your temporary inbox account.",
         };
       }
+      if (!user.botVerifiedAt) {
+        return {
+          ok: false as const,
+          status: 403,
+          error: "Complete the bot verification before creating an inbox.",
+        };
+      }
+      const userId = user.id;
 
       // Serialize quota checks for the same Firebase user in a multi-click
       // race. This lock is on the small identity row, never on email data.
@@ -505,11 +509,14 @@ export function registerTempInboxRoutes(app: FastifyInstance): void {
     if (!uid) return;
     const db = getDb();
     const user = await db
-      .select({ id: schema.tempInboxUsers.id })
+      .select({
+        id: schema.tempInboxUsers.id,
+        botVerifiedAt: schema.tempInboxUsers.botVerifiedAt,
+      })
       .from(schema.tempInboxUsers)
       .where(eq(schema.tempInboxUsers.firebaseUid, uid))
       .limit(1);
-    if (!user[0]) return reply.send({ inboxes: [] });
+    if (!user[0]) return reply.send({ inboxes: [], botVerified: false });
     const rows = await db
       .select()
       .from(schema.tempInboxes)
@@ -520,11 +527,14 @@ export function registerTempInboxRoutes(app: FastifyInstance): void {
         ),
       )
       .orderBy(desc(schema.tempInboxes.createdAt));
-    return reply.send({ inboxes: rows.map(serializeInbox) });
+    return reply.send({
+      inboxes: rows.map(serializeInbox),
+      botVerified: user[0].botVerifiedAt !== null,
+    });
   });
 
   app.post<{ Body: { turnstileToken?: string } }>(
-    "/temporary-inbox",
+    "/temporary-inbox/verify",
     async (req, reply) => {
       const uid = await firebaseUid(req as unknown as TempInboxRequest, reply);
       if (!uid) return;
@@ -532,8 +542,38 @@ export function registerTempInboxRoutes(app: FastifyInstance): void {
         req.body && typeof req.body === "object"
           ? (req.body as { turnstileToken?: string })
           : {};
+      const db = getDb();
+      const existing = await db
+        .select({ botVerifiedAt: schema.tempInboxUsers.botVerifiedAt })
+        .from(schema.tempInboxUsers)
+        .where(eq(schema.tempInboxUsers.firebaseUid, uid))
+        .limit(1);
+      if (existing[0]?.botVerifiedAt) return reply.send({ ok: true });
+
+      if (!(await validateTurnstile(body.turnstileToken, req.ip))) {
+        return reply.status(400).send({
+          error: "Complete the bot verification to continue.",
+        });
+      }
+
+      await db
+        .insert(schema.tempInboxUsers)
+        .values({ firebaseUid: uid, botVerifiedAt: new Date() })
+        .onConflictDoUpdate({
+          target: schema.tempInboxUsers.firebaseUid,
+          set: { botVerifiedAt: new Date() },
+        });
+      return reply.send({ ok: true });
+    },
+  );
+
+  app.post(
+    "/temporary-inbox",
+    async (req, reply) => {
+      const uid = await firebaseUid(req as unknown as TempInboxRequest, reply);
+      if (!uid) return;
       try {
-        const result = await createInbox(uid, req.ip, body.turnstileToken);
+        const result = await createInbox(uid, req.ip);
         return reply.status(result.ok ? 201 : result.status).send(result.ok ? result : { error: result.error });
       } catch (error) {
         app.log.error({ error }, "Temporary inbox creation failed");

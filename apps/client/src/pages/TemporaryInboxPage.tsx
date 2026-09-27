@@ -13,6 +13,7 @@ import {
   listTempInboxMessages,
   listTempInboxes,
   submitTempAddressPackRequest,
+  verifyTempInbox,
 } from "../lib/tempInboxApi";
 import { useNoindex } from "../lib/useDocumentMeta";
 import {
@@ -27,6 +28,7 @@ type TurnstileWidget = {
     options: {
       sitekey: string;
       theme?: "light" | "dark" | "auto";
+      appearance?: "always" | "execute" | "interaction-only";
       callback: (token: string) => void;
       "expired-callback"?: () => void;
       "error-callback"?: () => void;
@@ -135,6 +137,8 @@ export function TemporaryInboxPage() {
   const [messages, setMessages] = useState<TempInboxMessage[]>([]);
   const [now, setNow] = useState(() => Date.now());
   const [turnstileToken, setTurnstileToken] = useState<string | undefined>();
+  const [botVerified, setBotVerified] = useState(false);
+  const [botVerificationOpen, setBotVerificationOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [manualRefreshing, setManualRefreshing] = useState(false);
@@ -171,12 +175,14 @@ export function TemporaryInboxPage() {
   const refreshInboxes = useCallback(async () => {
     if (!user) return;
     const idToken = await user.getIdToken();
-    const next = await listTempInboxes(idToken);
-    setInboxes(next);
+    const result = await listTempInboxes(idToken);
+    setInboxes(result.inboxes);
+    setBotVerified(result.botVerified);
+    setBotVerificationOpen(!result.botVerified);
     setSelectedId((current) =>
-      current && next.some((inbox) => inbox.id === current)
+      current && result.inboxes.some((inbox) => inbox.id === current)
         ? current
-        : next[0]?.id ?? null,
+        : result.inboxes[0]?.id ?? null,
     );
   }, [user]);
 
@@ -209,6 +215,8 @@ export function TemporaryInboxPage() {
       setInboxes([]);
       setSelectedId(null);
       setMessages([]);
+      setBotVerified(false);
+      setBotVerificationOpen(false);
       return;
     }
     void refreshInboxes().catch((loadError) => setError(messageOf(loadError)));
@@ -246,7 +254,14 @@ export function TemporaryInboxPage() {
   }, [isPackDrawerOpen]);
 
   useEffect(() => {
-    if (!user || !turnstileSiteKey || !turnstileHostRef.current) return;
+    if (
+      !user ||
+      !botVerificationOpen ||
+      !turnstileSiteKey ||
+      !turnstileHostRef.current
+    ) {
+      return;
+    }
     let cancelled = false;
     void loadTurnstile()
       .then((turnstile) => {
@@ -254,6 +269,7 @@ export function TemporaryInboxPage() {
         widgetIdRef.current = turnstile.render(turnstileHostRef.current, {
           sitekey: turnstileSiteKey,
           theme: "light",
+          appearance: "always",
           callback: (nextToken) => setTurnstileToken(nextToken),
           "expired-callback": () => setTurnstileToken(undefined),
           "error-callback": () => setTurnstileToken(undefined),
@@ -268,7 +284,7 @@ export function TemporaryInboxPage() {
       }
       setTurnstileToken(undefined);
     };
-  }, [user]);
+  }, [botVerificationOpen, user]);
 
   async function handleGoogleSignIn() {
     setBusy(true);
@@ -283,21 +299,38 @@ export function TemporaryInboxPage() {
   }
 
   async function handleCreate() {
+    if (!user || !botVerified) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const idToken = await user.getIdToken();
+      const inbox = await createTempInbox(idToken);
+      setInboxes((current) => [inbox, ...current]);
+      setSelectedId(inbox.id);
+      setMessages([]);
+    } catch (createError) {
+      setError(messageOf(createError));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleBotVerification() {
     if (!user) return;
     setBusy(true);
     setError(null);
     try {
       const idToken = await user.getIdToken();
-      const inbox = await createTempInbox(idToken, turnstileToken);
-      setInboxes((current) => [inbox, ...current]);
-      setSelectedId(inbox.id);
-      setMessages([]);
+      await verifyTempInbox(idToken, turnstileToken);
+      setBotVerified(true);
+      setBotVerificationOpen(false);
       setTurnstileToken(undefined);
+    } catch (verificationError) {
+      setError(messageOf(verificationError));
       if (widgetIdRef.current && window.turnstile) {
         window.turnstile.reset(widgetIdRef.current);
       }
-    } catch (createError) {
-      setError(messageOf(createError));
+      setTurnstileToken(undefined);
     } finally {
       setBusy(false);
     }
@@ -449,6 +482,51 @@ export function TemporaryInboxPage() {
         </div>
       </header>
 
+      {botVerificationOpen ? (
+        <div className="tm-verification-backdrop" role="presentation">
+          <section
+            className="tm-verification-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="tm-verification-title"
+            aria-describedby="tm-verification-description"
+          >
+            <div className="tm-verification-icon" aria-hidden="true">✓</div>
+            <p className="tm-kicker">One quick security check</p>
+            <h2 id="tm-verification-title">Confirm you’re human</h2>
+            <p id="tm-verification-description">
+              Complete this check once after Google sign-in. You won’t be asked
+              again when you create another temporary address.
+            </p>
+            <div className="tm-verification-widget">
+              {turnstileSiteKey ? (
+                <div ref={turnstileHostRef} className="tm-turnstile" />
+              ) : import.meta.env.DEV ? (
+                <p className="tm-verification-dev">
+                  Local development mode: no challenge is configured.
+                </p>
+              ) : (
+                <p className="tm-error" role="alert">
+                  Verification is temporarily unavailable. Please try again later.
+                </p>
+              )}
+            </div>
+            {error ? <p className="tm-error" role="alert">{error}</p> : null}
+            <button
+              className="tm-dark-button tm-verification-button"
+              type="button"
+              onClick={() => void handleBotVerification()}
+              disabled={busy || (turnstileRequired && !turnstileToken)}
+            >
+              {busy ? "Checking…" : "Continue to your inbox"} <span aria-hidden="true">→</span>
+            </button>
+            <small className="tm-verification-note">
+              This check protects temporary inboxes from automated abuse.
+            </small>
+          </section>
+        </div>
+      ) : null}
+
       <section className="tm-dashboard-main" aria-label="Temporary inbox dashboard">
         <div className="tm-dashboard-heading">
           <div><h1>Inbox</h1><p>One address. The latest email only.</p></div>
@@ -467,10 +545,7 @@ export function TemporaryInboxPage() {
             </button>
           </div>
           <div className="tm-create-controls">
-            {turnstileSiteKey ? <div ref={turnstileHostRef} className="tm-turnstile" /> : (
-              <small className="tm-turnstile-missing">Turnstile site key is not configured.</small>
-            )}
-            <button className="tm-dark-button" type="button" onClick={() => void handleCreate()} disabled={busy || (turnstileRequired && !turnstileToken)}>
+            <button className="tm-dark-button" type="button" onClick={() => void handleCreate()} disabled={busy || !botVerified}>
               {busy ? "Creating…" : "Create temporary address"} <span aria-hidden="true">+</span>
             </button>
           </div>

@@ -1014,6 +1014,7 @@ export const tempInboxUsers = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     firebaseUid: text("firebase_uid").notNull(),
+    botVerifiedAt: timestamp("bot_verified_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

@@ -171,6 +171,9 @@ async function ensureSchema(sql: ReturnType<typeof postgres>) {
   await sql.unsafe(
     `CREATE UNIQUE INDEX IF NOT EXISTS "temp_inbox_users_firebase_uid_idx" ON "temp_inbox_users" ("firebase_uid")`,
   );
+  await sql.unsafe(
+    `ALTER TABLE "temp_inbox_users" ADD COLUMN IF NOT EXISTS "bot_verified_at" timestamptz`,
+  );
   await sql.unsafe(`
     CREATE TABLE IF NOT EXISTS "temp_address_reservations" (
       "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,

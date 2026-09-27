@@ -7,6 +7,11 @@ export type TempInbox = {
   expiresAt: string;
 };
 
+export type TempInboxListResult = {
+  inboxes: TempInbox[];
+  botVerified: boolean;
+};
+
 export type TempInboxMessage = {
   id: string;
   fromAddress: string;
@@ -52,18 +57,20 @@ async function request<T>(
   return payload as T;
 }
 
-export async function listTempInboxes(token: string): Promise<TempInbox[]> {
-  const result = await request<{ inboxes: TempInbox[] }>("/temporary-inbox", token);
-  return result.inboxes;
+export async function listTempInboxes(token: string): Promise<TempInboxListResult> {
+  return request<TempInboxListResult>("/temporary-inbox", token);
 }
 
-export async function createTempInbox(
-  token: string,
-  turnstileToken?: string,
-): Promise<TempInbox> {
-  const result = await request<{ inbox: TempInbox }>("/temporary-inbox", token, {
+export async function verifyTempInbox(token: string, turnstileToken?: string): Promise<void> {
+  await request<{ ok: true }>("/temporary-inbox/verify", token, {
     method: "POST",
     body: JSON.stringify({ turnstileToken }),
+  });
+}
+
+export async function createTempInbox(token: string): Promise<TempInbox> {
+  const result = await request<{ inbox: TempInbox }>("/temporary-inbox", token, {
+    method: "POST",
   });
   return result.inbox;
 }

@@ -616,9 +616,82 @@
   min-height: 65px;
 }
 
-.tm-turnstile-missing {
-  max-width: 180px;
-  color: #925654;
+.tm-verification-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(18, 26, 20, 0.62);
+  backdrop-filter: blur(8px);
+}
+
+.tm-verification-modal {
+  width: min(100%, 520px);
+  padding: 34px;
+  border: 1px solid var(--tm-line-strong);
+  border-radius: 18px;
+  background: var(--tm-panel);
+  box-shadow: 0 26px 80px rgba(22, 37, 24, 0.28);
+  text-align: center;
+}
+
+.tm-verification-icon {
+  width: 46px;
+  height: 46px;
+  margin: 0 auto 19px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--tm-accent);
+  color: var(--tm-accent-ink);
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.tm-verification-modal .tm-kicker {
+  margin-bottom: 9px;
+}
+
+.tm-verification-modal h2 {
+  margin: 0;
+  color: var(--tm-ink);
+  font-size: clamp(27px, 5vw, 37px);
+  line-height: 1.08;
+  letter-spacing: -0.06em;
+}
+
+.tm-verification-modal > p:not(.tm-kicker):not(.tm-error) {
+  max-width: 390px;
+  margin: 13px auto 0;
+  color: var(--tm-ink-soft);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.tm-verification-widget {
+  min-height: 78px;
+  margin: 25px auto 12px;
+  display: grid;
+  place-items: center;
+}
+
+.tm-verification-dev {
+  margin: 0;
+  color: var(--tm-muted);
+  font-size: 11px;
+}
+
+.tm-verification-button {
+  width: 100%;
+  min-height: 48px;
+}
+
+.tm-verification-note {
+  display: block;
+  margin-top: 13px;
+  color: var(--tm-muted);
   font-size: 10px;
 }
 
@@ -1461,6 +1534,10 @@
 
   .tm-create-controls .tm-dark-button {
     width: 100%;
+  }
+
+  .tm-verification-modal {
+    padding: 28px 20px 23px;
   }
 
   .tm-upgrade-button {
